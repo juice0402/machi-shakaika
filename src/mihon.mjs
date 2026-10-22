@@ -506,10 +506,187 @@ function sakaiC(cd) {
 ${footer()}`;
 }
 
+// ===================== D・E・F（自然と日本らしさ・10/22 しょーくん「環境のサイトや社会の教科書っぽく、水や木や自然、日本らしく」） =====================
+// 中身と並びは A〜C と同じ。案ごとにちがうのは、見出しの飾り・日数の印・色と書体だけ（cfg）
+
+const KYOKASHO = '"UD Digi Kyokasho N-R","UD デジタル 教科書体 N-R","Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif';
+const MINCHO = '"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif';
+const GOTHIC = '"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif';
+
+// 共通の骨組みの CSS（色と書体は変数で、飾りは案ごと）
+const BASE = (v) => `
+:root{${v}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 ${GOTHIC};-webkit-text-size-adjust:100%}
+a{color:inherit}.pg{max-width:430px;margin:0 auto;padding:0 16px 24px}
+.hd .deco{display:block;margin:0 -16px;line-height:0}.hd .deco svg{display:block;width:100%}
+.hd .bar{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0 6px;border-bottom:1px solid var(--line)}
+.logo{font:700 20px/1.3 var(--head);margin:0;text-decoration:none;letter-spacing:.08em;color:var(--ink)}.hd small{font-size:12px;color:var(--sub)}
+.lead{margin:10px 0 12px;font:15px/1.6 var(--head);color:var(--sub)}
+.find{display:grid;grid-template-columns:auto 1fr auto;align-items:end;gap:10px;margin:0 0 16px}
+.find label{font-size:13px;color:var(--sub);padding-bottom:9px}
+.find input{font:inherit;font-size:18px;border:0;border-bottom:1.5px solid var(--ink);padding:8px 2px;background:none;width:100%;border-radius:0;color:var(--ink)}
+.find button{font:inherit;font-size:15px;background:none;border:0;border-bottom:1.5px solid var(--ink);padding:8px 2px;color:var(--ink)}
+.msg{grid-column:1/-1;margin:0;font-size:13px;color:var(--accent)}
+.q{font:700 17px/1.4 var(--head);margin:0 0 4px}
+.row{display:flex;align-items:center;gap:6px;min-height:54px;border-bottom:1px dotted var(--line)}
+.k{width:3.2em;font-size:13px;color:var(--sub)}
+.row button{font:inherit;background:none;border:0;color:var(--ink);min-width:44px;height:44px;font-size:24px;line-height:1}
+.row b{font-size:27px;min-width:1.4em;text-align:center;font-variant-numeric:tabular-nums;color:var(--num)}
+.day{position:relative;font-size:20px!important;padding:0 16px!important}.day span{position:relative;z-index:1}
+.day .mk{position:absolute;opacity:0;pointer-events:none}.day.on .mk{opacity:1}.day.on span{color:var(--accent);font-weight:700}
+.ans{margin:12px 0 4px;font-size:15px;line-height:2}
+.ans b{font-size:25px;color:var(--num);font-variant-numeric:tabular-nums;margin:0 1px 0 4px}
+.src{font-size:11px;color:var(--sub);margin:6px 0 0;line-height:1.5}
+h2{font:700 17px/1.4 var(--head);margin:26px 0 10px;display:flex;align-items:center;gap:8px;color:var(--h2)}
+.tiles{display:grid;grid-template-columns:repeat(13,1fr);gap:2px}
+.tile{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:9px;text-decoration:none;color:var(--ink)}
+.shelf ul{margin:0;padding:0;list-style:none;columns:2;column-gap:16px}.shelf li{padding:6px 0;border-bottom:1px dotted var(--line);font-size:15px}
+.crumb{font-size:12px;color:var(--sub);margin:10px 0 0}
+.city{font:700 32px/1.25 var(--head);margin:0 0 4px;letter-spacing:.04em}
+.big{margin:0;font-size:15px}.big b{font-size:36px;font-variant-numeric:tabular-nums;margin-right:2px;color:var(--num)}
+.chg,.hh{margin:0;font-size:15px}.chg b,.hh b{font-variant-numeric:tabular-nums}
+.feat{margin:10px 0;font:16px/1.6 var(--head)}
+.s1{margin:12px 0 4px;font-size:14px;line-height:1.75;padding:10px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.s1 b{color:var(--accent);font-size:18px;white-space:nowrap}
+.go{display:inline-block;margin:6px 0 2px;font-size:15px;font-weight:700}
+.g{margin:0 0 14px}.g p{margin:0 0 4px;font-size:13px}.g p b{font-size:15px}
+.bars{display:grid;grid-template-columns:3.5em 1fr 3.4em;align-items:center;gap:3px 8px;font-size:12px}
+.bars.w{grid-template-columns:6.5em 1fr 3.4em;gap:6px 8px}.bars.w span{white-space:nowrap}
+.axis{position:relative;height:14px;border-left:1px solid var(--ink)}
+.axis.mid{border-left:0}.axis.mid::before{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:1px solid var(--ink)}
+.axis span{position:absolute;top:2px;height:10px;background:var(--bar)}.axis span.z{background:var(--bar2)}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.share{height:14px;background:var(--track);position:relative}.share span{position:absolute;inset:0 auto 0 0;background:var(--bar)}
+.mnote{font-size:11px;color:var(--sub);margin:4px 0 0}
+.sonae{background:var(--soft);margin:22px -16px 0;padding:0 16px 18px}
+.sonae .edge{display:block;margin:0 -16px;line-height:0}.sonae .edge svg{display:block;width:100%}
+.why{margin:0 0 10px;font-size:14px}.why a{font-weight:700}
+.cnt{display:flex;gap:18px;margin:12px 0 8px}.cnt p{margin:0;font-size:12px;color:var(--sub)}.cnt b{display:block;font-size:27px;color:var(--num);font-variant-numeric:tabular-nums}
+.kinds{display:grid;grid-template-columns:7.5em 1fr 2.5em;gap:3px 8px;align-items:center;font-size:12px;margin:4px 0 12px}
+.kinds i{display:block;height:8px;background:var(--bar)}
+.notes{margin:0 0 10px;padding:0;list-style:none;font-size:12px;color:var(--sub)}.notes li{margin:0 0 3px}
+.links{display:flex;flex-direction:column;gap:2px;font-size:14px;margin:0 0 8px}.links a{padding:6px 0}
+details{border-top:1px dotted var(--line);border-bottom:1px dotted var(--line);font-size:14px}
+summary{padding:10px 0;cursor:pointer}details p{margin:0 0 10px;font-size:12px;color:var(--sub)}
+.ft{max-width:430px;margin:0 auto;padding:16px;font-size:11px;color:var(--sub);border-top:1px solid var(--line)}.ft p{margin:0 0 6px}
+`;
+
+// ---- D 社会の教科書（地図帳の色・等高線・地図記号） ----
+const DECO_D = `<svg viewBox="0 0 390 44" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+<rect width="390" height="44" fill="#e3f0f4"/>
+<path d="M0 44V30C40 26 70 33 110 28S170 18 210 22 270 30 300 24 360 14 390 18V44Z" fill="#d4e6bf"/>
+<g fill="none" stroke="#b49468" stroke-width=".8"><path d="M232 44C236 34 252 26 274 24S318 26 330 34 340 44 340 44"/><path d="M248 44C252 37 262 32 276 31S304 33 312 38 318 44 318 44"/><path d="M262 44C266 40 272 38 280 38S294 40 298 44"/></g>
+<path d="M0 37C30 35 50 40 80 38S130 31 160 35 200 42 230 40" fill="none" stroke="#3b8ec2" stroke-width="2.2" stroke-linecap="round"/>
+<g fill="none" stroke="#557a38" stroke-width="1.1" stroke-linecap="round"><circle cx="128" cy="25" r="2.6"/><path d="M128 27.6V31"/><circle cx="146" cy="23" r="2.6"/><path d="M146 25.6V29"/><path d="M182 30l3-6 3 6M185 24V31"/><path d="M198 28l3-6 3 6M201 22V29"/><path d="M40 28v-4M44 28v-4M58 30v-4M62 30v-4"/></g>
+<g fill="none" stroke="#2b2b2b" stroke-width="1.1"><circle cx="356" cy="30" r="4"/><circle cx="356" cy="30" r="1.6"/></g>
+</svg>`;
+const MARK_D = `<svg class="mk flag" viewBox="0 0 16 26" aria-hidden="true"><path d="M3 25V2" stroke="#2b2b2b" stroke-width="1.6"/><path d="M3.6 2.4h10.4l-3 4 3 4H3.6z" fill="#c53d43"/></svg>`;
+const CSS_D = BASE(`--bg:#fff;--ink:#262626;--sub:#6a6a64;--line:#cfd6cc;--accent:#c53d43;--num:#2b5d3a;--h2:#262626;--head:${KYOKASHO};--bar:#6f9a52;--bar2:#c3cfb8;--track:#e8ece2;--soft:#eef5f6`) + `
+.flag{left:-2px;top:-14px;width:16px;height:26px}
+.ch{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border:1.5px solid var(--ink);border-radius:50%;font:700 13px/1 ${GOTHIC}}
+.sea{background:#dcedf3;padding:8px}.tile{background:#d3e5bd;border:1px solid #fff}.tile.here{background:#8fbf6f;font-weight:700;color:#fff}
+.sonae h2{margin-top:18px}
+`;
+
+// ---- E 里山の川（水と森） ----
+const DECO_E = `<svg viewBox="0 0 390 64" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+<path d="M0 40L36 22 62 32 104 10 146 30 184 16 222 33 262 14 306 30 350 18 390 28V64H0Z" fill="#d6e5d5"/>
+<path d="M0 50C60 36 120 44 170 46S290 38 390 44V64H0Z" fill="#a9c98f"/>
+<path d="M0 58C50 52 90 56 140 54S240 48 290 54 360 60 390 58" fill="none" stroke="#2f8ac0" stroke-width="5" stroke-linecap="round"/>
+<path d="M0 58C50 52 90 56 140 54S240 48 290 54 360 60 390 58" fill="none" stroke="#bfe0f0" stroke-width="1.2" stroke-dasharray="6 9"/>
+<g fill="#356b44"><path d="M28 50l7-17 7 17z"/><path d="M40 49l6-14 6 14z"/><path d="M318 46l7-17 7 17z"/><path d="M331 47l6-13 6 13z"/><path d="M196 44l6-14 6 14z"/></g>
+<g fill="#6aa04f"><circle cx="78" cy="43" r="6"/><circle cx="90" cy="45" r="5"/><circle cx="252" cy="41" r="6"/><circle cx="364" cy="44" r="5"/></g>
+<g><path d="M120 46h14v-6l-7-5-7 5z" fill="#fff"/><path d="M118 40.5l9-7 9 7" fill="none" stroke="#5a4636" stroke-width="2"/><path d="M146 47h12v-5l-6-4-6 4z" fill="#fff"/><path d="M144 42.5l8-6 8 6" fill="none" stroke="#5a4636" stroke-width="2"/></g>
+</svg>`;
+const WAVE_E = `<svg viewBox="0 0 390 14" preserveAspectRatio="none" aria-hidden="true"><rect width="390" height="14" fill="#fff"/><path d="M0 8C20 2 40 2 60 8S100 14 120 8 160 2 180 8 220 14 240 8 280 2 300 8 340 14 360 8 390 4 390 4V14H0Z" fill="#eaf4f8"/><path d="M0 8C20 2 40 2 60 8S100 14 120 8 160 2 180 8 220 14 240 8 280 2 300 8 340 14 360 8 390 4" fill="none" stroke="#2f8ac0" stroke-width="1.6"/></svg>`;
+const MARK_E = `<svg class="mk drop" viewBox="0 0 16 22" aria-hidden="true"><path d="M8 1C5.5 6.5 2 10 2 14a6 6 0 0 0 12 0c0-4-3.5-7.5-6-13z" fill="#2f8ac0"/><path d="M5.2 14.5a3 3 0 0 0 2.6 3" fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/></svg>`;
+const CSS_E = BASE(`--bg:#fff;--ink:#23312a;--sub:#5f6e66;--line:#cfdcd2;--accent:#2f6fa8;--num:#2f6fa8;--h2:#2f5d3e;--head:${MINCHO};--bar:#4f8d5e;--bar2:#a9c7b2;--track:#e6efe8;--soft:#eaf4f8`) + `
+.drop{left:50%;bottom:-9px;width:12px;height:16px;margin-left:-6px}
+h2{text-decoration:underline wavy #7fb6d6;text-decoration-thickness:1.5px;text-underline-offset:7px}
+.tile{background:#eef5e8;border:1px solid #c9dcc0}.tile.here{background:#2f8ac0;border-color:#2f8ac0;color:#fff;font-weight:700}
+.sonae{padding-top:0}
+`;
+
+// ---- F 藍の手ぬぐい（青海波・朱の印） ----
+const SEIGAIHA = (h, id) => `<svg viewBox="0 0 390 ${h}" preserveAspectRatio="none" height="${h}" aria-hidden="true"><defs><pattern id="${id}" width="20" height="10" patternUnits="userSpaceOnUse"><g fill="#fff" stroke="#1f4f7c" stroke-width=".9"><path d="M-10 5a10 10 0 0 1 20 0M-7 5a7 7 0 0 1 14 0M-4 5a4 4 0 0 1 8 0"/><path d="M10 5a10 10 0 0 1 20 0M13 5a7 7 0 0 1 14 0M16 5a4 4 0 0 1 8 0"/><path d="M0 10a10 10 0 0 1 20 0M3 10a7 7 0 0 1 14 0M6 10a4 4 0 0 1 8 0"/><path d="M-10 15a10 10 0 0 1 20 0M-7 15a7 7 0 0 1 14 0M-4 15a4 4 0 0 1 8 0"/><path d="M10 15a10 10 0 0 1 20 0M13 15a7 7 0 0 1 14 0M16 15a4 4 0 0 1 8 0"/></g></pattern></defs><rect width="390" height="${h}" fill="url(#${id})"/></svg>`;
+const MARK_F = `<span class="mk han" aria-hidden="true"></span>`;
+const CSS_F = BASE(`--bg:#fff;--ink:#22272e;--sub:#5d6670;--line:#cdd6e0;--accent:#c53d43;--num:#1f4f7c;--h2:#1f4f7c;--head:${MINCHO};--bar:#1f4f7c;--bar2:#9fb3c8;--track:#e7ecf2;--soft:#eef2f7`) + `
+.han{left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border:2.5px solid var(--accent);border-radius:50%;box-shadow:inset 0 0 0 2px #fff,inset 0 0 0 3.5px var(--accent);transform:rotate(-8deg)}
+.hm{width:18px;height:10px;color:var(--h2);flex:none}
+.tile{background:#fff;border:1px solid #9fb3c8}.tile.here{background:#1f4f7c;border-color:#1f4f7c;color:#fff;font-weight:700}
+`;
+
+const THEMES2 = {
+  d: { label: 'D 社会の教科書', css: CSS_D, deco: DECO_D, mark: MARK_D, h: (i, t) => `<span class="ch">${i}</span>${t}`, q: 'わが家の備えは、どれだけ？', sea: true, edge: '' },
+  e: { label: 'E 里山の川', css: CSS_E, deco: DECO_E, mark: MARK_E, h: (i, t) => t, q: 'わが家の備えは、どれだけ？', sea: false, edge: WAVE_E },
+  f: { label: 'F 藍の手ぬぐい', css: CSS_F, deco: SEIGAIHA(18, 'sgh'), mark: MARK_F, h: (i, t) => `<svg class="hm" viewBox="0 0 18 10" aria-hidden="true"><path d="M1 10a8 8 0 0 1 16 0M4 10a5 5 0 0 1 10 0M7 10a2 2 0 0 1 4 0" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>${t}`, q: 'わが家の備えは、どれだけ？', sea: false, edge: SEIGAIHA(10, 'sgs') },
+};
+
+function topG(t, cd) {
+  const c = THEMES2[t];
+  return `<div class="pg">
+<header class="hd"><span class="deco">${c.deco}</span><div class="bar"><h1 class="logo">まちの社会科</h1><small>${c.label}</small></div></header>
+<p class="lead">${T.lead}</p>
+<form class="find" data-find data-to="/mihon/${t}/sakai/"><label for="q">市区町村</label><input id="q" type="search" placeholder="例 堺市" autocomplete="off"><button>さがす</button><p class="msg" data-msg></p></form>
+<section id="calc" class="calc" data-per='${cd.per}' data-n="4" data-d="3">
+<p class="q">${c.q}</p>
+<div class="row"><span class="k">人数</span><button data-step="-1" aria-label="1人へらす">−</button><b data-num>4</b><span>人</span><button data-step="1" aria-label="1人ふやす">＋</button></div>
+<div class="row"><span class="k">日数</span><button class="day on" data-day="3"><span>3日</span>${c.mark}</button><button class="day" data-day="7"><span>7日</span>${c.mark}</button></div>
+<p class="ans">水<b data-out="mizu">36</b>L　食事<b data-out="shoku">36</b>食　携帯トイレ<b data-out="toilet">60</b>回分</p>
+</section>
+<p class="src">${cd.perText}<br>${T.src}</p>
+<section class="map"><h2>${c.h(1, '都道府県から')}</h2>${c.sea ? `<div class="sea">` : ''}<div class="tiles">${tiles(t)}</div>${c.sea ? '</div>' : ''}</section>
+<section class="shelf"><h2>${c.h(2, '備えの知識')}</h2><ul><li><a href="#calc">備蓄の量</a></li><li><a href="#calc">ローリングストック</a></li><li><a href="#calc">携帯トイレ</a></li><li><a href="#calc">家の外の備え</a></li></ul></section>
+</div>
+${footer()}`;
+}
+
+function sakaiG(t, cd) {
+  const c = THEMES2[t];
+  const s = SAKAI;
+  const w = (v, max) => `${Math.min(50, (Math.abs(v) / max) * 50)}%`;
+  return `<div class="pg">
+<header class="hd"><span class="deco">${c.deco}</span><div class="bar"><a class="logo" href="/mihon/${t}/">まちの社会科</a><small>${c.label}</small></div></header>
+<p class="crumb">${s.pref}</p>
+<h1 class="city">${s.name}</h1>
+<p class="big"><b>${fmt(s.pop)}</b>人</p>
+<p class="chg">2020年から <b>${fmt(S.diff)}</b>人へった（${S.ch}%）</p>
+<p class="hh">世帯 <b>${fmt(s.households)}</b>・1世帯 <b>${S.per}</b>人</p>
+<p class="feat">世帯の4割がひとり暮らし</p>
+<p class="s1">1世帯の平均人数（${S.per}人）で計算すると、1週間に 水 <b>約${cd.week('mizu')}L</b>・携帯トイレ <b>約${cd.week('keitai-toilet')}回分</b><br><a class="go" href="/mihon/${t}/#calc">わが家の人数で計算</a></p>
+<p class="src">${T.kokusei}</p>
+<h2>${c.h(1, 'この街の数字')}</h2>
+<div class="g"><p><b>人口の増減</b>　2020年から2025年</p><div class="bars">
+<span>${s.name}</span><div class="axis mid"><span style="right:50%;width:${w(S.ch, 5)}"></span></div><span class="num">${S.ch}%</span>
+<span>全国</span><div class="axis mid"><span class="z" style="right:50%;width:${w(S.chZ, 5)}"></span></div><span class="num">${S.chZ}%</span></div></div>
+<div class="g"><p><b>1世帯の人数</b></p><div class="bars">
+<span>${s.name}</span><div class="axis"><span style="left:0;width:${(S.per / 3) * 100}%"></span></div><span class="num">${S.per}人</span>
+<span>全国</span><div class="axis"><span class="z" style="left:0;width:${(S.perZ / 3) * 100}%"></span></div><span class="num">${S.perZ}人</span></div></div>
+<div class="g"><div class="bars w">
+<span>65歳以上</span><div class="share"><span style="width:${S.age65}%"></span></div><span class="num">${S.age65}%</span>
+<span>ひとり暮らし</span><div class="share"><span style="width:${S.single}%"></span></div><span class="num">${S.single}%</span>
+<span>共同住宅</span><div class="share"><span style="width:${S.kyodo}%"></span></div><span class="num">${S.kyodo}%</span></div>
+<p class="mnote">65歳以上は人口のうち、ひとり暮らしと共同住宅は世帯のうち</p></div>
+<p class="src">${T.kokusei}</p>
+<p class="mnote">${T.mihonNote}</p>
+<section class="sonae">${c.edge ? `<span class="edge">${c.edge}</span>` : ''}<h2>${c.h(2, 'この街の備え')}</h2>
+<p class="why">世帯の4割がひとり暮らし。<a href="#">ひとり暮らしの備え</a></p>
+<p class="why">世帯の半分が共同住宅。<a href="#">マンションのトイレ</a></p>
+<div class="cnt"><p>指定緊急避難場所<b>${s.basho}</b></p><p>指定避難所<b>${s.hinanjo}</b></p></div>
+<div class="kinds">${s.kinds.map(([k, v]) => `<span>${k}</span><i style="width:${(v / s.basho) * 100}%"></i><span class="num">${v}</span>`).join('')}</div>
+<ul class="notes">${T.notes.map((n) => `<li>${n}</li>`).join('')}</ul>
+<div class="links">${LINKS}</div>
+<details><summary>${s.basho}か所の一覧を開く</summary><p>見本：開いたときに、この街の一覧を読み込みます</p></details>
+<p class="src">${T.hinanSrc}</p>
+</section>
+</div>
+${footer()}`;
+}
+
 // ===================== ならび =====================
 const CSS_I = `
 *{box-sizing:border-box}body{margin:0;background:#fff;color:#222;font:16px/1.7 system-ui,"Hiragino Sans","Noto Sans JP",sans-serif}
-.pg{max-width:430px;margin:0 auto;padding:16px}h1{font-size:20px;margin:0 0 4px}p{margin:0 0 12px;font-size:14px;color:#555}
+.pg{max-width:430px;margin:0 auto;padding:16px}h1{font-size:20px;margin:0 0 4px}h2{font-size:15px;margin:22px 0 8px;color:#555}p{margin:0 0 12px;font-size:14px;color:#555}
 ol{margin:0;padding:0 0 0 1.4em}li{margin:0 0 16px}li b{display:block;font-size:17px;color:#222}li a{display:inline-block;margin-right:18px;padding:6px 0;color:#222}
 .ft{max-width:430px;margin:0 auto;padding:16px;font-size:11px;color:#777;border-top:1px solid #ddd}.ft p{margin:0 0 6px}.ft a{color:#777}
 `;
@@ -518,26 +695,31 @@ export function mihonPages(items) {
   const cd = calcData(items);
   const desc = '見本のページ（デザインの案くらべ用）';
   const out = [];
-  const themes = [
+  const add = (t, name, css, top, sakai) => {
+    out.push({ path: `/mihon/${t}/`, html: wrap(t, { path: `/mihon/${t}/`, title: `見本 ${name}`, description: desc, css, body: top(cd) }) });
+    out.push({ path: `/mihon/${t}/sakai/`, html: wrap(t, { path: `/mihon/${t}/sakai/`, title: `見本 ${name} 堺市`, description: desc, css, body: sakai(cd) }) });
+  };
+  const nature = [
+    ['d', 'D 社会の教科書（地図帳の色・等高線・地図記号）'],
+    ['e', 'E 里山の川（山と森と川の景色・水のしずく）'],
+    ['f', 'F 藍の手ぬぐい（青海波・朱の印）'],
+  ];
+  for (const [t, name] of nature) add(t, name, THEMES2[t].css, (x) => topG(t, x), (x) => sakaiG(t, x));
+  const first = [
     ['a', 'A 社会科の資料集と白地図', CSS_A, topA, sakaiA],
     ['b', 'B ものさしの目盛り', CSS_B, topB, sakaiB],
     ['c', 'C 冷蔵庫に貼る家族の防災メモ', CSS_C, topC, sakaiC],
   ];
-  for (const [t, name, css, top, sakai] of themes) {
-    out.push({ path: `/mihon/${t}/`, html: wrap(t, { path: `/mihon/${t}/`, title: `見本 ${name}`, description: desc, css, body: top(cd) }) });
-    out.push({ path: `/mihon/${t}/sakai/`, html: wrap(t, { path: `/mihon/${t}/sakai/`, title: `見本 ${name} 堺市`, description: desc, css, body: sakai(cd) }) });
-  }
-  const list = themes
-    .map(([t, name]) => `<li><b>${name}</b><a href="/mihon/${t}/">トップ</a><a href="/mihon/${t}/sakai/">堺市のページ</a></li>`)
-    .join('');
+  for (const [t, name, css, top, sakai] of first) add(t, name, css, top, sakai);
+  const li = ([t, name]) => `<li><b>${name}</b><a href="/mihon/${t}/">トップ</a><a href="/mihon/${t}/sakai/">堺市のページ</a></li>`;
   out.push({
     path: '/mihon/',
     html: wrap('i', {
       path: '/mihon/',
-      title: '見本 デザインの3案',
+      title: '見本 デザインの案',
       description: desc,
       css: CSS_I,
-      body: `<div class="pg"><h1>デザインの3案</h1><p>中身は3案とも同じです。堺市の数字は国勢調査から取って、公式の発表と照らし合わせたもの。</p><ol>${list}</ol></div>${footer()}`,
+      body: `<div class="pg"><h1>デザインの案</h1><p>中身はどの案も同じです。堺市の数字は国勢調査から取って、公式の発表と照らし合わせたもの。</p><h2>自然と日本らしさ（10/22 2回目）</h2><ol>${nature.map(li).join('')}</ol><h2>1回目</h2><ol>${first.map(li).join('')}</ol></div>${footer()}`,
     }),
   });
   return out;
