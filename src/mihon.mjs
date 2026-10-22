@@ -77,7 +77,7 @@ function wrap(theme, { path, title, description, css, body }) {
 <link rel="canonical" href="${SITE.url}${path}">
 <style>${css.replace(/\n\s*/g, '')}</style>
 </head>
-<body class="${theme}">
+<body class="t-${theme}">
 ${body}
 <script>${CALC_JS}</script>
 </body>
@@ -616,9 +616,28 @@ const CSS_F = BASE(`--bg:#fff;--ink:#22272e;--sub:#5d6670;--line:#cdd6e0;--accen
 .tile{background:#fff;border:1px solid #9fb3c8}.tile.here{background:#1f4f7c;border-color:#1f4f7c;color:#fff;font-weight:700}
 `;
 
+// ---- G・H（10/22 しょーくん「Fがシンプルで見やすい。色味と雰囲気はDかE。木や緑があって見やすい」）----
+// F の骨組み（細い柄の帯・波の見出しの印・朱の印）に、E の森と川の色（G）／D の地図帳の色と地図記号（H）
+const TREES = (h, id) => `<svg viewBox="0 0 390 ${h}" preserveAspectRatio="none" height="${h}" aria-hidden="true"><defs><pattern id="${id}" width="28" height="${h}" patternUnits="userSpaceOnUse"><rect y="${h - 3}" width="28" height="3" fill="#b9d3a3"/><path d="M3 ${h - 3}l6-${h - 8} 6 ${h - 8}z" fill="#356b44"/><rect x="8.4" y="${h - 4}" width="1.2" height="2" fill="#5a4636"/><circle cx="21" cy="${h - 10}" r="5" fill="#76a95a"/><rect x="20.4" y="${h - 6}" width="1.2" height="4" fill="#5a4636"/></pattern></defs><rect width="390" height="${h}" fill="url(#${id})"/></svg>`;
+const RIVER = `<svg viewBox="0 0 390 10" preserveAspectRatio="none" height="10" aria-hidden="true"><path d="M0 5C16 1 32 1 48 5S80 9 96 5 128 1 144 5 176 9 192 5 224 1 240 5 272 9 288 5 320 1 336 5 368 9 390 4" fill="none" stroke="#3f8fbf" stroke-width="1.5"/></svg>`;
+const KIGOU = (h, id) => `<svg viewBox="0 0 390 ${h}" preserveAspectRatio="none" height="${h}" aria-hidden="true"><defs><pattern id="${id}" width="30" height="${h}" patternUnits="userSpaceOnUse"><rect width="30" height="${h}" fill="#eef5e6"/><g fill="none" stroke="#557a38" stroke-width="1.1" stroke-linecap="round"><circle cx="8" cy="${h / 2 - 2}" r="3"/><path d="M8 ${h / 2 + 1}v4"/><path d="M19 ${h / 2 + 3}l3.5-7 3.5 7M22.5 ${h / 2 - 4}v9"/></g></pattern></defs><rect width="390" height="${h}" fill="url(#${id})"/></svg>`;
+const HM_TREE = `<svg class="hm" viewBox="0 0 18 14" aria-hidden="true"><path d="M2 13l5-11 5 11z" fill="currentColor"/><circle cx="13" cy="7" r="4" fill="currentColor" opacity=".55"/></svg>`;
+const HM_KIGOU = `<svg class="hm" viewBox="0 0 18 14" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="5" cy="5" r="3.3"/><path d="M5 8.3V13"/><path d="M10 12l3.5-8 3.5 8M13.5 4v9.5"/></g></svg>`;
+const HAN = `.han{left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border:2.5px solid var(--accent);border-radius:50%;box-shadow:inset 0 0 0 2px #fff,inset 0 0 0 3.5px var(--accent);transform:rotate(-8deg)}
+.hm{width:18px;height:14px;color:var(--h2);flex:none}`;
+const CSS_G = BASE(`--bg:#fff;--ink:#23312a;--sub:#5f6e66;--line:#d3dfd5;--accent:#c53d43;--num:#2f6b45;--h2:#2f5d3e;--head:${MINCHO};--bar:#4f8d5e;--bar2:#b5cfbb;--track:#e6efe8;--soft:#eef5ef`) + HAN + `
+.tile{background:#eef5e8;border:1px solid #c9dcc0}.tile.here{background:#2f6b45;border-color:#2f6b45;color:#fff;font-weight:700}
+.sonae .edge{background:#fff}
+`;
+const CSS_H = BASE(`--bg:#fff;--ink:#262626;--sub:#66695f;--line:#d6dccf;--accent:#c53d43;--num:#2b5d3a;--h2:#3c5a2a;--head:${KYOKASHO};--bar:#6f9a52;--bar2:#c6d3b8;--track:#e9eee3;--soft:#f0f5ea`) + HAN + `
+.sea{background:#e2f0f4;padding:8px}.tile{background:#d8e8c4;border:1px solid #fff}.tile.here{background:#7fb05c;color:#fff;font-weight:700}
+`;
+
 const THEMES2 = {
   d: { label: 'D 社会の教科書', css: CSS_D, deco: DECO_D, mark: MARK_D, h: (i, t) => `<span class="ch">${i}</span>${t}`, q: 'わが家の備えは、どれだけ？', sea: true, edge: '' },
   e: { label: 'E 里山の川', css: CSS_E, deco: DECO_E, mark: MARK_E, h: (i, t) => t, q: 'わが家の備えは、どれだけ？', sea: false, edge: WAVE_E },
+  g: { label: 'G 森と川', css: CSS_G, deco: TREES(24, 'trh'), mark: MARK_F, h: (i, t) => `${HM_TREE}${t}`, q: 'わが家の備えは、どれだけ？', sea: false, edge: RIVER },
+  h: { label: 'H 地図帳の緑', css: CSS_H, deco: KIGOU(20, 'kgh'), mark: MARK_F, h: (i, t) => `${HM_KIGOU}${t}`, q: 'わが家の備えは、どれだけ？', sea: true, edge: KIGOU(12, 'kgs') },
   f: { label: 'F 藍の手ぬぐい', css: CSS_F, deco: SEIGAIHA(18, 'sgh'), mark: MARK_F, h: (i, t) => `<svg class="hm" viewBox="0 0 18 10" aria-hidden="true"><path d="M1 10a8 8 0 0 1 16 0M4 10a5 5 0 0 1 10 0M7 10a2 2 0 0 1 4 0" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>${t}`, q: 'わが家の備えは、どれだけ？', sea: false, edge: SEIGAIHA(10, 'sgs') },
 };
 
@@ -699,6 +718,11 @@ export function mihonPages(items) {
     out.push({ path: `/mihon/${t}/`, html: wrap(t, { path: `/mihon/${t}/`, title: `見本 ${name}`, description: desc, css, body: top(cd) }) });
     out.push({ path: `/mihon/${t}/sakai/`, html: wrap(t, { path: `/mihon/${t}/sakai/`, title: `見本 ${name} 堺市`, description: desc, css, body: sakai(cd) }) });
   };
+  const mix = [
+    ['g', 'G 森と川（Fの見やすさ×Eの森と川の色・木の帯・朱の印）'],
+    ['h', 'H 地図帳の緑（Fの見やすさ×Dの地図帳の色・地図記号の帯・朱の印）'],
+  ];
+  for (const [t, name] of mix) add(t, name, THEMES2[t].css, (x) => topG(t, x), (x) => sakaiG(t, x));
   const nature = [
     ['d', 'D 社会の教科書（地図帳の色・等高線・地図記号）'],
     ['e', 'E 里山の川（山と森と川の景色・水のしずく）'],
@@ -719,7 +743,7 @@ export function mihonPages(items) {
       title: '見本 デザインの案',
       description: desc,
       css: CSS_I,
-      body: `<div class="pg"><h1>デザインの案</h1><p>中身はどの案も同じです。堺市の数字は国勢調査から取って、公式の発表と照らし合わせたもの。</p><h2>自然と日本らしさ（10/22 2回目）</h2><ol>${nature.map(li).join('')}</ol><h2>1回目</h2><ol>${first.map(li).join('')}</ol></div>${footer()}`,
+      body: `<div class="pg"><h1>デザインの案</h1><p>中身はどの案も同じです。堺市の数字は国勢調査から取って、公式の発表と照らし合わせたもの。</p><h2>Fの見やすさ×DとEの色（10/22 3回目）</h2><ol>${mix.map(li).join('')}</ol><h2>自然と日本らしさ（10/22 2回目）</h2><ol>${nature.map(li).join('')}</ol><h2>1回目</h2><ol>${first.map(li).join('')}</ol></div>${footer()}`,
     }),
   });
   return out;
