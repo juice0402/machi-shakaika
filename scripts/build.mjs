@@ -15,6 +15,8 @@ import { prefPage } from '../src/pages/pref.mjs';
 import { cityPage } from '../src/pages/city.mjs';
 import { sonaePages } from '../src/pages/sonae.mjs';
 import { infoPages } from '../src/pages/info.mjs';
+import { douguPages } from '../src/pages/dougu.mjs';
+import { rankingPages } from '../src/pages/ranking.mjs';
 
 const DIST = 'dist';
 const stop = (msg) => {
@@ -59,6 +61,8 @@ add(topPage({ cc, munis, hinanMeta }));
 for (const pref of PREFS) add(prefPage({ pref, munis, list, z, cc, urlOf }));
 for (const city of cities) add(cityPage({ city, munis, list, z, cc, hinan, hinanMeta, urlOf }));
 for (const p of sonaePages({ cc, items, sources })) add(p);
+for (const p of douguPages({ cc, items, sources })) add(p);
+for (const p of rankingPages({ munis, list, urlOf })) add(p);
 for (const p of infoPages({ munis, estatMeta, hinanMeta })) add(p);
 add({ path: null, title: 'ページが見つかりません', description: 'ページが見つかりません。', noindex: true, noAds: true, body: '<h1 class="city">ページが見つかりません</h1><p><a href="/">トップへ</a></p>' });
 

@@ -8,13 +8,15 @@ export function calcConf(items) {
     by,
     days: items.days,
     per: { mizu: by.mizu.per_day, shoku: by.shushoku.per_day, toilet: by['keitai-toilet'].per_day },
+    // 品目の id → 計算の出力の名前（data-out）
+    out: { mizu: 'mizu', shushoku: 'shoku', 'keitai-toilet': 'toilet' },
     perText: `1人1日 水${by.mizu.per_day}L・${by.shushoku.per_day}食・トイレ${by['keitai-toilet'].per_day}回のめやす`,
   };
 }
 
 export const need = (per, n, d) => Math.round(per * n * d);
 
-export function calcHtml(cc, { n = 4, d = cc.days.min, q = 'わが家の備えは、どれだけ？', id = 'calc' } = {}) {
+export function calcHtml(cc, { n = 4, d = cc.days.min, q = 'わが家の備えは、どれだけ？', id = 'calc', ans = true } = {}) {
   const days = cc.days.choices
     .map((x) => `<button class="day${x === d ? ' on' : ''}" data-day="${x}" aria-pressed="${x === d}"><span>${x}日</span>${HAN}</button>`)
     .join('');
@@ -22,14 +24,16 @@ export function calcHtml(cc, { n = 4, d = cc.days.min, q = 'わが家の備え�
 <p class="q">${esc(q)}</p>
 <div class="row"><span class="k">人数</span><button data-step="-1" aria-label="1人へらす">−</button><b data-num>${n}</b><span>人</span><button data-step="1" aria-label="1人ふやす">＋</button></div>
 <div class="row"><span class="k">日数</span>${days}</div>
-<p class="ans">水<b data-out="mizu">${need(cc.per.mizu, n, d)}</b>L　食事<b data-out="shoku">${need(cc.per.shoku, n, d)}</b>食　携帯トイレ<b data-out="toilet">${need(cc.per.toilet, n, d)}</b>回分</p>
+${ans ? `<p class="ans">水<b data-out="mizu">${need(cc.per.mizu, n, d)}</b>L　食事<b data-out="shoku">${need(cc.per.shoku, n, d)}</b>食　携帯トイレ<b data-out="toilet">${need(cc.per.toilet, n, d)}</b>回分</p>` : ''}
 </section>`;
 }
 
 // ?n=1&d=7 で人数と日数を入れて開ける（市区町村ページの「1人分」など）
+// data-out はページのどこにあっても書きかえる（チェックリストの量）。a[data-keep] は人数と日数をつけたURLにする
 export const CALC_JS = `(()=>{const c=document.getElementById('calc');if(!c)return;const per=JSON.parse(c.dataset.per);let n=+c.dataset.n,d=+c.dataset.d;
 const u=new URLSearchParams(location.search);if(+u.get('n')>=1)n=Math.min(10,+u.get('n')|0);if(u.get('d')==='3'||u.get('d')==='7')d=+u.get('d');
 const f=v=>Math.round(v).toLocaleString('ja-JP');
 function draw(){c.querySelectorAll('[data-num]').forEach(e=>e.textContent=n);c.querySelectorAll('[data-day]').forEach(b=>{const on=+b.dataset.day===d;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
-for(const k in per)c.querySelectorAll('[data-out="'+k+'"]').forEach(e=>e.textContent=f(per[k]*n*d))}
+for(const k in per)document.querySelectorAll('[data-out="'+k+'"]').forEach(e=>e.textContent=f(per[k]*n*d));
+document.querySelectorAll('a[data-keep]').forEach(a=>a.href=a.pathname+'?n='+n+'&d='+d)}
 c.addEventListener('click',e=>{const s=e.target.closest('[data-step]'),y=e.target.closest('[data-day]');if(s){n=Math.min(10,Math.max(1,n+ +s.dataset.step));draw()}else if(y){d=+y.dataset.day;draw()}});draw()})();`;

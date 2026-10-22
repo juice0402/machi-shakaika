@@ -25,6 +25,7 @@ ${h2('市区町村の人口（多い順）')}
 ${inPref.map((x) => `<tr id="m${x.code}"><td>${urlOf(x.code) ? `<a href="${urlOf(x.code)}">${esc(x.name)}</a>` : esc(x.name)}</td><td>${fmt(x.pop)}</td><td>${signed(x.rate)}</td><td>${r1(x.per).toFixed(1)}</td></tr>`).join('\n')}
 </tbody></table>
 <p class="note">5年の増減は2020年から2025年。1世帯は一般世帯の平均人数（人）。</p>
+<p><a href="/ranking/jinko/">全国で人口が増えた市区町村</a></p>
 ${srcKokusei(munis)}`;
   return {
     path: `/${pref.slug}/`,

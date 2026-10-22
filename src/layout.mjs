@@ -79,6 +79,24 @@ details{border-top:1px dotted var(--line);border-bottom:1px dotted var(--line);f
 summary{padding:10px 0;cursor:pointer}.hl{margin:0 0 10px;padding:0;list-style:none;font-size:13px;max-height:420px;overflow:auto}
 .hl li{padding:5px 0;border-bottom:1px dotted var(--line)}.hl small{display:block;color:var(--sub);font-size:11px}
 .prose{font-size:15px;line-height:1.85}.prose p{margin:0 0 14px}
+.kz{margin-left:auto;font:400 13px/1 ${GOTHIC};color:var(--sub);font-variant-numeric:tabular-nums}
+.ckl{list-style:none;margin:0;padding:0}
+.ckl label{display:grid;grid-template-columns:32px 1fr auto;align-items:center;gap:4px 8px;min-height:50px;padding:6px 0;border-bottom:1px dotted var(--line);cursor:pointer;position:relative;font-size:15px;line-height:1.45}
+.ckl input{position:absolute;left:2px;top:50%;width:28px;height:28px;margin:-14px 0 0;opacity:0}
+.ckl .bx{position:relative;width:26px;height:26px;border:1.5px solid #9fb3a6;border-radius:50%;margin-left:2px}
+.ckl input:checked+.bx{border:2.5px solid var(--accent);box-shadow:inset 0 0 0 2px #fff,inset 0 0 0 3.5px var(--accent);transform:rotate(-8deg)}
+.ckl input:checked+.bx::after{content:"済";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 11px/1 ${MINCHO};color:var(--accent)}
+.ckl input:focus-visible+.bx{outline:2px solid var(--water);outline-offset:2px}
+.ckl input:checked~.t{color:var(--sub)}
+.ckl .t small{display:block;font-size:11px;color:var(--sub)}
+.qn{font-size:13px;white-space:nowrap}.qn b{font-size:20px;color:var(--num);font-variant-numeric:tabular-nums;margin-right:1px}
+.clr{font:inherit;font-size:13px;background:none;border:0;border-bottom:1px solid var(--sub);color:var(--sub);padding:6px 0;margin-top:12px;cursor:pointer}
+.masu{display:grid;grid-template-columns:repeat(20,1fr);gap:2px;margin:10px 0 4px}.masu i{aspect-ratio:1;background:var(--track)}.masu i.on{background:var(--num)}
+.rk{list-style:none;margin:0 0 8px;padding:0}.rk li{display:grid;grid-template-columns:1.5em 1fr 4em 5.4em;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dotted var(--line);font-size:14px;line-height:1.35}
+.rk .no{color:var(--sub);font-variant-numeric:tabular-nums;text-align:right;font-size:12px}
+.rk .nm small{display:block;font-size:11px;color:var(--sub)}
+.rk .bv{height:8px;background:var(--track);position:relative}.rk .bv i{position:absolute;inset:0 auto 0 0;background:var(--bar)}
+.rk .num{font-size:13px}
 .ft{max-width:430px;margin:0 auto;padding:16px 16px 28px;font-size:11px;color:var(--sub);border-top:1px solid var(--line)}.ft p{margin:0 0 6px}
 .ft .fl{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;margin:0 0 12px}.ft .fl a{padding:4px 0;color:var(--ink)}
 `.replace(/\n/g, '');

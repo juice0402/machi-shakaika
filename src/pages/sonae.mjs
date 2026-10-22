@@ -3,7 +3,7 @@
 import { esc, h2, jpDate } from '../layout.mjs';
 import { calcHtml, CALC_JS, need } from '../calc.mjs';
 
-function sourceList(ids, sources) {
+export function sourceList(ids, sources) {
   const by = new Map(sources.sources.map((s) => [s.id, s]));
   return `<ul class="notes">${ids
     .map((id) => {
@@ -38,7 +38,7 @@ export function sonaePages({ cc, items, sources }) {
     body: `<p class="crumb"><a href="/">トップ</a></p>
 <h1 class="city">備えの知識</h1>
 <p class="lead">公的な資料の数字をもとに、家の備えを人数と日数で考える</p>
-<ul class="list"><li><a href="/sonae/bichiku/">備蓄の量のめやす</a></li><li><a href="/sonae/rolling-stock/">ローリングストック</a></li><li><a href="/sonae/keitai-toilet/">携帯トイレの備え</a></li><li><a href="/dougu/keisan/">備蓄の量を計算する</a></li></ul>
+<ul class="list"><li><a href="/sonae/bichiku/">備蓄の量のめやす</a></li><li><a href="/sonae/rolling-stock/">ローリングストック</a></li><li><a href="/sonae/keitai-toilet/">携帯トイレの備え</a></li><li><a href="/dougu/keisan/">備蓄の量を計算する</a></li><li><a href="/dougu/check/">チェックリスト</a></li></ul>
 <p class="note">発生したときの行動や避難の判断は、お住まいの自治体の案内とハザードマップを優先してください。</p>`,
   });
 
@@ -115,6 +115,7 @@ ${sourceList(by['keitai-toilet'].sources, sources)}`,
 <h1 class="city">備蓄の量の計算</h1>
 ${calcHtml(cc)}
 <p class="src">${cc.perText}。最低${days.min}日分、できれば${days.better}日分</p>
+<p><a class="go" data-keep href="/dougu/check/">この人数でチェックリストを見る</a></p>
 ${h2('量のめやすのもと')}
 <div class="prose"><p>水は飲む水と調理の水の合計で、トイレや体をふく生活用水は別です。高齢の家族や小さな子どもがいる家は、<a href="/sonae/bichiku/#yohairyo">少なくとも${y}日分</a>がめやすです。</p></div>
 ${h2('出典')}
