@@ -6,6 +6,7 @@ import { dirname } from 'node:path';
 import { SITE } from '../src/site.mjs';
 import { readYaml, checkSources, checkItems, checkShogo } from '../src/data.mjs';
 import { page, esc } from '../src/layout.mjs';
+import { mihonPages } from '../src/mihon.mjs';
 
 const DIST = 'dist';
 
@@ -49,6 +50,9 @@ out(
 <p><a href="/">トップへ</a></p>`,
   }),
 );
+
+// デザイン3案の見本（決まったら消す）
+for (const p of mihonPages(items)) out(p.path, p.html);
 
 out(
   '/robots.txt',
