@@ -1,0 +1,87 @@
+# 照らし合わせ用の公式の数字（まちの社会科）
+# e-Stat から取った数字が、市区町村の公式の発表と合うかを確かめる。合わなければ公開しない。
+# 1件ずつ：市区町村コード（5けた）・何の数字か・公式の値・出典 id。
+# 年齢3区分の3つの合計が人口と同じなので、堺市の発表は「不詳補完値」（年齢などが不詳の人を割り振った値）とみられる。
+
+checks:
+  - area: "27140"
+    name: 堺市
+    what: 人口
+    value: 802648
+    source: sakai-kakuho
+  - area: "27140"
+    name: 堺市
+    what: 人口（男）
+    value: 380536
+    source: sakai-kakuho
+  - area: "27140"
+    name: 堺市
+    what: 人口（女）
+    value: 422112
+    source: sakai-kakuho
+  - area: "27140"
+    name: 堺市
+    what: 2020年の人口
+    value: 826161
+    source: sakai-kakuho
+  - area: "27140"
+    name: 堺市
+    what: 世帯数
+    value: 371987
+    source: sakai-kakuho
+  - area: "27140"
+    name: 堺市
+    what: 一般世帯数
+    value: 371244
+    source: sakai-kakuho-pdf
+  - area: "27140"
+    name: 堺市
+    what: 一般世帯の1世帯当たり人員
+    value: 2.10
+    digits: 2
+    source: sakai-kakuho-pdf
+  - area: "27140"
+    name: 堺市
+    what: 0〜14歳
+    value: 89040
+    source: sakai-kakuho-pdf
+  - area: "27140"
+    name: 堺市
+    what: 15〜64歳
+    value: 480762
+    source: sakai-kakuho-pdf
+  - area: "27140"
+    name: 堺市
+    what: 65歳以上
+    value: 232846
+    source: sakai-kakuho-pdf
+  - area: "27140"
+    name: 堺市
+    what: 単独世帯（一般世帯）
+    value: 150949
+    source: sakai-kakuho-pdf
+  - area: "27140"
+    name: 堺市
+    what: 65歳以上世帯員のいる一般世帯
+    value: 153806
+    source: sakai-kakuho-pdf
+  - area: "27140"
+    name: 堺市
+    what: 65歳以上世帯員のいる一般世帯のうち単独世帯
+    value: 61595
+    source: sakai-kakuho-pdf
+  - area: "23100"
+    name: 名古屋市
+    what: 人口
+    value: 2345186
+    source: nagoya-kokusei
+  - area: "23100"
+    name: 名古屋市
+    what: 2020年の人口
+    value: 2332176
+    source: nagoya-kokusei
+  - area: "23100"
+    name: 名古屋市
+    what: 世帯数
+    value: 1187231
+    source: nagoya-kokusei

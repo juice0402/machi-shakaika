@@ -1,0 +1,211 @@
+# 出典台帳（まちの社会科）
+# 数字・決まりの出どころは、ここに1つずつ書く。ページ・計算・クイズは id で出典を指す。
+# checked はその出典を開いて確かめた日。数字を変えるときは出典を開き直して checked を書きかえる。
+# kind：sonae（備えの数字）・estat（統計）・hinan（避難場所データ）・rule（規約・クレジット）・shogo（照らし合わせ用の公式の発表）
+# title はページの題そのもの。まだ題を確かめていないものは null にして、ページに出す前に確かめる。
+# about は、このサイトで何に使うか（出典の言葉をそのまま写さず、自分の言葉で短く）。
+
+sources:
+  # ---------- 備えの数字 ----------
+  - id: maff-sonae
+    kind: sonae
+    publisher: 農林水産省
+    title: 災害時のために、備えていますか?
+    url: https://www.maff.go.jp/j/syokuiku/plan/4_plan/togo/html/part8.html
+    checked: 2026-10-21
+    about: 食品は最低3日分〜1週間分×人数分。水は1人1日おおよそ3L（飲み水と調理の水）。大人1人1週間の例に2L×6本×2箱、カセットコンロ、ボンベ6本
+
+  - id: maff-stock
+    kind: sonae
+    publisher: 農林水産省
+    title: 家庭備蓄ポータル
+    url: https://www.maff.go.jp/j/zyukyu/foodstock/index.html
+    checked: 2026-10-21
+    about: 単身者・乳幼児・高齢者・慢性疾患・食物アレルギーの人向けの案内
+
+  - id: maff-guide
+    kind: sonae
+    publisher: 農林水産省
+    title: 食品ストックガイド
+    url: https://www.maff.go.jp/j/zyukyu/foodstock/guidebook.html
+    checked: 2026-10-21
+    about: 選び方、ローリングストック。要配慮者版あり
+
+  - id: miyagi-mizu
+    kind: sonae
+    publisher: 宮城県
+    title: null
+    url: https://www.pref.miyagi.jp/soshiki/bousai/km-wagaya.html
+    checked: 2026-10-21
+    about: 飲み水は1人1日3L。トイレを流す生活用水は別に要る
+
+  - id: hiroshima-toilet
+    kind: sonae
+    publisher: 広島市
+    title: null
+    url: https://www.city.hiroshima.lg.jp/saigaiinfo/saigai/1021018/1025517/1049251.html
+    checked: 2026-10-21
+    about: 内閣府「避難所におけるトイレの確保・管理ガイドライン」の1日5回。1人1日5回×人数×最低3日、できれば1週間
+
+  - id: kanagawa-toilet
+    kind: sonae
+    publisher: 神奈川県
+    title: null
+    url: https://www.pref.kanagawa.jp/docs/j8g/bousai/keitaitoirebitiku.html
+    checked: 2026-10-21
+    about: 断水・停電・配管の被害でトイレが使えなくなる。集合住宅で気づかず流すと下の階であふれるおそれ。最低3日、できれば7日
+
+  - id: suginami-toilet
+    kind: sonae
+    publisher: 杉並区
+    title: null
+    url: https://www.city.suginami.tokyo.jp/s015/news/27750.html
+    checked: 2026-10-21
+    about: 1人1日5回、最低3日・できれば7日
+
+  - id: nerima-yohairyo
+    kind: sonae
+    publisher: 練馬区
+    title: null
+    url: https://www.city.nerima.tokyo.jp/hokenfukushi/hoken/shokuiku/izatoiutoki/index.files/060326iza.pdf
+    checked: 2026-10-21
+    about: 乳幼児・妊産婦・高齢者・慢性疾患・食物アレルギーなどは少なくとも2週間分
+
+  - id: ota-pet
+    kind: sonae
+    publisher: 大田区
+    title: null
+    url: https://www.city.ota.tokyo.jp/seikatsu/hoken/pet_dog_cat/saigaitaisaku.html
+    checked: 2026-10-21
+    about: フードと水は最低5日分。環境省のガイドラインが改訂中なので、ペットのページを作る前に確かめ直す
+
+  - id: tokyo-bichiku
+    kind: sonae
+    publisher: 東京都
+    title: 東京備蓄ナビ
+    url: https://www.bichiku.metro.tokyo.lg.jp/
+    checked: 2026-10-21
+    about: 11月19日を「備蓄の日」としている
+
+  - id: disaportal
+    kind: sonae
+    publisher: 国土交通省
+    title: ハザードマップポータルサイト
+    url: https://disaportal.gsi.go.jp/
+    checked: 2026-10-21
+    about: ハザードは数字を出さず、ここへのリンクだけにする
+
+  # ---------- 統計（e-Stat） ----------
+  - id: estat-api-terms
+    kind: rule
+    publisher: 政府統計の総合窓口（e-Stat）
+    title: API機能利用規約
+    url: https://www.e-stat.go.jp/api/terms-of-use
+    checked: 2026-10-21
+    about: IDを人に貸さない（第3条）、クレジット表示（第7条）、短時間の大量アクセス禁止（第8条）
+
+  - id: estat-credit
+    kind: rule
+    publisher: 政府統計の総合窓口（e-Stat）
+    title: クレジット表示
+    url: https://www.e-stat.go.jp/api/api-info/credit
+    checked: 2026-10-21
+    about: 決められた文言を、見る人が参照できる場所に表示する（文言は src/site.mjs の estatCredit）
+
+  - id: estat-terms
+    kind: rule
+    publisher: 政府統計の総合窓口（e-Stat）
+    title: 利用規約（出典と加工の記載）
+    url: https://www.e-stat.go.jp/terms-of-use
+    checked: 2026-10-21
+    about: 出典を書く。加工したら加工したことを別に書く。国が作ったように見せない
+
+  - id: estat-api-manual
+    kind: rule
+    publisher: 政府統計の総合窓口（e-Stat）
+    title: API仕様（3.0版）
+    url: https://www.e-stat.go.jp/api/api-info/e-stat-manual3-0
+    checked: 2026-10-21
+    about: getStatsList・getMetaInfo・getStatsData
+
+  - id: kokusei-2025
+    kind: estat
+    publisher: 総務省
+    title: 令和7年国勢調査
+    url: null
+    checked: null
+    about: 人口等基本集計（2025年10月1日現在）。数字は e-Stat API から取る。出典の行は「出典：総務省「令和7年国勢調査」を加工して作成」。url は使う統計表が決まったら e-Stat の表のページにする
+
+  - id: chuo-kokusei
+    kind: estat
+    publisher: 中央区
+    title: null
+    url: https://www.city.chuo.lg.jp/a0012/kusei/gaiyou/toukeidate/kokuseichousa/kokuseichosar07.html
+    checked: 2026-10-21
+    about: 令和7年国勢調査の人口等基本集計が2026年9月29日に総務省から公表されたことの確認
+
+  # ---------- 照らし合わせ用（公式の発表） ----------
+  - id: sakai-kakuho
+    kind: shogo
+    publisher: 堺市
+    title: null
+    url: https://www.city.sakai.lg.jp/shisei/tokei/kokucho_kakuho.html
+    checked: 2026-10-22
+    about: 人口802,648人（男380,536・女422,112）、世帯数371,987。数字は data/shogo.yml
+
+  - id: sakai-kakuho-pdf
+    kind: shogo
+    publisher: 堺市
+    title: 令和7年国勢調査 人口等基本集計結果（確報値）PDF
+    url: https://www.city.sakai.lg.jp/shisei/tokei/kokucho_kakuho.files/R7kokucho_kakuho.pdf
+    checked: 2026-10-22
+    about: 一般世帯371,244・1世帯当たり人員2.10・年齢3区分・単独世帯・65歳以上世帯員のいる一般世帯。数字は data/shogo.yml
+
+  - id: nagoya-kokusei
+    kind: shogo
+    publisher: 名古屋市
+    title: null
+    url: https://www.city.nagoya.jp/houdou/3003942/3003948/3005709.html
+    checked: 2026-10-22
+    about: 令和7年国勢調査の確定値（2026年9月29日の報道発表）。人口2,345,186人、世帯数1,187,231。数字は data/shogo.yml
+
+  # ---------- 避難場所データ ----------
+  - id: gsi-hinanbasho
+    kind: hinan
+    publisher: 国土地理院
+    title: 指定緊急避難場所・指定避難所データ
+    url: https://www.gsi.go.jp/bousaichiri/hinanbasho.html
+    checked: 2026-10-22
+    about: 市町村が登録し公開に同意したものだけ。載っていない＝無い、ではない
+
+  - id: gsi-menseki
+    kind: rule
+    publisher: 国土地理院
+    title: 免責事項・ご利用上の注意（指定緊急避難場所・指定避難所データ）
+    url: https://www.gsi.go.jp/bousaichiri/hinanbasho-menseki.html
+    checked: 2026-10-22
+    about: ご利用上の注意4点。第三者に出すときは、これらが正しく伝わるようにする
+
+  - id: gsi-download
+    kind: rule
+    publisher: 国土地理院
+    title: 指定緊急避難場所・指定避難所データダウンロードサイト
+    url: https://hinanmap.gsi.go.jp/index.html
+    checked: 2026-10-22
+    about: 利用規約とご利用上の注意への同意の画面がある
+
+  - id: gsi-terms
+    kind: rule
+    publisher: 国土地理院
+    title: 国土地理院コンテンツ利用規約（令和7年11月20日改正）
+    url: https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html
+    checked: 2026-10-22
+    about: 公共データ利用規約（第1.0版）を適用。商用利用できる。加工した情報を国土地理院が作ったように見せない
+
+  - id: digital-pdl
+    kind: rule
+    publisher: デジタル庁
+    title: 公共データ利用規約（第1.0版）
+    url: https://www.digital.go.jp/resources/open_data/public_data_license_v1.0
+    checked: 2026-10-22
+    about: 商用利用できる。CC BY 4.0 と互換
