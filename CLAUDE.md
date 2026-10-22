@@ -1,6 +1,6 @@
 # まちの社会科 — Claude 向けの決まり
 
-市区町村の数字（e-Stat の国勢調査など）と、家の備え（備蓄量の計算・チェックリスト・品目）をつなぐ静的サイト（https://machi-shakaika.com、第1弾は11/17ごろ）。
+市区町村の数字（e-Stat の国勢調査など）と、家の備え（備蓄量の計算・チェックリスト・品目）をつなぐ静的サイト（https://machi-shakaika.com、第1弾は準備ができしだい公開・締め切りは11/19の備蓄の日より前）。
 運営はしょーくん。しょーくんはコードを書かず、ターミナルも使わず、スマホで確認する。開発・運用は Claude が担当する。
 設計の決定版はプロジェクト資料 `claude/bousai-estat-tougou-plan.md`（ここと食いちがったら、そちらが正）。共通ルールは `claude/site-principles.md`、台帳は `claude/site-registry.md`。
 
