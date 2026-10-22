@@ -28,10 +28,22 @@ const files = {};
 let same = true;
 for (const [k, url] of Object.entries(HINAN_FILES)) {
   const headers = { 'User-Agent': UA };
-  const res = await fetch(url, { headers, signal: AbortSignal.timeout(180_000) });
-  if (res.status !== 200) stop(`${k}：HTTP ${res.status}`);
+  // つながらない・途中で切れることがあるので、30秒あけて3回まで
+  let res;
+  let buf;
+  for (let attempt = 1; ; attempt++) {
+    try {
+      res = await fetch(url, { headers, signal: AbortSignal.timeout(180_000) });
+      if (res.status !== 200) stop(`${k}：HTTP ${res.status}`);
+      buf = new Uint8Array(await res.arrayBuffer());
+      break;
+    } catch (e) {
+      if (attempt >= 3) stop(`${k}：取れませんでした（${String(e.cause?.code ?? e.name ?? e).slice(0, 60)}）`);
+      note('warning', `${k}：取れなかったので、やり直します（${attempt}回目）`);
+      await new Promise((r) => setTimeout(r, 30_000));
+    }
+  }
   const etag = res.headers.get('etag');
-  const buf = new Uint8Array(await res.arrayBuffer());
   files[k] = { etag, lastModified: res.headers.get('last-modified'), rows: parseCsv(decodeText(buf).text), bytes: buf.length };
   if (!etag || etag !== prev.files?.[k]?.etag) same = false;
   await new Promise((r) => setTimeout(r, 1000));
