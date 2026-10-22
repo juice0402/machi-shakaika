@@ -41,6 +41,7 @@
 | `src/lib/yaml.mjs` | このリポジトリで使う形だけの小さなYAMLの読み取り |
 | `src/lib/estat.mjs` | e-Stat API の呼び出しと返ってきた形の読み取り |
 | `src/lib/csv.mjs` | CSV の読み取りと文字コードの見分け |
+| `src/lib/hinan.mjs` | 国土地理院の避難場所の全国CSV（hinanmap.gsi.go.jp）のURLと、市区町村ごと・災害の種類ごとの数え方 |
 | `data/sources.yml`・`items.yml`・`shogo.yml` | 出典台帳・備えの数字・照らし合わせ用の公式の数字 |
 | `scripts/build.mjs`・`verify-dist.mjs`・`changed.mjs` | ビルド・全ページ点検・本番とのちがい |
 | `scripts/probe-*.mjs`・`.github/workflows/probe.yml` | データの土台づくりの確認（e-Stat の表さがしと照らし合わせ・避難場所データの取り方）。結果はPRにコメント |

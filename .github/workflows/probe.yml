@@ -10,6 +10,7 @@ on:
       - 'scripts/probe-*.mjs'
       - 'src/lib/estat.mjs'
       - 'src/lib/csv.mjs'
+      - 'src/lib/hinan.mjs'
       - 'data/shogo.yml'
       - '.github/workflows/probe.yml'
   workflow_dispatch:
