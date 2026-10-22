@@ -1,52 +1,160 @@
-// ページの外側（head・ヘッダー・フッター）
-// デザインはまだ決めていない（3案を本物の画面でくらべてから）。いまは文字と余白だけの仮の見た目
+// ページの外側（head・ヘッダー・フッター）と共通の部品。見た目は「G 森と川」（10/22 しょーくんが決定）
+//   木の帯（杉と丸い木）のふち・明朝の見出しに小さな木の印・森の緑と川の青・えらんだものに朱の印
+//   「この街の備え」は細い川の線で区切る
 import { SITE, ESTAT_CREDIT } from './site.mjs';
 
 export const esc = (s) =>
   String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+export const fmt = (n) => (n == null ? '-' : Number(n).toLocaleString('ja-JP'));
+
+const MINCHO = '"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif';
+const GOTHIC = '"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif';
 
 const CSS = `
-:root{--paper:#fff;--ink:#1f2328;--sub:#5b636b;--line:#d7dbe0}
-@media (prefers-color-scheme:dark){:root{--paper:#16181b;--ink:#e6e8eb;--sub:#a0a8b0;--line:#33383e}}
-*{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.7 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
-.wrap{max-width:40rem;margin:0 auto;padding:0 16px}
-header{border-bottom:1px solid var(--line)}
-header .wrap{display:flex;align-items:center;min-height:48px}
-header a{color:inherit;text-decoration:none;font-weight:700}
-main{padding:24px 0 40px}
-h1{font-size:1.5rem;line-height:1.4;margin:0 0 8px}
-p{margin:0 0 12px}
-footer{border-top:1px solid var(--line);color:var(--sub);font-size:.75rem;padding:16px 0 32px}
-footer p{margin:0 0 6px}
-`
-  .replace(/\n/g, '')
-  .replace(/\s*([{}:;,])\s*/g, '$1');
+:root{--bg:#fff;--ink:#23312a;--sub:#5f6e66;--line:#d3dfd5;--accent:#c53d43;--num:#2f6b45;--h2:#2f5d3e;--bar:#4f8d5e;--bar2:#b5cfbb;--track:#e6efe8;--soft:#eef5ef;--water:#3f8fbf}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 ${GOTHIC};-webkit-text-size-adjust:100%}
+a{color:inherit}.pg{max-width:430px;margin:0 auto;padding:0 16px 24px}
+.deco{display:block;margin:0 -16px;line-height:0}.deco svg{display:block;width:100%}
+.bar{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
+.logo{font:700 20px/1.3 ${MINCHO};margin:0;text-decoration:none;letter-spacing:.08em;color:var(--ink);white-space:nowrap}
+.nav{display:flex;gap:14px;font-size:13px}.nav a{text-decoration:none;color:var(--sub);padding:6px 0}
+.lead{margin:10px 0 12px;font:15px/1.6 ${MINCHO};color:var(--sub)}
+.find{display:grid;grid-template-columns:auto 1fr auto;align-items:end;gap:10px;margin:0 0 16px;position:relative}
+.find label{font-size:13px;color:var(--sub);padding-bottom:9px}
+.find input{font:inherit;font-size:18px;border:0;border-bottom:1.5px solid var(--ink);padding:8px 2px;background:none;width:100%;border-radius:0;color:var(--ink)}
+.find button{font:inherit;font-size:15px;background:none;border:0;border-bottom:1.5px solid var(--ink);padding:8px 2px;color:var(--ink)}
+.hits{grid-column:1/-1;margin:0;padding:0;list-style:none;font-size:15px}.hits li a{display:block;padding:7px 0;border-bottom:1px dotted var(--line)}.hits small{color:var(--sub);margin-left:6px}
+.msg{grid-column:1/-1;margin:0;font-size:13px;color:var(--sub)}
+.q{font:700 17px/1.4 ${MINCHO};margin:0 0 4px}
+.row{display:flex;align-items:center;gap:6px;min-height:54px;border-bottom:1px dotted var(--line)}
+.k{width:3.2em;font-size:13px;color:var(--sub)}
+.row button{font:inherit;background:none;border:0;color:var(--ink);min-width:44px;height:44px;font-size:24px;line-height:1;cursor:pointer}
+.row b{font-size:27px;min-width:1.4em;text-align:center;font-variant-numeric:tabular-nums;color:var(--num)}
+.day{position:relative;font-size:20px!important;padding:0 16px!important}.day span{position:relative;z-index:1}
+.day .han{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border:2.5px solid var(--accent);border-radius:50%;box-shadow:inset 0 0 0 2px #fff,inset 0 0 0 3.5px var(--accent);transform:rotate(-8deg);opacity:0;pointer-events:none}
+.day.on .han{opacity:1}.day.on span{color:var(--accent);font-weight:700}
+.ans{margin:12px 0 4px;font-size:15px;line-height:2}
+.ans b{font-size:25px;color:var(--num);font-variant-numeric:tabular-nums;margin:0 1px 0 4px}
+.src{font-size:11px;color:var(--sub);margin:6px 0 0;line-height:1.5}
+h2{font:700 17px/1.4 ${MINCHO};margin:28px 0 10px;display:flex;align-items:center;gap:8px;color:var(--h2)}
+.hm{width:18px;height:14px;color:var(--h2);flex:none}
+h3{font:700 15px/1.5 ${MINCHO};margin:18px 0 6px}
+p{margin:0 0 10px}
+.tiles{display:grid;grid-template-columns:repeat(13,1fr);gap:2px}
+.tile{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:9px;text-decoration:none;color:var(--ink);background:#eef5e8;border:1px solid #c9dcc0}
+.tile.here{background:#2f6b45;border-color:#2f6b45;color:#fff;font-weight:700}
+.list{margin:0;padding:0;list-style:none}.list li{border-bottom:1px dotted var(--line)}.list a{display:block;padding:8px 0;font-size:15px}
+.cols{columns:2;column-gap:16px}.cols li{break-inside:avoid}
+.crumb{font-size:12px;color:var(--sub);margin:10px 0 0}.crumb a{color:var(--sub)}
+.city{font:700 32px/1.25 ${MINCHO};margin:0 0 4px;letter-spacing:.04em}
+.big{margin:0;font-size:15px}.big b{font-size:36px;font-variant-numeric:tabular-nums;margin-right:2px;color:var(--num)}
+.chg,.hh{margin:0;font-size:15px}.chg b,.hh b{font-variant-numeric:tabular-nums}
+.feat{margin:10px 0;font:16px/1.6 ${MINCHO}}
+.s1{margin:12px 0 4px;font-size:14px;line-height:1.75;padding:10px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.s1 b{color:var(--accent);font-size:18px;white-space:nowrap}
+.go{display:inline-block;margin:6px 0 2px;font-size:15px;font-weight:700}
+.g{margin:0 0 16px}.g>p{margin:0 0 4px;font-size:13px}.g>p b{font-size:15px}
+.scale{position:relative;height:42px;margin:2px 0 0}
+.scale .ln{position:absolute;left:0;right:0;top:16px;border-top:1px solid var(--ink)}
+.scale .tk{position:absolute;top:12px;height:9px;border-left:1px solid var(--ink)}
+.scale .me,.scale .zk{position:absolute;transform:translateX(-50%);font-size:10px;line-height:1.2;white-space:nowrap;text-align:center}
+.scale .me{top:22px;color:var(--accent);font-weight:700}.scale .me::before{content:"";display:block;width:0;height:0;margin:0 auto;border:5px solid transparent;border-bottom:7px solid var(--accent);border-top:0}
+.scale .zk{top:0;color:var(--sub)}.scale .zk::after{content:"";display:block;width:0;height:0;margin:0 auto;border:4px solid transparent;border-top:6px solid var(--sub);border-bottom:0}
+.scale .lo,.scale .hi{position:absolute;top:24px;font-size:10px;color:var(--sub)}.scale .lo{left:0}.scale .hi{right:0}
+.bars{display:grid;grid-template-columns:6.5em 1fr 3.4em;align-items:center;gap:6px 8px;font-size:12px}.bars span{white-space:nowrap}
+.share{height:14px;background:var(--track);position:relative}.share i{position:absolute;inset:0 auto 0 0;background:var(--bar)}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}.tbl th,.tbl td{padding:6px 4px;border-bottom:1px dotted var(--line);text-align:right;font-variant-numeric:tabular-nums}
+.tbl th{font-weight:400;color:var(--sub);font-size:12px}.tbl td:first-child,.tbl th:first-child{text-align:left}
+.tbl tr.me td{color:var(--num);font-weight:700}
+.note{font-size:12px;color:var(--sub)}
+.sonae{background:var(--soft);margin:24px -16px 0;padding:0 16px 18px}
+.edge{display:block;margin:0 -16px;line-height:0;background:#fff}.edge svg{display:block;width:100%}
+.why{margin:0 0 10px;font-size:14px}.why a{font-weight:700}
+.cnt{display:flex;gap:18px;margin:12px 0 8px}.cnt p{margin:0;font-size:12px;color:var(--sub)}.cnt b{display:block;font-size:27px;color:var(--num);font-variant-numeric:tabular-nums}
+.kinds{display:grid;grid-template-columns:7.5em 1fr 2.5em;gap:3px 8px;align-items:center;font-size:12px;margin:4px 0 12px}.kinds i{display:block;height:8px;background:var(--bar)}
+.notes{margin:0 0 10px;padding:0;list-style:none;font-size:12px;color:var(--sub)}.notes li{margin:0 0 3px}
+.links{display:flex;flex-direction:column;font-size:14px;margin:0 0 8px}.links a{padding:6px 0}
+details{border-top:1px dotted var(--line);border-bottom:1px dotted var(--line);font-size:14px}
+summary{padding:10px 0;cursor:pointer}.hl{margin:0 0 10px;padding:0;list-style:none;font-size:13px;max-height:420px;overflow:auto}
+.hl li{padding:5px 0;border-bottom:1px dotted var(--line)}.hl small{display:block;color:var(--sub);font-size:11px}
+.prose{font-size:15px;line-height:1.85}.prose p{margin:0 0 14px}
+.ft{max-width:430px;margin:0 auto;padding:16px 16px 28px;font-size:11px;color:var(--sub);border-top:1px solid var(--line)}.ft p{margin:0 0 6px}
+.ft .fl{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;margin:0 0 12px}.ft .fl a{padding:4px 0;color:var(--ink)}
+`.replace(/\n/g, '');
 
-export function page({ path, title, description, body, noindex = false }) {
-  const full = path === '/' ? title : `${title}｜${SITE.name}`;
-  const robots = !SITE.launched || noindex ? '<meta name="robots" content="noindex">' : '';
-  const canonical = path ? `<link rel="canonical" href="${SITE.url}${path}">` : '';
+export const TREES = (id) =>
+  `<svg viewBox="0 0 390 24" preserveAspectRatio="none" height="24" aria-hidden="true"><defs><pattern id="${id}" width="28" height="24" patternUnits="userSpaceOnUse"><rect y="21" width="28" height="3" fill="#b9d3a3"/><path d="M3 21l6-16 6 16z" fill="#356b44"/><rect x="8.4" y="20" width="1.2" height="2" fill="#5a4636"/><circle cx="21" cy="14" r="5" fill="#76a95a"/><rect x="20.4" y="18" width="1.2" height="4" fill="#5a4636"/></pattern></defs><rect width="390" height="24" fill="url(#${id})"/></svg>`;
+export const RIVER = `<svg viewBox="0 0 390 10" preserveAspectRatio="none" height="10" aria-hidden="true"><path d="M0 5C16 1 32 1 48 5S80 9 96 5 128 1 144 5 176 9 192 5 224 1 240 5 272 9 288 5 320 1 336 5 368 9 390 4" fill="none" stroke="#3f8fbf" stroke-width="1.5"/></svg>`;
+const HM = `<svg class="hm" viewBox="0 0 18 14" aria-hidden="true"><path d="M2 13l5-11 5 11z" fill="currentColor"/><circle cx="13" cy="7" r="4" fill="currentColor" opacity=".55"/></svg>`;
+export const h2 = (t, id) => `<h2${id ? ` id="${id}"` : ''}>${HM}${t}</h2>`;
+export const HAN = `<span class="han" aria-hidden="true"></span>`;
+
+const NAV = `<nav class="nav" aria-label="サイト内"><a href="/#map">都道府県</a><a href="/sonae/">備えの知識</a><a href="/dougu/keisan/">計算</a></nav>`;
+
+export const FOOT_LINKS = [
+  ['/about/', 'このサイトについて'],
+  ['/privacy/', 'プライバシーポリシー'],
+];
+
+/**
+ * @param {object} p
+ * @param {string} p.path      /から始まるURL（null は 404）
+ * @param {string} p.title     ページの題（トップ以外は「｜まちの社会科」がつく）
+ * @param {string} p.description
+ * @param {string} p.body
+ * @param {boolean}[p.noindex]
+ * @param {boolean}[p.noAds]   AdSense を置かない
+ * @param {boolean}[p.gsi]     国土地理院のデータを使うページ（フッターに出典）
+ * @param {string} [p.script]  ページの最後に入れるスクリプト
+ * @param {string} [p.head]    head に足すもの（構造化データなど）
+ */
+export function page(p) {
+  const full = p.path === '/' ? `${SITE.name}｜街の数字と家の備え` : `${p.title}｜${SITE.name}`;
+  const robots = !SITE.launched || p.noindex ? '<meta name="robots" content="noindex">' : '';
+  const canonical = p.path ? `<link rel="canonical" href="${SITE.url}${p.path}">` : '';
+  const ads = Boolean(SITE.adsense) && SITE.launched && !p.noAds && !p.noindex;
+  const isTop = p.path === '/';
   return `<!doctype html>
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(full)}</title>
-<meta name="description" content="${esc(description)}">
+<meta name="description" content="${esc(p.description)}">
 ${robots}${canonical}
-<style>${CSS}</style>
+<meta property="og:title" content="${esc(full)}"><meta property="og:description" content="${esc(p.description)}"><meta property="og:type" content="${isTop ? 'website' : 'article'}">${p.path ? `<meta property="og:url" content="${SITE.url}${p.path}">` : ''}
+${ads ? `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${SITE.adsense}" crossorigin="anonymous"></script>\n` : ''}<style>${CSS}</style>${p.head ?? ''}
 </head>
 <body>
-<header><div class="wrap"><a href="/">${esc(SITE.name)}</a></div></header>
-<main><div class="wrap">
-${body}
-</div></main>
-<footer><div class="wrap">
+<div class="pg">
+<header><span class="deco">${TREES('trh')}</span><div class="bar">${isTop ? `<h1 class="logo">${esc(SITE.name)}</h1>` : `<a class="logo" href="/">${esc(SITE.name)}</a>`}${NAV}</div></header>
+<main>
+${p.body}
+</main>
+</div>
+<footer class="ft">
+<div class="fl">${FOOT_LINKS.map(([h, t]) => `<a href="${h}">${t}</a>`).join('')}</div>
 <p>${esc(ESTAT_CREDIT)}</p>
-</div></footer>
+${p.gsi ? '<p>出典：<a href="https://www.gsi.go.jp/bousaichiri/hinanbasho.html">国土地理院ウェブサイト</a>（指定緊急避難場所・指定避難所データ）</p>' : ''}
+</footer>
+${p.script ? `<script>${p.script}</script>` : ''}
 </body>
 </html>
 `;
+}
+
+// 目盛り：全国の市区町村の中での位置（lo〜hi）。me がこの街、zk が全国の値
+export function scale({ lo, hi, me, zk, unit, ticks = 4, meLabel, zkLabel }) {
+  const pos = (v) => `${Math.max(0, Math.min(100, ((v - lo) / (hi - lo)) * 100)).toFixed(1)}%`;
+  const tk = Array.from({ length: ticks + 1 }, (_, i) => `<span class="tk" style="left:${((i / ticks) * 100).toFixed(1)}%"></span>`).join('');
+  return `<div class="scale"><span class="ln"></span>${tk}${zk == null ? '' : `<span class="zk" style="left:${pos(zk)}">${zkLabel}</span>`}<span class="me" style="left:${pos(me)}">${meLabel}</span><span class="lo">${lo}${unit}</span><span class="hi">${hi}${unit}</span></div>`;
+}
+
+export const srcKokusei = (m) =>
+  `<p class="src">出典：総務省「${esc(m.statName)}」を加工して作成（${jpDate(m.survey)}現在・${jpDate(m.published)}公表）</p>`;
+
+export function jpDate(iso) {
+  const [y, mo, d] = String(iso).split('-').map(Number);
+  return `${y}年${mo}月${d}日`;
 }

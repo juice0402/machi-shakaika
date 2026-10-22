@@ -23,7 +23,8 @@
 - 公開：`.github/workflows/deploy.yml` が Cloudflare Pages（プロジェクト `machi-shakaika`）へ Direct Upload。Cloudflare 側のビルドは使わない（アカウント共有の月500回の枠を使わないため）
   - PR → プレビュー（PRにURLのコメント）／ main → 本番。本番は `dist/fingerprint.json` を本番の `/fingerprint.json` とくらべ、同じなら公開しない
   - Secrets：`ESTAT_APP_ID`・`CLOUDFLARE_API_TOKEN`（Pages の編集だけ、`machi-shakaika-deploy`）・`CLOUDFLARE_ACCOUNT_ID`。値はチャット・ログ・コメント・ファイルに出さない
-  - `SITE.launched`（`src/site.mjs`）が false のあいだは全ページ noindex・robots.txt は全部おことわり。pages.dev はいつも noindex
+  - `SITE.launched`（`src/site.mjs`）が false のあいだは全ページ noindex・robots.txt は全部おことわり（AdSense の審査もこの間はできない）。pages.dev はいつも noindex
+- AdSense：`SITE.adsense` に運営者ID（ca-pub-）を入れると、公開後の全ページの head にスクリプト、/ads.txt を置く。審査に向けて、空のリンク・「準備中」のページ・中身のない棚の入口を作らない。運営者情報・プライバシーポリシー（広告の Cookie の説明）・ナビを全ページに
 - 流れ：ブランチ `claude/...` → PR → CI が緑・プレビューで確認 → しょーくんに知らせてから Merge。修正はまとめて少ない push で
 - Claude の予約タスクは使わない。毎週の更新は GitHub Actions の `update.yml`（月曜0:07）と、災害時モードの手動ボタン（これから作る）
 - このクラウドの作業場からは e-Stat と国土地理院につながらない。データは Actions が取って data/ にコミットしたものを使う
@@ -40,7 +41,10 @@
 | 場所 | 中身 |
 |---|---|
 | `src/site.mjs` | サイト名・URL・公開前フラグ・e-Stat のクレジット文 |
-| `src/layout.mjs` | ページの外側（head・ヘッダー・フッター）。デザインは3案くらべで決めるまで仮 |
+| `src/layout.mjs` | ページの外側（head・ヘッダー・ナビ・フッター）と共通の部品。見た目は「G 森と川」（10/22 決定）：木の帯のふち・明朝の見出しに小さな木の印・森の緑と川の青・えらんだものに朱の印・「この街の備え」は川の線で区切る |
+| `src/stats.mjs` | 割合・全国の中の位置・県内順位・人口が近い街・特徴の1行（データの条件ごとの言い回し）・備えの知識へのつなぎ |
+| `src/calc.mjs` | 備蓄量の計算の部品（items.yml から。?n=1&d=7 で人数と日数を入れて開ける） |
+| `src/pages/*.mjs` | top（トップ）・pref（都道府県47）・city（市区町村74）・sonae（備えの知識3本と計算のページ）・info（このサイトについて・プライバシーポリシー） |
 | `src/data.mjs` | data/*.yml を読んで形を確かめる、必要量の計算 |
 | `src/lib/yaml.mjs` | このリポジトリで使う形だけの小さなYAMLの読み取り |
 | `src/lib/estat.mjs` | e-Stat API の呼び出しと返ってきた形の読み取り |
