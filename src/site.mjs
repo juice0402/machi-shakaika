@@ -6,8 +6,8 @@ export const SITE = {
   url: 'https://machi-shakaika.com',
   pagesDev: 'https://machi-shakaika.pages.dev',
   project: 'machi-shakaika',
-  // 第1弾の公開まで false：全ページ noindex、robots.txt は全部おことわり
-  launched: false,
+  // false のあいだは全ページ noindex、robots.txt は全部おことわり（10/22 公開）
+  launched: true,
   lang: 'ja',
   // Google AdSense の運営者ID（ca-pub- から始まる。公開してよい値）。入れると、公開後の全ページ（noindex と noAds はのぞく）の head に
   // AdSense のスクリプトが入り、ビルドが /ads.txt を置く。空のあいだは何も入らない
