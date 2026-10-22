@@ -56,6 +56,13 @@ export function checkItems(items, src) {
       if (!(typeof it.per_day === 'number' && it.per_day > 0)) errors.push(`${at}: 計算に使うのに per_day がありません`);
       if (!it.sources?.length) errors.push(`${at}: 計算に使うのに出典がありません`);
     } else if (it.per_day != null) errors.push(`${at}: calc: false なら per_day は null`);
+    if (it.hinmoku) {
+      if (!it.page) errors.push(`${at}: 品目ページの名前（page）がありません`);
+      if (!it.sources?.length) errors.push(`${at}: 品目ページに出典がありません`);
+      if (!it.calc && !it.example_qty && !it.page_note) errors.push(`${at}: 品目ページに出す量のめやす（example_qty か page_note）がありません`);
+      const sh = it.shop;
+      if (!Array.isArray(sh?.keywords) || !sh.keywords.length || !Array.isArray(sh?.must) || !sh.must.length) errors.push(`${at}: shop の keywords と must がありません`);
+    }
   }
   if (seen.size === 0) errors.push('品目が1つもありません');
   // チェックリスト：品目を指すか、名前と出典があるか

@@ -2,6 +2,8 @@
 # このサイトの備えの数字はここにだけ置く。本文・計算・チェックリスト・品目ページ・クイズはここから読む。
 # 数字はすべて sources.yml の出典 id を書く。資料によって目安がちがうときは「最低・できれば」の両方を書く。
 # per_day は「1人1日あたり」。null は目安の数字をまだ出典で確かめていないもの（計算には使わない）。
+# page は品目ページ（/hinmoku/<id>/）の名前。shop は楽天市場で探す言葉（keywords）と、商品名に入っているべき言葉
+#   （must のどれか、also があれば also のどれかも）、入っていたら外す言葉（ng）。scripts/fetch-rakuten.mjs が使う
 
 days:
   min: 3            # 最低3日分
@@ -20,6 +22,11 @@ items:
     per_day: 3
     calc: true
     hinmoku: true
+    page: 備蓄の水
+    shop:
+      keywords: [保存水 2L, 長期保存水]
+      must: [保存水, 備蓄水]
+      ng: [ウォーターサーバー, 炭酸, ペット用]
     sources: [maff-sonae, miyagi-mizu]
     about: 飲み水と調理の水。トイレを流す水は別に要る
 
@@ -29,6 +36,12 @@ items:
     per_day: 3
     calc: true
     hinmoku: true
+    page: 備蓄の主食（アルファ米など）
+    shop:
+      keywords: [アルファ米, 非常食 ご飯]
+      must: [アルファ米, アルファー米, ごはん, ご飯, 白米]
+      also: [非常食, 保存食, 備蓄, 長期保存, アルファ]
+      ng: [ペット用, 炊飯器]
     sources: [maff-sonae]
     about: 1人1日3食で数える
 
@@ -38,6 +51,12 @@ items:
     per_day: 5
     calc: true
     hinmoku: true
+    page: 携帯トイレ
+    shop:
+      keywords: [携帯トイレ, 簡易トイレ 非常用]
+      must: [トイレ]
+      also: [携帯, 簡易, 非常用, 防災, 凝固]
+      ng: [ペット, 猫, 犬, トイレットペーパー, カバー, おむつ]
     sources: [hiroshima-toilet, kanagawa-toilet, suginami-toilet]
     about: 断水・停電・配管の被害で水洗トイレが使えなくなることがある
 
@@ -47,8 +66,16 @@ items:
     per_day: null
     calc: false
     hinmoku: true
+    page: カセットコンロとボンベ
+    example_text: 農林水産省の大人1人1週間の例では、ボンベ
+    example_qty: 6
+    shop:
+      keywords: [カセットボンベ, カセットコンロ]
+      must: [カセット]
+      also: [ボンベ, コンロ, ガス]
+      ng: [テーブル, カバー, 収納]
     sources: [maff-sonae]
-    about: 農林水産省の大人1人1週間の例にボンベ6本。家族の人数での数え方は、品目ページを作るときに出典で確かめる
+    about: 農林水産省の大人1人1週間の例にボンベ6本。家族の人数での数え方は出典で確かめていないので、品目ページは例の数だけ出す
 
   - id: light
     name: ライト
@@ -56,8 +83,15 @@ items:
     per_day: null
     calc: false
     hinmoku: true
+    page: 防災用のライト（懐中電灯・ランタン）
+    page_note: 長崎市の非常持出品の例に、懐中電灯と携帯ラジオが入っています
+    shop:
+      keywords: [LEDランタン 防災, 懐中電灯 LED 防災]
+      must: [ランタン, 懐中電灯, ライト]
+      also: [LED, 防災, 電池, 充電]
+      ng: [自転車, 車用, フォグ, シーリング, デスク, 照明器具]
     sources: [nagasaki-mochidashi]
-    about: 長崎市の非常持出品の例に懐中電灯。目安の数は、品目ページを作るときに公的な資料で確かめる
+    about: 長崎市の非常持出品の例に懐中電灯。目安の数は公的な資料で確かめていないので、数は出さない
 
   - id: battery
     name: モバイルバッテリー
@@ -65,8 +99,14 @@ items:
     per_day: null
     calc: false
     hinmoku: true
+    page: モバイルバッテリー
+    page_note: 長崎市の非常持出品の例に、モバイルバッテリーが入っています
+    shop:
+      keywords: [モバイルバッテリー]
+      must: [モバイルバッテリー]
+      ng: [ケース, カバー, ポーチ]
     sources: [nagasaki-mochidashi]
-    about: 長崎市の非常持出品の例にモバイルバッテリー。目安の数は、品目ページを作るときに公的な資料で確かめる
+    about: 長崎市の非常持出品の例にモバイルバッテリー。目安の数は公的な資料で確かめていないので、数は出さない
 
 # チェックリスト（/dougu/check/）。並びはページに出す順
 # item は上の品目を指す（calc: true の品目は、人数と日数で量を出す。qty: false で量を出さない）

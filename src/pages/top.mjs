@@ -32,7 +32,7 @@ export function topPage({ cc, munis, hinanMeta }) {
 ${calcHtml(cc)}
 <p class="src">${cc.perText}（農林水産省・内閣府のガイドラインほか）<br>${esc(munis.statName)}（${jpDate(munis.published)}公表）・避難場所データ ${jpDate(hinanMeta.checked)}取得</p>
 <section id="map">${h2('都道府県から')}<div class="tiles">${tiles}</div><ul class="list"><li><a href="/ranking/jinko/">人口が増えた市区町村</a></li></ul></section>
-<section>${h2('備えの知識')}<ul class="list"><li><a href="/sonae/bichiku/">備蓄の量のめやす</a></li><li><a href="/sonae/rolling-stock/">ローリングストック</a></li><li><a href="/sonae/keitai-toilet/">携帯トイレの備え</a></li><li><a href="/dougu/check/">チェックリスト</a></li></ul></section>`;
+<section>${h2('備えの知識')}<ul class="list"><li><a href="/sonae/bichiku/">備蓄の量のめやす</a></li><li><a href="/sonae/rolling-stock/">ローリングストック</a></li><li><a href="/sonae/keitai-toilet/">携帯トイレの備え</a></li><li><a href="/dougu/check/">チェックリスト</a></li><li><a href="/hinmoku/">品目ごとのめやす</a></li></ul></section>`;
   return {
     path: '/',
     title: 'まちの社会科',
