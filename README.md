@@ -1,1 +1,9 @@
-# machi-shakaika
+# まちの社会科
+
+市区町村の人口や世帯の数字と、家の備えの量をつなぐサイト（https://machi-shakaika.com 、準備中）。
+
+- 統計：政府統計の総合窓口（e-Stat）の API（令和7年国勢調査など）
+- 避難場所：国土地理院「指定緊急避難場所・指定避難所データ」
+- 静的サイト（Node 22、依存パッケージなし）。GitHub Actions から Cloudflare Pages へ Direct Upload
+
+このサービスは、政府統計総合窓口(e-Stat)のAPI機能を使用していますが、サービスの内容は国によって保証されたものではありません。

@@ -1,0 +1,84 @@
+name: ビルドと公開
+
+# テスト → ビルド → 全ページ点検 →（本番は前回とくらべて変わったときだけ）→ Cloudflare Pages へ直接アップロード（Direct Upload）
+# Cloudflare 側ではビルドしないので、アカウント共有の「月500回のビルド枠」を使わない
+#   main への push        → 本番（いまは https://machi-shakaika.pages.dev。独自ドメインは第1弾の前につなぐ）
+#   プルリクエスト        → プレビュー（PRにURLをコメント）
+# 本番は dist/fingerprint.json を本番の /fingerprint.json とくらべ、同じなら公開しない（scripts/changed.mjs）
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: deploy-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+env:
+  PROJECT: machi-shakaika
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: テスト
+        run: npm test
+
+      - name: ビルド
+        run: npm run build
+
+      - name: 全ページ点検
+        run: npm run verify
+
+      - name: 本番と変わったか（main のとき）
+        id: diff
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        run: node scripts/changed.mjs
+
+      - name: Cloudflare Pages へアップロード
+        # フォークからのPRには秘密情報が渡らないので、アップロードしない。main は変わったときだけ
+        if: >-
+          (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
+          (github.event_name != 'pull_request' && github.ref != 'refs/heads/main') ||
+          steps.diff.outputs.changed == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          set -o pipefail
+          # 初回だけ Pages のプロジェクトを作る（すでにあれば何もしない。Git 連携なしの Direct Upload 用）
+          if ! npx --yes wrangler@4 pages project list 2>/dev/null | grep -qw "$PROJECT"; then
+            npx --yes wrangler@4 pages project create "$PROJECT" --production-branch=main
+          fi
+          npx --yes wrangler@4 pages deploy dist --project-name="$PROJECT" --branch="$BRANCH" --commit-dirty=true | tee deploy.log
+          grep -Eo 'https://[A-Za-z0-9.-]+\.pages\.dev' deploy.log | sort -u > urls.txt || true
+          {
+            echo "### Cloudflare Pages（$BRANCH）"
+            sed 's/^/- /' urls.txt
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: PRにプレビューURLをコメント
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          ALIAS=$(grep -v -E '^https://[0-9a-f]{8}\.' urls.txt | head -1)
+          [ -n "$ALIAS" ] || ALIAS=$(head -1 urls.txt)
+          gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body "プレビュー：$ALIAS
+          （コミット ${SHA::7}。このブランチに push するたびに同じURLが新しくなります）"

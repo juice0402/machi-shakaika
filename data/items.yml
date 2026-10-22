@@ -1,0 +1,75 @@
+# 備えの数字（まちの社会科）
+# このサイトの備えの数字はここにだけ置く。本文・計算・チェックリスト・品目ページ・クイズはここから読む。
+# 数字はすべて sources.yml の出典 id を書く。資料によって目安がちがうときは「最低・できれば」の両方を書く。
+# per_day は「1人1日あたり」。null は目安の数字をまだ出典で確かめていないもの（計算には使わない）。
+
+days:
+  min: 3            # 最低3日分
+  better: 7         # できれば1週間分
+  choices: [3, 7]   # 計算の日数のマス
+  sources: [maff-sonae, hiroshima-toilet, kanagawa-toilet]
+
+# 乳幼児・妊産婦・高齢者・慢性疾患・食物アレルギーなどの人は、少なくとも2週間分
+yohairyo_days: 14
+yohairyo_sources: [nerima-yohairyo, maff-stock]
+
+items:
+  - id: mizu
+    name: 水
+    unit: L
+    per_day: 3
+    calc: true
+    lists: [bichiku]
+    hinmoku: true
+    sources: [maff-sonae, miyagi-mizu]
+    about: 飲み水と調理の水。トイレを流す水は別に要る
+
+  - id: shushoku
+    name: 主食
+    unit: 食
+    per_day: 3
+    calc: true
+    lists: [bichiku]
+    hinmoku: true
+    sources: [maff-sonae]
+    about: 1人1日3食で数える
+
+  - id: keitai-toilet
+    name: 携帯トイレ
+    unit: 回分
+    per_day: 5
+    calc: true
+    lists: [bichiku, mochidashi]
+    hinmoku: true
+    sources: [hiroshima-toilet, kanagawa-toilet, suginami-toilet]
+    about: 断水・停電・配管の被害で水洗トイレが使えなくなることがある
+
+  - id: gas
+    name: カセットコンロとボンベ
+    unit: 本
+    per_day: null
+    calc: false
+    lists: [bichiku]
+    hinmoku: true
+    sources: [maff-sonae]
+    about: 農林水産省の大人1人1週間の例にボンベ6本。家族の人数での数え方は、品目ページを作るときに出典で確かめる
+
+  - id: light
+    name: ライト
+    unit: 個
+    per_day: null
+    calc: false
+    lists: [bichiku, mochidashi]
+    hinmoku: true
+    sources: []
+    about: 目安の数は、品目ページを作るときに公的な資料で確かめる
+
+  - id: battery
+    name: モバイルバッテリー
+    unit: 個
+    per_day: null
+    calc: false
+    lists: [bichiku, mochidashi]
+    hinmoku: true
+    sources: []
+    about: 目安の数は、品目ページを作るときに公的な資料で確かめる

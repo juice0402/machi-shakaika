@@ -1,0 +1,15 @@
+{
+  "name": "machi-shakaika",
+  "private": true,
+  "type": "module",
+  "description": "まちの社会科 — 市区町村の数字（e-Stat）と家の備えの静的サイト（依存パッケージなし）",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test \"tests/**/*.test.mjs\"",
+    "verify": "node scripts/verify-dist.mjs",
+    "check": "npm test && npm run build && npm run verify"
+  }
+}
