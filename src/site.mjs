@@ -11,7 +11,7 @@ export const SITE = {
   lang: 'ja',
   // Google AdSense の運営者ID（ca-pub- から始まる。公開してよい値）。入れると、公開後の全ページ（noindex と noAds はのぞく）の head に
   // AdSense のスクリプトが入り、ビルドが /ads.txt を置く。空のあいだは何も入らない
-  adsense: '',
+  adsense: 'ca-pub-7891863499821813',
 };
 
 // e-Stat API のクレジット表示（e-Stat 指定の文言。変えない。API機能利用規約 第7条）

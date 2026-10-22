@@ -32,9 +32,14 @@ for (const f of html) {
   const emoji = [...shown.matchAll(/\p{Extended_Pictographic}/gu)].map((m) => m[0]).filter((c) => !'©®™'.includes(c));
   if (emoji.length) fail(f, `絵文字がある：${[...new Set(emoji)].join(' ')}`);
   for (const w of BANNED) if (shown.includes(w)) fail(f, `使わない言葉「${w}」`);
+  // 外のファイルの読み込みは AdSense のスクリプトだけ（公開後・運営者IDがあるとき）
+  const adsTag = `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${SITE.adsense}" crossorigin="anonymous"></script>`;
   for (const m of s.matchAll(/<(script|link|img|iframe)\b[^>]*(?:src|href)="(https?:)?\/\/[^"]+"[^>]*>/gi)) {
-    if (!/rel="canonical"/.test(m[0])) fail(f, `外のファイルを読み込んでいる：${m[0].slice(0, 80)}`);
+    if (/rel="canonical"/.test(m[0])) continue;
+    if (SITE.adsense && SITE.launched && m[0] === adsTag.replace('</script>', '')) continue;
+    fail(f, `外のファイルを読み込んでいる：${m[0].slice(0, 80)}`);
   }
+  if (SITE.adsense && SITE.launched && !f.endsWith('404.html') && !s.includes(adsTag)) fail(f, 'AdSense のスクリプトがない');
   for (const m of s.matchAll(/href="(\/[^"#?]*)/g)) {
     const p = m[1];
     const ok = existsSync(`${DIST}${p}`) && statSync(`${DIST}${p}`).isFile() ? true : existsSync(`${DIST}${p.replace(/\/?$/, '/')}index.html`);
@@ -48,6 +53,12 @@ for (const need of ['robots.txt', '_headers', 'fingerprint.json', 'index.html', 
   if (!existsSync(`${DIST}/${need}`)) fail(`${DIST}/${need}`, 'ない');
 }
 if (!SITE.launched && !/Disallow: \/\n/.test(readFileSync(`${DIST}/robots.txt`, 'utf8'))) fail(`${DIST}/robots.txt`, '公開前なのに Disallow: / でない');
+if (SITE.launched) {
+  const robots = readFileSync(`${DIST}/robots.txt`, 'utf8');
+  if (/Disallow: \/\n/.test(robots)) fail(`${DIST}/robots.txt`, '公開したのに全部おことわり');
+  if (!existsSync(`${DIST}/sitemap.xml`)) fail(`${DIST}/sitemap.xml`, 'ない');
+  if (SITE.adsense && !existsSync(`${DIST}/ads.txt`)) fail(`${DIST}/ads.txt`, 'ない');
+}
 
 console.log(`点検：${html.length} ページ${bad ? `・NG ${bad}` : '・OK'}`);
 if (bad) process.exit(1);
