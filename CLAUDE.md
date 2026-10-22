@@ -25,7 +25,8 @@
   - Secrets：`ESTAT_APP_ID`・`CLOUDFLARE_API_TOKEN`（Pages の編集だけ、`machi-shakaika-deploy`）・`CLOUDFLARE_ACCOUNT_ID`。値はチャット・ログ・コメント・ファイルに出さない
   - `SITE.launched`（`src/site.mjs`）が false のあいだは全ページ noindex・robots.txt は全部おことわり。pages.dev はいつも noindex
 - 流れ：ブランチ `claude/...` → PR → CI が緑・プレビューで確認 → しょーくんに知らせてから Merge。修正はまとめて少ない push で
-- Claude の予約タスクは使わない。毎週の更新は GitHub Actions のワークフロー1本（月曜0時台。これから作る）と、災害時モードの手動ボタン（これから作る）
+- Claude の予約タスクは使わない。毎週の更新は GitHub Actions の `update.yml`（月曜0:07）と、災害時モードの手動ボタン（これから作る）
+- このクラウドの作業場からは e-Stat と国土地理院につながらない。データは Actions が取って data/ にコミットしたものを使う
 
 ## データの決まり
 - 出典はすべて `data/sources.yml`（出典台帳）。ページ・計算は出典の id を指す。title はページの題そのもの（まだ確かめていないものは null。ページに出す前に確かめる）。checked は開いて確かめた日。計算に使う出典は90日を過ぎるとテストが止まる
@@ -47,4 +48,8 @@
 | `src/lib/hinan.mjs` | 国土地理院の避難場所の全国CSV（hinanmap.gsi.go.jp）のURLと、市区町村ごと・災害の種類ごとの数え方 |
 | `data/sources.yml`・`items.yml`・`shogo.yml` | 出典台帳・備えの数字・照らし合わせ用の公式の数字 |
 | `scripts/build.mjs`・`verify-dist.mjs`・`changed.mjs` | ビルド・全ページ点検・本番とのちがい |
-| `scripts/probe-*.mjs`・`.github/workflows/probe.yml` | データの土台づくりの確認（e-Stat の表さがしと照らし合わせ・避難場所データの取り方）。結果はPRにコメント |
+| `data/estat.yml` | e-Stat から取る表と項目（名前で指定）。年齢・世帯・住宅は不詳補完値の表 |
+| `scripts/fetch-estat.mjs` → `data/estat/munis.json`・`meta.json` | 表の更新日を見て、変わったときだけ全市区町村の数字を取る。照らし合わせに通らなければ書きかえない |
+| `scripts/fetch-hinan.mjs` → `data/hinan/counts.json`・`list/<コード>.json`・`meta.json` | 避難場所の全国CSV（ETagが変わったときだけ作り直す）。数は全市区町村、一覧はページを作る街だけ。件数の見張り |
+| `src/munis.mjs`・`src/areas.mjs` | munis.json の読み書きと点検・都道府県とページを作る74の街（英字のURL） |
+| `.github/workflows/update.yml` | 毎週月曜0:07に上の2つ → 変わったら data/ をコミットして deploy.yml を呼ぶ。止まったら Issue。データの取り方を変えたPRでも動き、PRのブランチにコミットする |

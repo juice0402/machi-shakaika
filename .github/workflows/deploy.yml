@@ -11,6 +11,12 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  # 週1回のデータの更新（update.yml）から、コミットしたあとの main を公開する
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        required: false
 
 permissions:
   contents: read
@@ -29,6 +35,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref || '' }}
 
       - uses: actions/setup-node@v5
         with:

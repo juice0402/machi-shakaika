@@ -1,0 +1,90 @@
+name: データの更新
+
+# 毎週月曜 0:07（日本時間）に、国勢調査（e-Stat）と避難場所（国土地理院）のデータを確かめる
+#   e-Stat：使っている表の更新日だけ見て、更新された表があるときだけ取る
+#   避難場所：全国CSVの ETag を見て、変わったときだけ作り直す（確かめた日は毎回書きかえる）
+#   照らし合わせ（公式の数字）・件数の見張りに通らなければ止めて Issue を立てる（前の公開がそのまま残る）
+#   変わったら data/ をコミットして、ビルドと公開（deploy.yml）を動かす
+# データの取り方を変えたPRでも動き、取ったデータをそのPRのブランチにコミットする（公開はしない）
+
+on:
+  schedule:
+    - cron: '7 15 * * 0'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'scripts/fetch-*.mjs'
+      - 'src/munis.mjs'
+      - 'src/areas.mjs'
+      - 'data/estat.yml'
+      - '.github/workflows/update.yml'
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: update-${{ github.head_ref || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+      sha: ${{ steps.commit.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: 国勢調査（e-Stat）
+        env:
+          ESTAT_APP_ID: ${{ secrets.ESTAT_APP_ID }}
+        run: node scripts/fetch-estat.mjs
+
+      - name: 避難場所（国土地理院）
+        run: node scripts/fetch-hinan.mjs
+
+      - name: テスト（照らし合わせをふくむ）
+        run: npm test
+
+      - name: コミット
+        id: commit
+        run: |
+          git add data/
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "データの変化なし" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+            commit -q -m "データの更新（$(TZ=Asia/Tokyo date +%F)）"
+          git push -q
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          git show --stat --format='### データの更新%n%s' HEAD >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 止まったら Issue（main のとき）
+        if: failure() && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "データの更新が止まった（$(TZ=Asia/Tokyo date +%F)）" \
+            --body "週1回のデータの更新が、照らし合わせか見張りで止まりました。公開は前のままです。$RUN"
+
+  deploy:
+    needs: fetch
+    if: github.event_name != 'pull_request' && needs.fetch.outputs.changed == 'true'
+    uses: ./.github/workflows/deploy.yml
+    with:
+      ref: ${{ needs.fetch.outputs.sha }}
+    secrets: inherit
