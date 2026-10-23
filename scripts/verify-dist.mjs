@@ -70,7 +70,7 @@ for (const f of html) {
   const dup = ids.filter((x, i) => ids.indexOf(x) !== i);
   if (dup.length) fail(f, `id の重複：${[...new Set(dup)].join(' ')}`);
 }
-for (const need of ['robots.txt', '_headers', 'fingerprint.json', 'index.html', '404.html', 'favicon.ico', 'favicon.svg', 'apple-touch-icon.png']) {
+for (const need of ['robots.txt', '_headers', 'fingerprint.json', 'index.html', '404.html', 'favicon.ico', 'favicon.svg', 'apple-touch-icon.png', 'quiz/machi.json']) {
   if (!existsSync(`${DIST}/${need}`)) fail(`${DIST}/${need}`, 'ない');
 }
 if (!SITE.launched && !/Disallow: \/\n/.test(readFileSync(`${DIST}/robots.txt`, 'utf8'))) fail(`${DIST}/robots.txt`, '公開前なのに Disallow: / でない');
