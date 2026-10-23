@@ -18,6 +18,7 @@ import { infoPages } from '../src/pages/info.mjs';
 import { douguPages } from '../src/pages/dougu.mjs';
 import { rankingPages } from '../src/pages/ranking.mjs';
 import { hinmokuPages } from '../src/pages/hinmoku.mjs';
+import { quizPages } from '../src/pages/quiz.mjs';
 import { PRODUCTS_PATH } from '../src/rakuten.mjs';
 
 const DIST = 'dist';
@@ -69,6 +70,7 @@ for (const p of sonaePages({ cc, items, sources })) add(p);
 for (const p of douguPages({ cc, items, sources })) add(p);
 for (const p of rankingPages({ munis, list, urlOf })) add(p);
 for (const p of hinmokuPages({ items, sources, products })) add(p);
+for (const p of quizPages({ munis, cities, urlOf, items, sources })) add(p);
 for (const p of infoPages({ munis, estatMeta, hinanMeta })) add(p);
 add({ path: null, title: 'ページが見つかりません', description: 'ページが見つかりません。', noindex: true, noAds: true, body: '<h1 class="city">ページが見つかりません</h1><p><a href="/">トップへ</a></p>' });
 
