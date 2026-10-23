@@ -72,6 +72,9 @@ for (const p of hinmokuPages({ items, sources, products })) add(p);
 for (const p of infoPages({ munis, estatMeta, hinanMeta })) add(p);
 add({ path: null, title: 'ページが見つかりません', description: 'ページが見つかりません。', noindex: true, noAds: true, body: '<h1 class="city">ページが見つかりません</h1><p><a href="/">トップへ</a></p>' });
 
+// ファビコン（A 森と川。10/23 しょーくんが3案から選んだ）。static/ の中をそのまま置く
+for (const f of readdirSync('static')) copyFileSync(`static/${f}`, `${DIST}/${f}`);
+
 // 避難場所の一覧（市区町村ページで「開く」を押したときだけ読み込む）
 mkdirSync(`${DIST}/hinan`, { recursive: true });
 for (const c of cities) {
@@ -112,6 +115,10 @@ out(
     ...(SITE.launched ? [] : ['  X-Robots-Tag: noindex']),
     '/hinan/*',
     '  Cache-Control: public, max-age=86400',
+    '/favicon.*',
+    '  Cache-Control: public, max-age=604800',
+    '/apple-touch-icon.png',
+    '  Cache-Control: public, max-age=604800',
     `https://:project.pages.dev/*`,
     '  X-Robots-Tag: noindex',
     `https://:version.:project.pages.dev/*`,
