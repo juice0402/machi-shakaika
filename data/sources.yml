@@ -34,10 +34,26 @@ sources:
   - id: miyagi-mizu
     kind: sonae
     publisher: 宮城県
-    title: null
+    title: 災害に対するご家庭での備え
     url: https://www.pref.miyagi.jp/soshiki/bousai/km-wagaya.html
-    checked: 2026-10-21
-    about: 飲み水は1人1日3L。トイレを流す生活用水は別に要る
+    checked: 2026-10-22
+    about: 飲み水は1人1日3L・3日分、大きな災害では1週間分。トイレを流す生活用水は別に要る。備蓄の例にトイレットペーパー・ティッシュ・マッチ・ろうそく・カセットコンロ
+
+  - id: kantei-sonae
+    kind: sonae
+    publisher: 首相官邸
+    title: 災害が起きる前にできること
+    url: https://www.kantei.go.jp/jp/headline/bousai/sonae.html
+    checked: 2026-10-22
+    about: 備蓄の例（人数分）。飲料水は1人1日3L・3日分、大きな災害では1週間分。非常食（ご飯・缶詰・乾パンなど）、トイレットペーパー・ティッシュ・携帯トイレ・マッチ・ろうそく・カセットコンロ。生活用水は別
+
+  - id: nagasaki-mochidashi
+    kind: sonae
+    publisher: 長崎市
+    title: 非常持出品と備蓄品の準備
+    url: https://www.city.nagasaki.lg.jp/bousai/210004/210003/p000445.html
+    checked: 2026-10-22
+    about: 非常持出品の例（飲料水・食料品・貴重品・懐中電灯・携帯ラジオ・モバイルバッテリー・ヘルメット・救急用品・感染予防・衣類・洗面用具・携帯トイレ・生理用品、乳児はミルク・紙おむつ・ほ乳びん）。2026年7月1日更新
 
   - id: hiroshima-toilet
     kind: sonae

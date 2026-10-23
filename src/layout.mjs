@@ -79,6 +79,32 @@ details{border-top:1px dotted var(--line);border-bottom:1px dotted var(--line);f
 summary{padding:10px 0;cursor:pointer}.hl{margin:0 0 10px;padding:0;list-style:none;font-size:13px;max-height:420px;overflow:auto}
 .hl li{padding:5px 0;border-bottom:1px dotted var(--line)}.hl small{display:block;color:var(--sub);font-size:11px}
 .prose{font-size:15px;line-height:1.85}.prose p{margin:0 0 14px}
+.kz{margin-left:auto;font:400 13px/1 ${GOTHIC};color:var(--sub);font-variant-numeric:tabular-nums}
+.ckl{list-style:none;margin:0;padding:0}
+.ckl label{display:grid;grid-template-columns:32px 1fr auto;align-items:center;gap:4px 8px;min-height:50px;padding:6px 0;border-bottom:1px dotted var(--line);cursor:pointer;position:relative;font-size:15px;line-height:1.45}
+.ckl input{position:absolute;left:2px;top:50%;width:28px;height:28px;margin:-14px 0 0;opacity:0}
+.ckl .bx{position:relative;width:26px;height:26px;border:1.5px solid #9fb3a6;border-radius:50%;margin-left:2px}
+.ckl input:checked+.bx{border:2.5px solid var(--accent);box-shadow:inset 0 0 0 2px #fff,inset 0 0 0 3.5px var(--accent);transform:rotate(-8deg)}
+.ckl input:checked+.bx::after{content:"済";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 11px/1 ${MINCHO};color:var(--accent)}
+.ckl input:focus-visible+.bx{outline:2px solid var(--water);outline-offset:2px}
+.ckl input:checked~.t{color:var(--sub)}
+.ckl .t small{display:block;font-size:11px;color:var(--sub)}
+.qn{font-size:13px;white-space:nowrap}.qn b{font-size:20px;color:var(--num);font-variant-numeric:tabular-nums;margin-right:1px}
+.clr{font:inherit;font-size:13px;background:none;border:0;border-bottom:1px solid var(--sub);color:var(--sub);padding:6px 0;margin-top:12px;cursor:pointer}
+.masu{display:grid;grid-template-columns:repeat(20,1fr);gap:2px;margin:10px 0 4px}.masu i{aspect-ratio:1;background:var(--track)}.masu i.on{background:var(--num)}
+.rk{list-style:none;margin:0 0 8px;padding:0}.rk li{display:grid;grid-template-columns:1.5em 1fr 4em 5.4em;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dotted var(--line);font-size:14px;line-height:1.35}
+.rk .no{color:var(--sub);font-variant-numeric:tabular-nums;text-align:right;font-size:12px}
+.rk .nm small{display:block;font-size:11px;color:var(--sub)}
+.rk .bv{height:8px;background:var(--track);position:relative}.rk .bv i{position:absolute;inset:0 auto 0 0;background:var(--bar)}
+.rk .num{font-size:13px}
+.list small.sub{display:block;font-size:12px;color:var(--sub);margin:-6px 0 8px}
+.pr{margin:18px 0 4px;font-size:13px}.pr b{font-size:14px;letter-spacing:.08em}
+.shop{list-style:none;margin:0;padding:0}.shop li[hidden]{display:none}
+.shop a{display:grid;grid-template-columns:128px 1fr;grid-auto-rows:min-content;column-gap:12px;padding:10px 0;border-bottom:1px dotted var(--line);text-decoration:none;color:var(--ink)}
+.shop img{grid-row:1/span 6;width:128px;height:128px}
+.shop .nm{font-size:13px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.shop .pz{font-size:17px;font-weight:700;color:var(--num);margin-top:2px;font-variant-numeric:tabular-nums}
+.shop .rv{font-size:11px;color:var(--sub);line-height:1.5}.shop .to{font-size:13px;color:var(--h2);text-decoration:underline;margin-top:4px}
 .ft{max-width:430px;margin:0 auto;padding:16px 16px 28px;font-size:11px;color:var(--sub);border-top:1px solid var(--line)}.ft p{margin:0 0 6px}
 .ft .fl{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;margin:0 0 12px}.ft .fl a{padding:4px 0;color:var(--ink)}
 `.replace(/\n/g, '');
@@ -91,6 +117,11 @@ export const h2 = (t, id) => `<h2${id ? ` id="${id}"` : ''}>${HM}${t}</h2>`;
 export const HAN = `<span class="han" aria-hidden="true"></span>`;
 
 const NAV = `<nav class="nav" aria-label="サイト内"><a href="/#map">都道府県</a><a href="/sonae/">備えの知識</a><a href="/dougu/keisan/">計算</a></nav>`;
+
+// 楽天ウェブサービスのクレジット（楽天の指定のまま。1文字も変えない）
+export const RAKUTEN_CREDIT = `<!-- Rakuten Web Services Attribution Snippet FROM HERE -->
+<a href="https://developers.rakuten.com/" target="_blank">Supported by Rakuten Developers</a>
+<!-- Rakuten Web Services Attribution Snippet TO HERE -->`;
 
 export const FOOT_LINKS = [
   ['/about/', 'このサイトについて'],
@@ -108,12 +139,13 @@ export const FOOT_LINKS = [
  * @param {boolean}[p.gsi]     国土地理院のデータを使うページ（フッターに出典）
  * @param {string} [p.script]  ページの最後に入れるスクリプト
  * @param {string} [p.head]    head に足すもの（構造化データなど）
+ * @param {boolean}[p.rakuten] 楽天の商品を出すページ（AdSense を置かない・フッターに楽天のクレジット）
  */
 export function page(p) {
   const full = p.path === '/' ? `${SITE.name}｜街の数字と家の備え` : `${p.title}｜${SITE.name}`;
   const robots = !SITE.launched || p.noindex ? '<meta name="robots" content="noindex">' : '';
   const canonical = p.path ? `<link rel="canonical" href="${SITE.url}${p.path}">` : '';
-  const ads = Boolean(SITE.adsense) && SITE.launched && !p.noAds && !p.noindex;
+  const ads = Boolean(SITE.adsense) && SITE.launched && !p.noAds && !p.noindex && !p.rakuten;
   const isTop = p.path === '/';
   return `<!doctype html>
 <html lang="ja">
@@ -137,6 +169,7 @@ ${p.body}
 <div class="fl">${FOOT_LINKS.map(([h, t]) => `<a href="${h}">${t}</a>`).join('')}</div>
 <p>${esc(ESTAT_CREDIT)}</p>
 ${p.gsi ? '<p>出典：<a href="https://www.gsi.go.jp/bousaichiri/hinanbasho.html">国土地理院ウェブサイト</a>（指定緊急避難場所・指定避難所データ）</p>' : ''}
+${p.rakuten ? `<p>${RAKUTEN_CREDIT}</p>` : ''}
 </footer>
 ${p.script ? `<script>${p.script}</script>` : ''}
 </body>

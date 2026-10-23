@@ -5,8 +5,14 @@ name: ビルドと公開
 #   main への push        → 本番（いまは https://machi-shakaika.pages.dev。独自ドメインは第1弾の前につなぐ）
 #   プルリクエスト        → プレビュー（PRにURLをコメント）
 # 本番は dist/fingerprint.json を本番の /fingerprint.json とくらべ、同じなら公開しない（scripts/changed.mjs）
+# 品目ページの楽天の商品は、ビルドの前に毎回とりなおす（scripts/fetch-rakuten.mjs）。毎朝6:17（日本時間）にも動く
+#   取ったものはコミットしない・ログに出さない・成果物（artifacts）に上げない（公開リポジトリのため。楽天ウェブサービス規約 第10条9号）
+#   取れなければ止める（公開しない）。毎朝の分が止まったら Issue
+#   本番に公開したら、3日より古い公開（デプロイ）を消す（古いページに前の商品が残らないように）
 
 on:
+  schedule:
+    - cron: '17 21 * * *'
   push:
     branches: [main]
   pull_request:
@@ -20,6 +26,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
   pull-requests: write
 
 concurrency:
@@ -45,7 +52,18 @@ jobs:
       - name: テスト
         run: npm test
 
+      - name: 楽天の商品を取る
+        # フォークからのPRにはキーが渡らないので取らない（そのときは商品なしでビルド）
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          RAKUTEN_APPLICATION_ID: ${{ secrets.RAKUTEN_APPLICATION_ID }}
+          RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
+          RAKUTEN_AFFILIATE_ID: ${{ secrets.RAKUTEN_AFFILIATE_ID }}
+        run: node scripts/fetch-rakuten.mjs
+
       - name: ビルド
+        env:
+          REQUIRE_RAKUTEN: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && '1' || '0' }}
         run: npm run build
 
       - name: 全ページ点検
@@ -78,6 +96,22 @@ jobs:
             echo "### Cloudflare Pages（$BRANCH）"
             sed 's/^/- /' urls.txt
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 古い公開を消す（本番に公開したとき）
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node scripts/cleanup-deployments.mjs
+
+      - name: 止まったら Issue（毎朝の分）
+        if: failure() && github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "毎朝の公開が止まった（$(TZ=Asia/Tokyo date +%F)）" \
+            --body "楽天の商品の取得かビルドで止まりました。公開は前のままです。$RUN"
 
       - name: PRにプレビューURLをコメント
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository

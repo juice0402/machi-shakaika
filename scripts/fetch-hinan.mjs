@@ -28,10 +28,32 @@ const files = {};
 let same = true;
 for (const [k, url] of Object.entries(HINAN_FILES)) {
   const headers = { 'User-Agent': UA };
-  const res = await fetch(url, { headers, signal: AbortSignal.timeout(180_000) });
-  if (res.status !== 200) stop(`${k}：HTTP ${res.status}`);
+  // つながらない・途中で切れることがあるので、30秒あけて3回まで
+  let res;
+  let buf;
+  for (let attempt = 1; ; attempt++) {
+    try {
+      res = await fetch(url, { headers, signal: AbortSignal.timeout(180_000) });
+      if (res.status !== 200) stop(`${k}：HTTP ${res.status}`);
+      buf = new Uint8Array(await res.arrayBuffer());
+      break;
+    } catch (e) {
+      if (attempt >= 3) {
+        const why = `${k}：つながりませんでした（${String(e.cause?.code ?? e.name ?? e).slice(0, 60)}）`;
+        // 前に確かめた日から14日以内なら、前のデータのまま続ける（取得日はそのまま＝ページの「取得」も前の日のまま）
+        const age = prev.checked ? (Date.parse(today) - Date.parse(prev.checked)) / 86400000 : Infinity;
+        if (age <= 14 && existsSync(`${DIR}/counts.json`)) {
+          note('warning', `${why}。前のデータ（${prev.checked} 取得）のまま続けます`);
+          if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### 避難場所データ\n- ${why}。前のデータのまま\n`);
+          process.exit(0);
+        }
+        stop(`${why}。前に取れた日から14日をこえました`);
+      }
+      note('warning', `${k}：取れなかったので、やり直します（${attempt}回目）`);
+      await new Promise((r) => setTimeout(r, 30_000));
+    }
+  }
   const etag = res.headers.get('etag');
-  const buf = new Uint8Array(await res.arrayBuffer());
   files[k] = { etag, lastModified: res.headers.get('last-modified'), rows: parseCsv(decodeText(buf).text), bytes: buf.length };
   if (!etag || etag !== prev.files?.[k]?.etag) same = false;
   await new Promise((r) => setTimeout(r, 1000));

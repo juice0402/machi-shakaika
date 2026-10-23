@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readYaml, checkSources, checkItems, checkShogo, needAmount } from '../src/data.mjs';
+import { readYaml, checkSources, checkItems, checkShogo, needAmount, checkEntries } from '../src/data.mjs';
 import { ESTAT_CREDIT } from '../src/site.mjs';
 
 const sources = readYaml('sources.yml');
@@ -59,3 +59,25 @@ test('まちがった台帳はエラーになる', () => {
   assert.ok(e2.some((x) => x.includes('nai')));
   assert.ok(e2.some((x) => x.includes('per_day')));
 });
+
+test('チェックリスト：家に置く備えと持ち出す袋。量を出すのは計算に使う品目だけ', () => {
+  const ids = items.checklists.map((c) => c.id);
+  assert.deepEqual(ids, ['bichiku', 'mochidashi']);
+  const keys = new Set();
+  for (const cl of items.checklists) {
+    for (const e of checkEntries(items, cl)) {
+      assert.ok(!keys.has(e.key), `${e.key} が2回あります`);
+      keys.add(e.key);
+      assert.ok(e.sources.length, `${e.key}: 出典がありません`);
+      if (e.qty) assert.equal(e.item.calc, true);
+    }
+  }
+  const bichiku = checkEntries(items, items.checklists[0]);
+  assert.deepEqual(bichiku.filter((e) => e.qty).map((e) => e.item.id), ['mizu', 'shushoku', 'keitai-toilet']);
+  assert.equal(checkEntries(items, items.checklists[1]).filter((e) => e.qty).length, 0);
+  const bad = { ...items, checklists: [{ id: 'x', name: 'x', entries: [{ item: 'nai' }, { name: '出典なし' }] }] };
+  const e = checkItems(bad, sources);
+  assert.ok(e.some((x) => x.includes('nai')));
+  assert.ok(e.some((x) => x.includes('出典なし: 出典がありません')));
+});
+

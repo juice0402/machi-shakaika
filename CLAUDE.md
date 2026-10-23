@@ -1,6 +1,6 @@
 # まちの社会科 — Claude 向けの決まり
 
-市区町村の数字（e-Stat の国勢調査など）と、家の備え（備蓄量の計算・チェックリスト・品目）をつなぐ静的サイト（https://machi-shakaika.com、第1弾は準備ができしだい公開・締め切りは11/19の備蓄の日より前）。
+市区町村の数字（e-Stat の国勢調査など）と、家の備え（備蓄量の計算・チェックリスト・品目）をつなぐ静的サイト（https://machi-shakaika.com、2026-10-22 公開）。
 運営はしょーくん。しょーくんはコードを書かず、ターミナルも使わず、スマホで確認する。開発・運用は Claude が担当する。
 設計の決定版はプロジェクト資料 `claude/bousai-estat-tougou-plan.md`（ここと食いちがったら、そちらが正）。共通ルールは `claude/site-principles.md`、台帳は `claude/site-registry.md`。
 
@@ -21,7 +21,7 @@
 - 依存パッケージなしの Node 22 だけ（`scripts/build.mjs`）。npm の部品を足さない
 - コマンド：`npm run check`（テスト → ビルド → 全ページ点検）。PR前に必ず緑にする
 - 公開：`.github/workflows/deploy.yml` が Cloudflare Pages（プロジェクト `machi-shakaika`）へ Direct Upload。Cloudflare 側のビルドは使わない（アカウント共有の月500回の枠を使わないため）
-  - PR → プレビュー（PRにURLのコメント）／ main → 本番。本番は `dist/fingerprint.json` を本番の `/fingerprint.json` とくらべ、同じなら公開しない
+  - PR → プレビュー（PRにURLのコメント）／ main → 本番。毎朝6:17にも動く（楽天の商品をとりなおす）。本番は `dist/fingerprint.json` を本番の `/fingerprint.json` とくらべ、同じなら公開しない。毎朝の分が止まったら Issue
   - Secrets：`ESTAT_APP_ID`・`CLOUDFLARE_API_TOKEN`（Pages の編集だけ、`machi-shakaika-deploy`）・`CLOUDFLARE_ACCOUNT_ID`。値はチャット・ログ・コメント・ファイルに出さない
   - `SITE.launched`（`src/site.mjs`）が false のあいだは全ページ noindex・robots.txt は全部おことわり（AdSense の審査もこの間はできない）。pages.dev はいつも noindex
 - AdSense：`SITE.adsense` に運営者ID（ca-pub-）を入れると、公開後の全ページの head にスクリプト、/ads.txt を置く。審査に向けて、空のリンク・「準備中」のページ・中身のない棚の入口を作らない。運営者情報・プライバシーポリシー（広告の Cookie の説明）・ナビを全ページに
@@ -31,11 +31,16 @@
 
 ## データの決まり
 - 出典はすべて `data/sources.yml`（出典台帳）。ページ・計算は出典の id を指す。title はページの題そのもの（まだ確かめていないものは null。ページに出す前に確かめる）。checked は開いて確かめた日。計算に使う出典は90日を過ぎるとテストが止まる
-- 備えの数字は `data/items.yml` の1か所だけ。本文・計算・チェックリスト・クイズはここから読む（数字を本文に直接書かない）
+- 備えの数字は `data/items.yml` の1か所だけ。本文・計算・チェックリスト・クイズはここから読む（数字を本文に直接書かない）。チェックリストの並びも items.yml の checklists
+- ランキングは増えた街だけ（減った順・「ワースト」を作らない）
 - 照らし合わせ：`data/shogo.yml` の公式の数字（堺市 802,648人など）と e-Stat の値が合わなければ公開しない
 - e-Stat：クレジット表示（`ESTAT_CREDIT`、指定の文言のまま）を全ページのフッターに。数字のかたまりごとに「出典：総務省「令和7年国勢調査」を加工して作成」と調査の日・公表日。呼び出しは1秒あける（`src/lib/estat.mjs`）。使っている表の更新日だけ週1回見て、更新された表だけ取る
 - 国土地理院の避難場所データ：公共データ利用規約（PDL1.0）。出典と加工の記載、取得日、ご利用上の注意（ふたつのちがい・載っていない＝無い、ではない・最新は自治体で確かめる）を出す。一覧は「開く」を押したときだけ読み込む
-- 楽天は第1弾は手作りのリンク（API・アプリの枠は使わない）。商品は品目ページ（/hinmoku/）だけ。「広告」「PR」の表示と rel="sponsored"
+- 楽天（10/23 しょーくんの判断で手作りリンクから API に変更。販売終了の商品が残らないように）：商品は品目ページ（/hinmoku/<id>/ の6つ）だけ。楽天のアプリ「まちの社会科」（許可されたWebサイト machi-shakaika.com・machi-shakaika.pages.dev、楽天市場API、有効期限 2027-10-23。切れる前にアプリ一覧で延長）
+  - `scripts/fetch-rakuten.mjs` がビルドの前に毎回、items.yml の shop の言葉で商品検索（レビューが多い順・買えるものだけ）→ 結果に多いジャンルのデイリーランキング → 順位・レビューでえらぶ（`src/rakuten.mjs`）。品目ごとに6件持ち、開くたびに3件を入れかえて見せる
+  - 公開リポジトリなので、取ったものはコミットしない（data/rakuten/ は .gitignore）・ログに商品名を出さない・artifacts に上げない（規約 第10条9号）。本番に公開したら3日より古いデプロイを消す（`scripts/cleanup-deployments.mjs`）
+  - 品目ページは AdSense なし・楽天以外へのリンクなし（出典は名前と確認日だけ。第8条4項）・フッターに楽天のクレジット（1文字も変えない）・商品の上に「PR」・リンクは rel="nofollow sponsored noopener"・画像はAPIのURLのまま。「おすすめ」「最安値」「定価」は使わない。順位は楽天のランキングの事実だけ
+  - Secrets：`RAKUTEN_APPLICATION_ID`・`RAKUTEN_ACCESS_KEY`・`RAKUTEN_AFFILIATE_ID`
 
 ## ファイル
 | 場所 | 中身 |
@@ -44,7 +49,8 @@
 | `src/layout.mjs` | ページの外側（head・ヘッダー・ナビ・フッター）と共通の部品。見た目は「G 森と川」（10/22 決定）：木の帯のふち・明朝の見出しに小さな木の印・森の緑と川の青・えらんだものに朱の印・「この街の備え」は川の線で区切る |
 | `src/stats.mjs` | 割合・全国の中の位置・県内順位・人口が近い街・特徴の1行（データの条件ごとの言い回し）・備えの知識へのつなぎ |
 | `src/calc.mjs` | 備蓄量の計算の部品（items.yml から。?n=1&d=7 で人数と日数を入れて開ける） |
-| `src/pages/*.mjs` | top（トップ）・pref（都道府県47）・city（市区町村74）・sonae（備えの知識3本と計算のページ）・info（このサイトについて・プライバシーポリシー） |
+| `src/rakuten.mjs`・`scripts/fetch-rakuten.mjs` | 楽天市場の商品検索・ランキングの呼び方とえらび方、ビルドの前の取得（data/rakuten/products.json、コミットしない） |
+| `src/pages/*.mjs` | hinmoku（品目6と一覧。楽天の商品）・top（トップ）・pref（都道府県47）・city（市区町村74）・sonae（備えの知識3本と計算のページ）・dougu（チェックリスト。品目は items.yml の checklists、チェックはブラウザの中だけ）・ranking（人口が増えた市区町村。増えた街だけ、割合は人口1万人以上）・info（このサイトについて・プライバシーポリシー） |
 | `src/data.mjs` | data/*.yml を読んで形を確かめる、必要量の計算 |
 | `src/lib/yaml.mjs` | このリポジトリで使う形だけの小さなYAMLの読み取り |
 | `src/lib/estat.mjs` | e-Stat API の呼び出しと返ってきた形の読み取り |

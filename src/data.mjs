@@ -56,9 +56,51 @@ export function checkItems(items, src) {
       if (!(typeof it.per_day === 'number' && it.per_day > 0)) errors.push(`${at}: 計算に使うのに per_day がありません`);
       if (!it.sources?.length) errors.push(`${at}: 計算に使うのに出典がありません`);
     } else if (it.per_day != null) errors.push(`${at}: calc: false なら per_day は null`);
+    if (it.hinmoku) {
+      if (!it.page) errors.push(`${at}: 品目ページの名前（page）がありません`);
+      if (!it.sources?.length) errors.push(`${at}: 品目ページに出典がありません`);
+      if (!it.calc && !it.example_qty && !it.page_note) errors.push(`${at}: 品目ページに出す量のめやす（example_qty か page_note）がありません`);
+      const sh = it.shop;
+      if (!Array.isArray(sh?.keywords) || !sh.keywords.length || !Array.isArray(sh?.must) || !sh.must.length) errors.push(`${at}: shop の keywords と must がありません`);
+    }
   }
   if (seen.size === 0) errors.push('品目が1つもありません');
+  // チェックリスト：品目を指すか、名前と出典があるか
+  const lists = new Set();
+  for (const cl of items?.checklists ?? []) {
+    const at = `チェックリスト ${cl?.id ?? '(id なし)'}`;
+    if (!cl?.id || lists.has(cl.id) || !/^[a-z0-9-]+$/.test(cl.id)) errors.push(`${at}: id がないか2回あります`);
+    lists.add(cl?.id);
+    if (!cl?.name) errors.push(`${at}: name がありません`);
+    if (!cl?.entries?.length) errors.push(`${at}: entries がありません`);
+    const names = new Set();
+    for (const e of cl?.entries ?? []) {
+      const it = e?.item ? (items.items ?? []).find((x) => x.id === e.item) : null;
+      const name = e?.name ?? it?.name;
+      if (e?.item && !it) errors.push(`${at}: 品目 ${e.item} が items にありません`);
+      if (!name) errors.push(`${at}: name がありません`);
+      if (names.has(name)) errors.push(`${at}: ${name} が2回あります`);
+      names.add(name);
+      srcOk(e?.sources, `${at} ${name}`);
+      if (!(e?.sources?.length || it?.sources?.length)) errors.push(`${at} ${name}: 出典がありません`);
+    }
+  }
   return errors;
+}
+
+// チェックリストの1行を、品目の情報とあわせて読む
+export function checkEntries(items, cl) {
+  return cl.entries.map((e) => {
+    const it = e.item ? items.items.find((x) => x.id === e.item) : null;
+    return {
+      key: `${cl.id}:${e.name ?? it.name}`,
+      name: e.name ?? it.name,
+      sub: e.sub ?? null,
+      item: it,
+      qty: Boolean(it?.calc) && e.qty !== false,
+      sources: [...new Set([...(e.sources ?? []), ...(it?.sources ?? [])])],
+    };
+  });
 }
 
 // 照らし合わせ用の公式の数字
