@@ -2,6 +2,8 @@
 import { esc, fmt, h2, scale, srcKokusei, jpDate, RIVER } from '../layout.mjs';
 import { derive, feature, prefRank, similar, sonaeLinks, prefOf, r1 } from '../stats.mjs';
 import { need } from '../calc.mjs';
+import { machiQuiz } from '../quiz.mjs';
+import { machiQuizHtml, MACHI_JS } from './quiz.mjs';
 
 const pct = (v) => `${r1(v).toFixed(1)}%`;
 const signed = (v) => `${v > 0 ? '+' : ''}${r1(v).toFixed(1)}%`;
@@ -39,6 +41,8 @@ ${h2('この街の数字')}
 ${scales.map(([t, sub, s]) => `<div class="g"><p><b>${t}</b>　${sub}</p>${scale(s)}</div>`).join('\n')}
 <p class="note">目盛りのはしは、全国の市区町村のおおよその幅です。</p>
 
+${machiQuizHtml(a.name, machiQuiz(a, list, near, list.filter((x) => urlOf(x.code))))}
+
 ${h2('県内と、人口が近い街')}
 <p>${esc(pref.name)}の${of}市区町村のうち、人口は${rank}番目に多い街です。</p>
 <table class="tbl"><thead><tr><th>人口が近い街</th><th>人口</th><th>5年の増減</th></tr></thead><tbody>
@@ -72,11 +76,11 @@ ${
 <div class="links"><a href="https://disaportal.gsi.go.jp/">ハザードマップポータルサイト（国土交通省）</a></div>
 </section>`;
 
-  const script = h
+  const script = MACHI_JS + (h
     ? `(()=>{const d=document.getElementById('hl');if(!d)return;const K=${JSON.stringify(hinan.kinds.map(([, n]) => n))};let done=0;d.addEventListener('toggle',()=>{if(!d.open||done)return;done=1;const ul=d.querySelector('ul');ul.textContent='読み込み中';fetch(d.dataset.src).then(r=>r.json()).then(j=>{ul.textContent='';const add=(n,a,t)=>{const li=document.createElement('li');li.textContent=n;const s=document.createElement('small');s.textContent=a+(t?'　'+t:'');li.append(s);ul.append(li)};
 const h1=document.createElement('li');h1.textContent='指定緊急避難場所';h1.style.fontWeight='700';ul.append(h1);j.b.forEach(([n,a,m])=>add(n,a,K.filter((_,i)=>m>>i&1).join('・')));
 const h2=document.createElement('li');h2.textContent='指定避難所';h2.style.fontWeight='700';ul.append(h2);j.h.forEach(([n,a])=>add(n,a,''))}).catch(()=>{ul.textContent='読み込めませんでした'})})})();`
-    : '';
+    : '');
 
   return {
     path,

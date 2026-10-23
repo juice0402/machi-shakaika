@@ -45,7 +45,9 @@ for (const f of html) {
     if (SITE.adsense && SITE.launched && m[0] === adsTag.replace('</script>', '')) continue;
     fail(f, `外のファイルを読み込んでいる：${m[0].slice(0, 80)}`);
   }
-  if (SITE.adsense && SITE.launched && !f.endsWith('404.html') && !rakuten && !s.includes(adsTag)) fail(f, 'AdSense のスクリプトがない');
+  if (SITE.adsense && SITE.launched && !f.endsWith('404.html') && !rakuten && !s.includes('<body data-ads="off">') && !s.includes(adsTag)) fail(f, 'AdSense のスクリプトがない');
+  // クイズは AdSense なし（答えのボタンの近くに自動広告が入ると誤クリックをまねくため。設計：広告は結果の下だけ）
+  if (/\/quiz\//.test(f) && s.includes('adsbygoogle')) fail(f, 'クイズのページに AdSense がある');
   if (rakuten) {
     // 楽天の商品を出すページ：AdSense なし・楽天以外へのリンクなし（規約 第8条4項）・商品のリンクに sponsored と「PR」
     if (s.includes('adsbygoogle')) fail(f, '楽天のページに AdSense がある');
@@ -68,7 +70,7 @@ for (const f of html) {
   const dup = ids.filter((x, i) => ids.indexOf(x) !== i);
   if (dup.length) fail(f, `id の重複：${[...new Set(dup)].join(' ')}`);
 }
-for (const need of ['robots.txt', '_headers', 'fingerprint.json', 'index.html', '404.html', 'favicon.ico', 'favicon.svg', 'apple-touch-icon.png']) {
+for (const need of ['robots.txt', '_headers', 'fingerprint.json', 'index.html', '404.html', 'favicon.ico', 'favicon.svg', 'apple-touch-icon.png', 'quiz/machi.json']) {
   if (!existsSync(`${DIST}/${need}`)) fail(`${DIST}/${need}`, 'ない');
 }
 if (!SITE.launched && !/Disallow: \/\n/.test(readFileSync(`${DIST}/robots.txt`, 'utf8'))) fail(`${DIST}/robots.txt`, '公開前なのに Disallow: / でない');

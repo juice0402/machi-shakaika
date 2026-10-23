@@ -12,7 +12,7 @@ const GOTHIC = '"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",syste
 
 const CSS = `
 :root{--bg:#fff;--ink:#23312a;--sub:#5f6e66;--line:#d3dfd5;--accent:#c53d43;--num:#2f6b45;--h2:#2f5d3e;--bar:#4f8d5e;--bar2:#b5cfbb;--track:#e6efe8;--soft:#eef5ef;--water:#3f8fbf}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 ${GOTHIC};-webkit-text-size-adjust:100%}
+*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 ${GOTHIC};-webkit-text-size-adjust:100%}
 a{color:inherit}.pg{max-width:430px;margin:0 auto;padding:0 16px 24px}
 .deco{display:block;margin:0 -16px;line-height:0}.deco svg{display:block;width:100%}
 .bar{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
@@ -105,6 +105,33 @@ summary{padding:10px 0;cursor:pointer}.hl{margin:0 0 10px;padding:0;list-style:n
 .shop .nm{font-size:13px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .shop .pz{font-size:17px;font-weight:700;color:var(--num);margin-top:2px;font-variant-numeric:tabular-nums}
 .shop .rv{font-size:11px;color:var(--sub);line-height:1.5}.shop .to{font-size:13px;color:var(--h2);text-decoration:underline;margin-top:4px}
+.qz{margin:6px 0 12px}.qz .meta{font-size:12px;color:var(--sub);margin:8px 0 0}
+.qz .qq{font:700 18px/1.55 ${MINCHO};margin:4px 0 6px}.mq .qq{font-size:16px}
+.qz .ch{list-style:none;margin:0 0 6px;padding:0}
+.qz .ch button{position:relative;display:flex;align-items:center;gap:12px;width:100%;min-height:52px;padding:8px 2px 8px 8px;background:none;border:0;border-bottom:1px dotted var(--line);font:inherit;font-size:17px;line-height:1.4;color:var(--ink);text-align:left;cursor:pointer}
+.qz .ch button:disabled{cursor:default;color:var(--ink)}
+.qz .ch .k{position:relative;flex:none;display:flex;align-items:center;justify-content:center;width:24px;height:24px;font:700 15px/1 ${MINCHO};color:var(--sub)}
+.qz .ch .t small{display:block;font-size:11px;color:var(--sub)}
+.qz .ch .v{margin-left:auto;font-size:13px;color:var(--sub);white-space:nowrap;visibility:hidden}.qz .ch[data-done] .v{visibility:visible}
+.qz .ch .ok .k{color:var(--accent)}.qz .ch .ok .k::after{content:"";position:absolute;left:50%;top:50%;width:34px;height:30px;margin:-15px 0 0 -17px;border:2.5px solid var(--accent);border-radius:50%;transform:rotate(-10deg);box-sizing:border-box}
+.qz .ch .ok .t{font-weight:700}
+.qz .ch .ng .k::before,.qz .ch .ng .k::after{content:"";position:absolute;left:50%;top:50%;width:22px;height:2.5px;margin:-1px 0 0 -11px;background:var(--accent);transform:rotate(40deg)}.qz .ch .ng .k::after{transform:rotate(-40deg)}
+.qz .ex{font-size:14px;margin:6px 0 4px}.qz .ex p{margin:0 0 4px}
+.qz .score{margin:14px 0 6px;font:700 20px/1 ${MINCHO};color:var(--accent)}.qz .score b{font-size:56px;margin-right:4px}
+button.go{font:inherit;font-size:15px;font-weight:700;background:none;border:0;padding:6px 0;color:var(--ink);text-decoration:underline;cursor:pointer}button.go:disabled{color:var(--sub);text-decoration:none;cursor:default}
+.t5 .tile{font:inherit;font-size:9px;padding:0;cursor:pointer;position:relative}
+.t5 .tile.pick::after,.t5 .tile.hit::after,.t5 .tile.ans5::after{content:"";position:absolute;inset:-3px;border:2px solid var(--accent);border-radius:50%;pointer-events:none}
+.t5 .tile.hit{color:var(--accent);font-weight:700}.t5 .tile.ans5::after{border-style:dashed}
+.t5 .tile.miss::before,.t5 .tile.miss::after{content:"";position:absolute;left:50%;top:50%;width:80%;height:2px;margin:-1px 0 0 -40%;background:var(--accent);transform:rotate(40deg)}.t5 .tile.miss::after{transform:rotate(-40deg)}
+.sc{margin:6px 0 4px;font-size:13px;color:var(--sub)}.sc select{font:inherit;font-size:15px;color:var(--ink);background:none;border:0;border-bottom:1.5px solid var(--ink);padding:4px 2px;border-radius:0;max-width:70%}
+.gogun{border:1px solid var(--line);padding:8px 6px;margin:6px 0;line-height:1.2}
+.gogun .w{position:relative;display:inline-block;margin:3px 2px;padding:8px 9px;min-height:40px;background:none;border:0;font:inherit;font-size:15px;color:var(--ink);cursor:pointer;text-decoration:underline dotted var(--sub);text-underline-offset:4px}
+.gogun .w small{display:block;font-size:10px;color:var(--sub);text-decoration:none}.gogun .w:disabled{cursor:default;color:var(--ink)}
+.gogun .w.hit{color:var(--accent);font-weight:700;text-decoration:none}
+.gogun .w.hit::after,.gogun .w.ans5::after{content:"";position:absolute;inset:1px -2px;border:2px solid var(--accent);border-radius:50%;transform:rotate(-4deg);pointer-events:none}.gogun .w.ans5::after{border-style:dashed}
+.gogun .w.miss::before,.gogun .w.miss::after{content:"";position:absolute;left:15%;right:15%;top:50%;height:2px;background:var(--accent);transform:rotate(18deg)}.gogun .w.miss::after{transform:rotate(-18deg)}
+.t5l{margin:10px 0 6px;padding-left:2.2em;font-size:14px;line-height:1.5}.t5l li{padding:4px 0;border-bottom:1px dotted var(--line)}.t5l li.got{color:var(--accent);font-weight:700}.t5l li.rest{color:var(--sub)}
+.dbr .score{margin:10px 0 2px}.dbm{font:700 17px/1.5 ${MINCHO};color:var(--accent);margin:0 0 4px}
 .ft{max-width:430px;margin:0 auto;padding:16px 16px 28px;font-size:11px;color:var(--sub);border-top:1px solid var(--line)}.ft p{margin:0 0 6px}
 .ft .fl{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;margin:0 0 12px}.ft .fl a{padding:4px 0;color:var(--ink)}
 `.replace(/\n/g, '');
@@ -159,7 +186,7 @@ ${robots}${canonical}
 <meta property="og:title" content="${esc(full)}"><meta property="og:description" content="${esc(p.description)}"><meta property="og:type" content="${isTop ? 'website' : 'article'}">${p.path ? `<meta property="og:url" content="${SITE.url}${p.path}">` : ''}
 ${ads ? `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${SITE.adsense}" crossorigin="anonymous"></script>\n` : ''}<style>${CSS}</style>${p.head ?? ''}
 </head>
-<body>
+<body${ads ? '' : ' data-ads="off"'}>
 <div class="pg">
 <header><span class="deco">${TREES('trh')}</span><div class="bar">${isTop ? `<h1 class="logo">${esc(SITE.name)}</h1>` : `<a class="logo" href="/">${esc(SITE.name)}</a>`}${NAV}</div></header>
 <main>

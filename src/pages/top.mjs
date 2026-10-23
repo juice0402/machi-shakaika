@@ -4,7 +4,7 @@ import { calcHtml, CALC_JS } from '../calc.mjs';
 import { PREFS } from '../areas.mjs';
 
 // 47都道府県のタイル地図（列, 行）
-const TILES = {
+export const TILES = {
   hokkaido: [12, 0], aomori: [12, 2], akita: [11, 3], iwate: [12, 3],
   ishikawa: [8, 4], toyama: [9, 4], niigata: [10, 4], yamagata: [11, 4], miyagi: [12, 4],
   shimane: [3, 5], tottori: [4, 5], hyogo: [5, 5], kyoto: [6, 5], fukui: [7, 5], gifu: [8, 5], nagano: [9, 5], gunma: [10, 5], tochigi: [11, 5], fukushima: [12, 5],
@@ -13,7 +13,7 @@ const TILES = {
   nagasaki: [0, 8], kumamoto: [1, 8], miyazaki: [2, 8], kochi: [3, 8], tokushima: [4, 8],
   kagoshima: [1, 9], okinawa: [0, 11],
 };
-const short = (n) => (n === '北海道' ? '北海' : n.replace(/[都府県]$/, '').slice(0, 2));
+export const short = (n) => (n === '北海道' ? '北海' : n.replace(/[都府県]$/, '').slice(0, 2));
 
 export const FIND_JS = `(()=>{const f=document.querySelector('[data-find]');if(!f)return;const i=f.querySelector('input'),ul=f.querySelector('.hits'),msg=f.querySelector('.msg');let all=null;
 const load=()=>all?Promise.resolve(all):fetch('/search.json').then(r=>r.json()).then(j=>all=j);
@@ -32,7 +32,8 @@ export function topPage({ cc, munis, hinanMeta }) {
 ${calcHtml(cc)}
 <p class="src">${cc.perText}（農林水産省・内閣府のガイドラインほか）<br>${esc(munis.statName)}（${jpDate(munis.published)}公表）・避難場所データ ${jpDate(hinanMeta.checked)}取得</p>
 <section id="map">${h2('都道府県から')}<div class="tiles">${tiles}</div><ul class="list"><li><a href="/ranking/jinko/">人口が増えた市区町村</a></li></ul></section>
-<section>${h2('備えの知識')}<ul class="list"><li><a href="/sonae/bichiku/">備蓄の量のめやす</a></li><li><a href="/sonae/rolling-stock/">ローリングストック</a></li><li><a href="/sonae/keitai-toilet/">携帯トイレの備え</a></li><li><a href="/dougu/check/">チェックリスト</a></li><li><a href="/hinmoku/">品目ごとのめやす</a></li></ul></section>`;
+<section>${h2('備えの知識')}<ul class="list"><li><a href="/sonae/bichiku/">備蓄の量のめやす</a></li><li><a href="/sonae/rolling-stock/">ローリングストック</a></li><li><a href="/sonae/keitai-toilet/">携帯トイレの備え</a></li><li><a href="/dougu/check/">チェックリスト</a></li><li><a href="/hinmoku/">品目ごとのめやす</a></li></ul></section>
+<section>${h2('クイズ')}<ul class="list"><li><a href="/quiz/docchi/">どっちが多い？</a></li><li><a href="/quiz/dobon/">ドボンクイズ</a></li><li><a href="/quiz/sonae/">備えの数字クイズ</a></li></ul></section>`;
   return {
     path: '/',
     title: 'まちの社会科',

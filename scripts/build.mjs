@@ -18,6 +18,8 @@ import { infoPages } from '../src/pages/info.mjs';
 import { douguPages } from '../src/pages/dougu.mjs';
 import { rankingPages } from '../src/pages/ranking.mjs';
 import { hinmokuPages } from '../src/pages/hinmoku.mjs';
+import { quizPages } from '../src/pages/quiz.mjs';
+import { machiData } from '../src/quiz.mjs';
 import { PRODUCTS_PATH } from '../src/rakuten.mjs';
 
 const DIST = 'dist';
@@ -69,8 +71,12 @@ for (const p of sonaePages({ cc, items, sources })) add(p);
 for (const p of douguPages({ cc, items, sources })) add(p);
 for (const p of rankingPages({ munis, list, urlOf })) add(p);
 for (const p of hinmokuPages({ items, sources, products })) add(p);
+for (const p of quizPages({ munis, items, sources })) add(p);
 for (const p of infoPages({ munis, estatMeta, hinanMeta })) add(p);
 add({ path: null, title: 'ページが見つかりません', description: 'ページが見つかりません。', noindex: true, noAds: true, body: '<h1 class="city">ページが見つかりません</h1><p><a href="/">トップへ</a></p>' });
+
+// クイズの数字（どっちが多い・ドボンクイズを開いたときだけ読む）：都道府県47と全国の市区町村
+writeFileSync(`${DIST}/quiz/machi.json`, JSON.stringify(machiData(munis.areas, urlOf)));
 
 // ファビコン（A 森と川。10/23 しょーくんが3案から選んだ）。static/ の中をそのまま置く
 for (const f of readdirSync('static')) copyFileSync(`static/${f}`, `${DIST}/${f}`);
@@ -114,6 +120,8 @@ out(
     '  Referrer-Policy: strict-origin-when-cross-origin',
     ...(SITE.launched ? [] : ['  X-Robots-Tag: noindex']),
     '/hinan/*',
+    '  Cache-Control: public, max-age=86400',
+    '/quiz/machi.json',
     '  Cache-Control: public, max-age=86400',
     '/favicon.*',
     '  Cache-Control: public, max-age=604800',
