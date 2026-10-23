@@ -1,11 +1,11 @@
-// クイズの棚（/quiz/）と、どっちが多い（/quiz/docchi/）・トップ5当て（/quiz/top5/）・備えの数字クイズ（/quiz/sonae/）
+// クイズの棚（/quiz/）と、どっちが多い（/quiz/docchi/）・ドボンクイズ（/quiz/dobon/）・備えの数字クイズ（/quiz/sonae/）
 // 見た目は小テスト：選択肢は「ア・イ・ウ」、正解に赤ペンの丸、まちがえた所にバツ。紙吹雪や絵文字は使わない
 // 回答はどこにも送らない。結果を送るのは「◯問中◯問」の文とURLだけ（見る人がえらんだときだけ）
 // AdSense は置かない（答えのボタンの近くに自動広告が入ると誤クリックをまねくため）
 import { esc, h2, srcKokusei } from '../layout.mjs';
 import { PREFS } from '../areas.mjs';
 import { TILES, short } from './top.mjs';
-import { top5Topics, docchiData, sonaeData } from '../quiz.mjs';
+import { dobonTopics, docchiData, sonaeData, DOBON } from '../quiz.mjs';
 
 const KANA = 'アイウ';
 const data = (obj) => `<script type="application/json" id="qd">${JSON.stringify(obj).replace(/</g, '\\u003c')}</script>`;
@@ -41,12 +41,12 @@ export function quizPages({ munis, cities, urlOf, items, sources }) {
   out.push({
     path: '/quiz/',
     title: 'クイズ（街の数字・備えの数字）',
-    description: '2025年国勢調査の数字でくらべる「どっちが多い？」「トップ5当て」と、家の備えの量の「備えの数字クイズ」。答えはその場で、出典つき。',
+    description: '2025年国勢調査の数字でくらべる「どっちが多い？」「ドボンクイズ」と、家の備えの量の「備えの数字クイズ」。答えはその場で、出典つき。',
     noAds: true,
     body: `<p class="crumb"><a href="/">トップ</a></p>
 <h1 class="city">クイズ</h1>
 ${h2('街の数字クイズ')}
-<ul class="list"><li><a href="/quiz/docchi/">どっちが多い？</a><small class="sub">2つの街・都道府県の数字をくらべる10問</small></li><li><a href="/quiz/top5/">トップ5当て</a><small class="sub">都道府県の地図から5つえらぶ</small></li></ul>
+<ul class="list"><li><a href="/quiz/docchi/">どっちが多い？</a><small class="sub">2つの街・都道府県の数字をくらべる10問</small></li><li><a href="/quiz/dobon/">ドボンクイズ</a><small class="sub">トップ10の都道府県を1つずつ。外れたらドボン</small></li></ul>
 <p class="note">市区町村のページの中にも、その街のクイズが3問あります（例：<a href="/osaka/sakai/">堺市</a>）。</p>
 ${h2('備えの数字クイズ')}
 <ul class="list"><li><a href="/quiz/sonae/">備えの数字クイズ</a><small class="sub">水・食事・携帯トイレの量のめやす5問</small></li></ul>
@@ -62,46 +62,47 @@ ${h2('備えの数字クイズ')}
 <h1 class="city">どっちが多い？</h1>
 <section id="quiz" class="qz"><p class="meta"></p><p class="qq"></p><ul class="ch"></ul><p class="ex" hidden></p><p><button class="go next" type="button" hidden>次の問題</button></p></section>
 <section id="res" class="qz" hidden aria-live="polite"><p class="score"><b>0</b><span>／10</span></p><p><button class="go send" type="button">結果を送る</button>　<button class="go again" type="button">もう一度</button></p><p class="note" id="sent"></p>
-<p><a href="/ranking/jinko/">人口が増えた市区町村</a>・<a href="/quiz/top5/">トップ5当て</a></p></section>
+<p><a href="/ranking/jinko/">人口が増えた市区町村</a>・<a href="/quiz/dobon/">ドボンクイズ</a></p></section>
 <noscript><p>このクイズはスクリプトで動きます。</p></noscript>
 ${src}`,
     script: DOCCHI_JS,
     head: data(docchiData(munis.areas, cities, urlOf)),
   });
 
-  // トップ5当て
-  const topics = top5Topics(munis.areas);
+  // ドボンクイズ（都道府県トップ10）：1つずつえらび、11位より下をえらんだらドボン（10/23 しょーくんの案）
+  const topics = dobonTopics(munis.areas, DOBON);
   const tiles = PREFS.map((p) => {
     const [x, y] = TILES[p.slug];
     return `<button type="button" class="tile" data-c="${p.code}" style="grid-column:${x + 1};grid-row:${y + 1}" aria-label="${esc(p.name)}">${short(p.name)}</button>`;
   }).join('');
   const prefInfo = Object.fromEntries(PREFS.map((p) => [p.code, [p.name, p.slug]]));
   out.push({
-    path: '/quiz/top5/',
-    title: '都道府県トップ5当てクイズ（人口・面積・人口密度など）',
-    description: `人口が多い・面積が広いなど、上位5つの都道府県を地図からえらぶクイズ。お題は${topics.length}つ、2025年国勢調査の数字です。`,
+    path: '/quiz/dobon/',
+    title: `都道府県ドボンクイズ（トップ${DOBON}を当てる）`,
+    description: `人口が多い・面積が広いなど、トップ${DOBON}に入る都道府県を地図から1つずつえらぶクイズ。${DOBON + 1}位より下をえらんだらドボン。お題は${topics.length}つ、2025年国勢調査の数字です。`,
     noAds: true,
     body: `<p class="crumb"><a href="/">トップ</a> / <a href="/quiz/">クイズ</a></p>
-<h1 class="city">トップ5当て</h1>
-<section id="t5" class="qz"><p class="qq"></p><p class="meta"></p>
+<h1 class="city">ドボンクイズ</h1>
+<section id="db" class="qz"><p class="qq"></p><p class="meta"></p>
 <div class="tiles t5">${tiles}</div>
-<p><button class="go check" type="button" disabled>答え合わせ</button></p>
-<div class="t5a" hidden aria-live="polite"><p class="score"><b>0</b><span>／5</span></p><ol class="t5l"></ol><p class="miss note"></p>
-<p><button class="go next" type="button">次のお題</button>　<button class="go send" type="button">結果を送る</button></p><p class="note" id="sent"></p></div></section>
+<div class="dbr" hidden aria-live="polite"><p class="score"><b>0</b><span>／${DOBON}</span></p><p class="dbm"></p></div>
+<ol class="t5l"></ol>
+<p class="dbn" hidden><button class="go next" type="button">次のお題</button>　<button class="go send" type="button">結果を送る</button></p><p class="note" id="sent"></p></section>
 <noscript><p>このクイズはスクリプトで動きます。</p></noscript>
 ${src}`,
-    head: data({ t: topics.map((t) => [t.title, t.unit, t.order, t.vals]), p: prefInfo }),
+    head: data({ n: DOBON, t: topics.map((t) => [t.title, t.unit, t.order, t.vals]), p: prefInfo }),
     script: `(()=>{${COMMON}
-const D=JSON.parse($('#qd').textContent),box=$('#t5'),tiles=[...box.querySelectorAll('.tile')],chk=$('.check',box),ans=$('.t5a',box);let ti=-1,pick=new Set(),done=false,order=shuffle([...D.t.keys()]),oi=0,last='';
-function topic(){ti=order[oi++%order.length];pick.clear();done=false;$('.qq',box).textContent=D.t[ti][0]+'都道府県はどこ？';tiles.forEach(t=>t.className='tile');ans.hidden=true;count()}
-function count(){const n=5-pick.size;$('.meta',box).textContent=done?'':(n?'あと'+n+'つえらんでください':'これでよければ答え合わせ');chk.disabled=done||pick.size!==5}
-tiles.forEach(t=>t.addEventListener('click',()=>{if(done)return;const c=t.dataset.c;if(pick.has(c)){pick.delete(c);t.classList.remove('pick')}else if(pick.size<5){pick.add(c);t.classList.add('pick')}count()}));
-chk.addEventListener('click',()=>{done=true;const [title,unit,ord,vals]=D.t[ti],top=ord.slice(0,5);let s=0;
-tiles.forEach(t=>{const c=t.dataset.c,inTop=top.includes(c),p=pick.has(c);t.classList.remove('pick');if(inTop&&p){t.classList.add('hit');s++}else if(inTop)t.classList.add('ans5');else if(p)t.classList.add('miss')});
-$('.score b',ans).textContent=s;const ol=$('.t5l',ans);ol.textContent='';top.forEach((c,i)=>{const li=document.createElement('li'),a=document.createElement('a');a.href='/'+D.p[c][1]+'/';a.textContent=D.p[c][0];li.append(a,'　'+vals[i]+unit);if(pick.has(c))li.className='got';ol.append(li)});
-const miss=[...pick].filter(c=>!top.includes(c)).map(c=>D.p[c][0]+'は'+(ord.indexOf(c)+1)+'位');$('.miss',ans).textContent=miss.length?'えらんだ所：'+miss.join('・'):'';
-last='まちの社会科「トップ5当て」'+title+'都道府県 5つ中'+s+'つ正解';$('#sent').textContent='';ans.hidden=false;count()});
-$('.next',ans).addEventListener('click',()=>{topic();box.scrollIntoView()});share($('.send',ans),()=>last);topic()})();`,
+const D=JSON.parse($('#qd').textContent),N=D.n,box=$('#db'),tiles=[...box.querySelectorAll('.tile')],ol=$('.t5l',box),res=$('.dbr',box),nav=$('.dbn',box);let ti,found,over,order=shuffle([...D.t.keys()]),oi=0,last='';
+const slot=(i,c,cls)=>{const li=ol.children[i],[,unit,,vals]=D.t[ti];li.textContent='';const a=document.createElement('a');a.href='/'+D.p[c][1]+'/';a.textContent=D.p[c][0];li.append(a,'　'+vals[i]+unit);li.className=cls};
+function topic(){ti=order[oi++%order.length];found=new Set();over=false;$('.qq',box).textContent=D.t[ti][0]+'都道府県トップ'+N;tiles.forEach(t=>{t.className='tile';t.disabled=false});
+ol.textContent='';for(let i=0;i<N;i++){const li=document.createElement('li');li.className='blank';li.textContent='　';ol.append(li)}res.hidden=true;nav.hidden=true;$('#sent').textContent='';meta()}
+function meta(){$('.meta',box).textContent=over?'':found.size?'見つけた '+found.size+'／'+N:'トップ'+N+'に入る都道府県を1つずつ。'+(N+1)+'位より下はドボン'}
+function end(win,c,r){over=true;const [title,,ord]=D.t[ti];ord.slice(0,N).forEach((x,i)=>{if(!found.has(x)){slot(i,x,'rest');tiles.find(t=>t.dataset.c===x).classList.add('ans5')}});tiles.forEach(t=>t.disabled=true);
+$('.score b',res).textContent=found.size;$('.dbm',res).textContent=win?'パーフェクト':'ドボン　'+D.p[c][0]+'は'+(r+1)+'位';res.hidden=false;nav.hidden=false;
+last='まちの社会科「ドボンクイズ」'+title+'都道府県 '+N+'個中'+found.size+'個'+(win?'（パーフェクト）':'');meta()}
+tiles.forEach(t=>t.addEventListener('click',()=>{if(over||t.classList.contains('hit'))return;const c=t.dataset.c,ord=D.t[ti][2],r=ord.indexOf(c);
+if(r<N){t.classList.add('hit');found.add(c);slot(r,c,'got');meta();if(found.size===N)end(true)}else{t.classList.add('miss');end(false,c,r)}}));
+$('.next',nav).addEventListener('click',()=>{topic();box.scrollIntoView()});share($('.send',nav),()=>last);topic()})();`,
   });
 
   // 備えの数字クイズ

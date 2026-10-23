@@ -4,17 +4,18 @@ import { readMunis } from '../src/munis.mjs';
 import { readYaml } from '../src/data.mjs';
 import { resolveCities } from '../src/areas.mjs';
 import { muniList, similar, derive } from '../src/stats.mjs';
-import { METRICS, top5Topics, docchiData, fair, machiQuiz, sonaeData, calcChoices, show } from '../src/quiz.mjs';
+import { METRICS, dobonTopics, DOBON, docchiData, fair, machiQuiz, sonaeData, calcChoices, show } from '../src/quiz.mjs';
 
 const munis = readMunis();
 const skip = !munis && 'data/estat/munis.json がない';
 
-test('トップ5当て：お題があり、5位と6位が表示で同じにならない', { skip }, () => {
-  const t = top5Topics(munis.areas);
+test('ドボンクイズ：お題があり、10位と11位が表示で同じにならない', { skip }, () => {
+  const t = dobonTopics(munis.areas);
+  assert.equal(DOBON, 10);
   assert.ok(t.length >= 5, `お題 ${t.length}`);
   for (const x of t) {
     assert.equal(x.order.length, 47);
-    assert.notEqual(x.vals[4], x.vals[5], x.title);
+    assert.notEqual(x.vals[DOBON - 1], x.vals[DOBON], x.title);
     assert.ok(!/人口が増え|減|高齢|65歳/.test(x.title), `住む人が気にする題：${x.title}`);
   }
 });

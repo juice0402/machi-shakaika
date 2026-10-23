@@ -4,7 +4,7 @@
 import { derive, prefOf, r1 } from './stats.mjs';
 import { need } from './calc.mjs';
 
-// くらべる数字（どっちが多い・トップ5当て・わたしの街で使う）
+// くらべる数字（どっちが多い・ドボンクイズ・わたしの街で使う）
 // diff：どっちが多いで出す最小の差（同じ単位。数の大きいものは割合 rel も見る）
 export const METRICS = [
   { key: 'pop', q: '人口が多いのは？', top: '人口が多い', unit: '人', digits: 0, rel: 0.03 },
@@ -32,15 +32,19 @@ export function rng(seed) {
   };
 }
 
-// トップ5当て：都道府県47のお題。5位と6位が表示で同じになるお題は出さない
-export function top5Topics(areas) {
+// ドボンクイズ：都道府県トップ10のお題。10位と11位が表示で同じになるときは、割合だけ1けた細かく出す。それでも同じならお題にしない
+export const DOBON = 10;
+export function dobonTopics(areas, n = DOBON) {
   const prefs = Object.values(areas)
     .filter((a) => a.level === '2')
     .map(derive);
   const out = [];
-  for (const m of METRICS.filter((x) => x.top)) {
-    const s = [...prefs].filter((p) => Number.isFinite(p[m.key])).sort((a, b) => b[m.key] - a[m.key]);
-    if (s.length !== 47 || show(m, s[4][m.key]) === show(m, s[5][m.key])) continue;
+  for (const m0 of METRICS.filter((x) => x.top)) {
+    const s = [...prefs].filter((p) => Number.isFinite(p[m0.key])).sort((a, b) => b[m0.key] - a[m0.key]);
+    if (s.length !== 47) continue;
+    const tries = m0.unit === '%' ? [m0, { ...m0, digits: m0.digits + 1 }] : [m0];
+    const m = tries.find((x) => show(x, s[n - 1][x.key]) !== show(x, s[n][x.key]));
+    if (!m) continue;
     out.push({ key: m.key, title: m.top, unit: m.unit, order: s.map((p) => p.code.slice(0, 2)), vals: s.map((p) => show(m, p[m.key])) });
   }
   return out;
