@@ -2,6 +2,7 @@
 //   木の帯（杉と丸い木）のふち・明朝の見出しに小さな木の印・森の緑と川の青・えらんだものに朱の印
 //   「この街の備え」は細い川の線で区切る
 import { SITE, ESTAT_CREDIT } from './site.mjs';
+import { townHtml, ART_CSS } from './art.mjs';
 
 export const esc = (s) =>
   String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -201,7 +202,7 @@ export function page(p) {
 <meta name="description" content="${esc(p.description)}">
 ${robots}${canonical}
 <meta property="og:site_name" content="${esc(SITE.name)}"><meta property="og:title" content="${esc(full)}"><meta property="og:description" content="${esc(p.description)}"><meta property="og:type" content="${isTop ? 'website' : 'article'}">${p.path ? `<meta property="og:url" content="${SITE.url}${p.path}">` : ''}
-${ads ? `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${SITE.adsense}" crossorigin="anonymous"></script>\n` : ''}<style>${CSS}</style>${p.head ?? ''}
+${ads ? `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${SITE.adsense}" crossorigin="anonymous"></script>\n` : ''}<style>${CSS}${ART_CSS}</style>${p.head ?? ''}
 </head>
 <body${ads ? '' : ' data-ads="off"'}>
 <div class="pg">
@@ -210,7 +211,7 @@ ${ads ? `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsb
 ${p.body}
 </main>
 </div>
-<footer class="ft">
+${townHtml()}<footer class="ft">
 <div class="fl">${FOOT_LINKS.map(([h, t]) => `<a href="${h}">${t}</a>`).join('')}</div>
 <p>${esc(ESTAT_CREDIT)}</p>
 ${p.gsi ? '<p>出典：<a href="https://www.gsi.go.jp/bousaichiri/hinanbasho.html">国土地理院ウェブサイト</a>（指定緊急避難場所・指定避難所データ）</p>' : ''}
