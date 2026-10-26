@@ -199,6 +199,8 @@ export function page(p) {
   const saigai = p.saigai ?? SAIGAI;
   const ads = Boolean(SITE.adsense) && SITE.launched && !p.noAds && !p.noindex && !p.rakuten && !saigai;
   const isTop = p.path === '/';
+  // adsLate：ページのスクリプトが準備できてから広告を読む（期限メモ：URL の # のメモを消してから）
+  const adsSrc = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${SITE.adsense}`;
   return `<!doctype html>
 <html lang="ja">
 <head>
@@ -209,9 +211,9 @@ export function page(p) {
 <meta name="description" content="${esc(p.description)}">
 ${robots}${canonical}
 <meta property="og:site_name" content="${esc(SITE.name)}"><meta property="og:title" content="${esc(full)}"><meta property="og:description" content="${esc(p.description)}"><meta property="og:type" content="${isTop ? 'website' : 'article'}">${p.path ? `<meta property="og:url" content="${SITE.url}${p.path}">` : ''}
-${ads ? `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${SITE.adsense}" crossorigin="anonymous"></script>\n` : ''}<style>${CSS}${ART_CSS}</style>${p.head ?? ''}
+${ads && !p.adsLate ? `<script async src="${adsSrc}" crossorigin="anonymous"></script>\n` : ''}<style>${CSS}${ART_CSS}</style>${p.head ?? ''}
 </head>
-<body${ads ? '' : ' data-ads="off"'}>
+<body${ads ? (p.adsLate ? ` data-ads-late="${adsSrc}"` : '') : ' data-ads="off"'}>
 ${saigai ? `${SAIGAI_BAR}\n` : ''}<div class="pg">
 <header><span class="deco">${TREES('trh')}</span><div class="bar">${isTop ? `<h1 class="logo">${esc(SITE.name)}</h1>` : `<a class="logo" href="/">${esc(SITE.name)}</a>`}${NAV}</div></header>
 <main>

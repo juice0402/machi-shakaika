@@ -55,6 +55,87 @@ sources:
     checked: 2026-10-22
     about: 非常持出品の例（飲料水・食料品・貴重品・懐中電灯・携帯ラジオ・モバイルバッテリー・ヘルメット・救急用品・感染予防・衣類・洗面用具・携帯トイレ・生理用品、乳児はミルク・紙おむつ・ほ乳びん）。2026年7月1日更新
 
+  - id: osaka-bichiku
+    kind: sonae
+    publisher: 大阪府
+    title: 備蓄品や非常持ち出し品などの準備
+    url: https://www.pref.osaka.lg.jp/kikikanri/bousaiportal_hp/hizyoumotidasihin.html
+    checked: 2026-10-26
+    about: 備蓄品のリスト例の生活用品に「懐中電灯・予備電池・携帯電話の充電器・モバイルバッテリー」。2025年11月14日更新
+
+  # 冬の停電と寒さ（/sonae/fuyu-teiden/）。title は題のうち、サイト名の末尾（「 - ほくでんネットワーク」など）を除いたもの
+  - id: hepco-saigai
+    kind: sonae
+    publisher: 北海道電力ネットワーク
+    title: 災害に備えて
+    url: https://www.hepco.co.jp/network/stable_supply/safety/disaster.html
+    checked: 2026-10-26
+    about: 停電時はIHが使えない（カセットコンロは換気に注意）。冬の備えにポータブルストーブ・カイロ・防寒衣・毛布・寝袋。長い停電に予備バッテリー。発電機は室内で使わない。木炭・練炭を室内で使わない
+
+  - id: asahikawa-sonae
+    kind: sonae
+    publisher: 旭川市
+    title: 災害に備えて
+    url: https://www.city.asahikawa.hokkaido.jp/kurashi/320/322/d053495.html
+    checked: 2026-10-26
+    about: 暖房用に電気を使わないポータブルストーブ・毛布・寝袋・使い捨てカイロ。ストーブは使い方を確かめて定期的に換気。水道管の凍結防止。備蓄は最低3日分、できれば7日分。飲料水は1人1日3L
+
+  - id: hokkaido-gas-teiden
+    kind: sonae
+    publisher: 北海道ガス
+    title: 停電時におけるガス機器のご使用について
+    url: https://www.hokkaido-gas.co.jp/safety/teiden_kiki.html
+    checked: 2026-10-26
+    about: 停電時にガスの給湯暖房機・給湯器・ふろ給湯器・FF暖房機は100V電源が要るので使えない。ガス機器を使うときは窓をあけるなどで換気。長い停電では凍結防止の電気ヒーターも働かない
+
+  - id: kyuden-ecocute
+    kind: sonae
+    publisher: 九州電力
+    title: 停電のとき、エコキュートは使用できる？
+    url: https://support.kyuden.co.jp/faq/show/435?category_id=47&site_domain=default
+    checked: 2026-10-26
+    about: 停電中はエコキュートで新たにお湯をわかせない。貯湯タンクに残った湯が使えるかは機種による
+
+  - id: bousai-teiden
+    kind: sonae
+    publisher: 内閣府
+    title: 家庭における地震時等の停電対策について
+    url: https://www.bousai.go.jp/jishin/syuto/denkikasaitaisaku/teidentaisaku.html
+    checked: 2026-10-26
+    about: 停電に備える項目：足元灯・懐中電灯、冷蔵庫や電子レンジが使えない場合の調理手段、冷暖房が使えなくても暖をとる手段、給水ポンプの停止による断水、医療機器の予備バッテリー
+
+  - id: caa-hakkaden
+    kind: sonae
+    publisher: 消費者庁
+    title: 携帯発電機・カセットこんろ・モバイルバッテリーの使用にご注意ください-発電機は屋内で絶対に使用しないでください。死亡事故も発生しています。-
+    url: https://www.caa.go.jp/policies/policy/consumer_safety/caution/caution_063/
+    checked: 2026-10-26
+    about: 2022年8月26日の注意喚起（経済産業省・NITEと同時）。発電機は屋内で絶対に使わず、屋外でも風通しのよい所で。カセットこんろは2台以上並べず大きな調理器具をのせず、ボンベを正しくつける
+
+  - id: sapporo-yukigai
+    kind: sonae
+    publisher: 札幌市
+    title: 雪害への備え、冬の防災
+    url: https://www.city.sapporo.jp/kikikanri/higoro/iza/winter_sonae.html
+    checked: 2026-10-26
+    about: 一酸化炭素中毒を防ぐため、ストーブやボイラーの給排気筒が雪でふさがらないようにする。停電に懐中電灯・携帯ラジオ・食料・飲料水。2024年2月13日更新
+
+  - id: niigata-ooyuki
+    kind: sonae
+    publisher: 新潟市
+    title: 大雪に備えましょう（市民のみなさんへのお願い）
+    url: https://www.city.niigata.lg.jp/kurashi/bosai/oshirase_ichiran/ooyuki_sonae.html
+    checked: 2026-10-26
+    about: 最低気温がマイナス4度以下になると水道管が凍結・破裂するおそれ。大雪時は交通・公共交通・ライフラインに影響。備蓄品は3日分が目安。2026年2月9日更新
+
+  - id: mlit-lifeline
+    kind: sonae
+    publisher: 国土交通省
+    title: 災害時、見てほしい情報［ライフライン情報］
+    url: https://www.mlit.go.jp/river/bousai/bousai-portal/helpful05/index.html
+    checked: 2026-10-26
+    about: 電力10社の停電情報ページのリンク集（ガス・水道、通信もある）。停電の情報はここへのリンクだけにする。出典の一覧には出さない
+
   - id: hiroshima-toilet
     kind: sonae
     publisher: 広島市

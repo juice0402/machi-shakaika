@@ -63,7 +63,7 @@ test('ブラウザで使う部品は、外の変数を使わない（ページ�
   assert.ok(t >= 400);
 });
 
-test('わたしの街クイズ：74の街すべてに5問以上。選択肢はちがうもので、答えは1つ。毎回同じ', { skip }, () => {
+test('わたしの街クイズ：ページを作る街すべてに5問以上。選択肢はちがうもので、答えは1つ。毎回同じ', { skip }, () => {
   const list = muniList(munis.areas);
   const { cities } = resolveCities(munis.areas);
   const codes = new Set(cities.map((c) => c.code));

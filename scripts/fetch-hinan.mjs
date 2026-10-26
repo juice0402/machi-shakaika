@@ -3,10 +3,11 @@
 //   data/hinan/list/<コード>.json（ページを作る市区町村の一覧。「開く」を押したときだけ読み込む）
 //   data/hinan/meta.json（取得日・ファイルの ETag）
 // を作る。ETag が前回と同じなら中身は作り直さず、確かめた日（checked）だけ書きかえる
+// ただし FORCE=1 のとき・ページを作る街の一覧ファイルが1つでも足りないとき（街を足したとき）は作り直す
 // 数が前回から大きく変わったとき・少なすぎるときは、書きかえずに止める（見張り）
 import { mkdirSync, writeFileSync, readFileSync, existsSync, appendFileSync, rmSync, readdirSync } from 'node:fs';
 import { decodeText, parseCsv } from '../src/lib/csv.mjs';
-import { HINAN_FILES, DISASTERS, countBasho, countHinanjo, readHistory, muniCode } from '../src/lib/hinan.mjs';
+import { HINAN_FILES, DISASTERS, countBasho, countHinanjo, readHistory, muniCode, missingLists, rebuildReason } from '../src/lib/hinan.mjs';
 import { readMunis } from '../src/munis.mjs';
 import { resolveCities } from '../src/areas.mjs';
 
@@ -59,11 +60,18 @@ for (const [k, url] of Object.entries(HINAN_FILES)) {
   await new Promise((r) => setTimeout(r, 1000));
 }
 
-if (same && existsSync(`${DIR}/counts.json`) && process.env.FORCE !== '1') {
+// ページを作る街の一覧ファイルが足りないか（前回の counts.json で数がある街だけ）
+const munis = readMunis();
+const hasCounts = existsSync(`${DIR}/counts.json`);
+const prevCounts = hasCounts ? JSON.parse(readFileSync(`${DIR}/counts.json`, 'utf8')) : null;
+const missing = munis ? missingLists(resolveCities(munis.areas).cities, prevCounts, (code) => existsSync(`${DIR}/list/${code}.json`)) : [];
+const why = rebuildReason({ same, hasCounts, force: process.env.FORCE === '1', missing });
+if (!why) {
   writeFileSync(`${DIR}/meta.json`, JSON.stringify({ ...prev, checked: today }, null, 1) + '\n');
   note('notice', `ファイルの更新なし（確かめた日 ${today}）`);
   process.exit(0);
 }
+note('notice', `作り直す：${why}`);
 
 const basho = countBasho(files.basho.rows);
 const hinanjo = countHinanjo(files.hinanjo.rows);
@@ -92,7 +100,6 @@ writeFileSync(
 );
 
 // ページを作る市区町村の一覧（施設・場所名と、住所の市区町村より後ろ。災害の種類はビットで）
-const munis = readMunis();
 if (!munis) stop('data/estat/munis.json がない（先に fetch-estat を動かす）');
 const { cities, errors } = resolveCities(munis.areas);
 if (errors.length) stop(errors.join(' / '));
@@ -124,6 +131,9 @@ for (const r of files.hinanjo.rows.slice(1)) {
 }
 for (const f of readdirSync(`${DIR}/list`)) rmSync(`${DIR}/list/${f}`);
 for (const [code, l] of lists) writeFileSync(`${DIR}/list/${code}.json`, JSON.stringify(l) + '\n');
+// 作り直したあとも足りない街があれば知らせる（毎週作り直しが続くため。点検 verify-dist.mjs でも止まる）
+const still = missingLists(cities, JSON.parse(readFileSync(`${DIR}/counts.json`, 'utf8')), (code) => lists.has(code));
+if (still.length) note('warning', `作り直しても一覧ファイルがない街：${still.join(' ')}`);
 
 writeFileSync(
   `${DIR}/meta.json`,

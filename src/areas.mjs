@@ -1,4 +1,7 @@
-// 都道府県と、ページを作る市区町村（段階1a：県庁所在地46・東京23区・県庁所在地でない政令市5＝74）
+// 都道府県と、ページを作る市区町村
+//   段階1a：県庁所在地46・東京23区・県庁所在地でない政令市5
+//   第2弾：中核市（総務省の一覧、62市・令和7年4月1日現在）のうち県庁所在地でないもの。ページを作る条件（設計の決定版）を
+//     みたさない7市（川越・越谷・柏・松本・豊田・岡崎・豊橋。「この街の備え」に世帯の特徴の数字がない）は入れていない
 // URL は /都道府県/市区町村/（同じ名前の市があるので都道府県の下に置く）。英字は一度公開したら変えない
 
 export const PREFS = [
@@ -15,7 +18,7 @@ export const PREFS = [
 ].map(([slug, name], i) => ({ slug, name, code: String(i + 1).padStart(2, '0') }));
 
 // [都道府県の英字, 名前（e-Stat の地域名と同じ）, 英字, 種類]
-// 種類：kencho 県庁所在地／seirei 政令市（県庁所在地でない）／ku 東京23区
+// 種類：kencho 県庁所在地／seirei 政令市（県庁所在地でない）／ku 東京23区／chukaku 中核市（県庁所在地でない）
 export const CITIES = [
   ['hokkaido', '札幌市', 'sapporo', 'kencho'], ['aomori', '青森市', 'aomori', 'kencho'], ['iwate', '盛岡市', 'morioka', 'kencho'],
   ['miyagi', '仙台市', 'sendai', 'kencho'], ['akita', '秋田市', 'akita', 'kencho'], ['yamagata', '山形市', 'yamagata', 'kencho'],
@@ -42,6 +45,17 @@ export const CITIES = [
   ['fukuoka', '福岡市', 'fukuoka', 'kencho'], ['fukuoka', '北九州市', 'kitakyushu', 'seirei'], ['saga', '佐賀市', 'saga', 'kencho'],
   ['nagasaki', '長崎市', 'nagasaki', 'kencho'], ['kumamoto', '熊本市', 'kumamoto', 'kencho'], ['oita', '大分市', 'oita', 'kencho'],
   ['miyazaki', '宮崎市', 'miyazaki', 'kencho'], ['kagoshima', '鹿児島市', 'kagoshima', 'kencho'], ['okinawa', '那覇市', 'naha', 'kencho'],
+  // 中核市（第2弾）
+  ['hokkaido', '旭川市', 'asahikawa', 'chukaku'], ['hokkaido', '函館市', 'hakodate', 'chukaku'], ['aomori', '八戸市', 'hachinohe', 'chukaku'],
+  ['fukushima', 'いわき市', 'iwaki', 'chukaku'], ['fukushima', '郡山市', 'koriyama', 'chukaku'], ['gunma', '高崎市', 'takasaki', 'chukaku'],
+  ['saitama', '川口市', 'kawaguchi', 'chukaku'], ['chiba', '船橋市', 'funabashi', 'chukaku'], ['tokyo', '八王子市', 'hachioji', 'chukaku'],
+  ['kanagawa', '横須賀市', 'yokosuka', 'chukaku'], ['aichi', '一宮市', 'ichinomiya', 'chukaku'], ['osaka', '豊中市', 'toyonaka', 'chukaku'],
+  ['osaka', '吹田市', 'suita', 'chukaku'], ['osaka', '高槻市', 'takatsuki', 'chukaku'], ['osaka', '枚方市', 'hirakata', 'chukaku'],
+  ['osaka', '八尾市', 'yao', 'chukaku'], ['osaka', '寝屋川市', 'neyagawa', 'chukaku'], ['osaka', '東大阪市', 'higashiosaka', 'chukaku'],
+  ['hyogo', '姫路市', 'himeji', 'chukaku'], ['hyogo', '尼崎市', 'amagasaki', 'chukaku'], ['hyogo', '明石市', 'akashi', 'chukaku'],
+  ['hyogo', '西宮市', 'nishinomiya', 'chukaku'], ['okayama', '倉敷市', 'kurashiki', 'chukaku'], ['hiroshima', '呉市', 'kure', 'chukaku'],
+  ['hiroshima', '福山市', 'fukuyama', 'chukaku'], ['yamaguchi', '下関市', 'shimonoseki', 'chukaku'], ['fukuoka', '久留米市', 'kurume', 'chukaku'],
+  ['nagasaki', '佐世保市', 'sasebo', 'chukaku'],
 ].map(([pref, name, slug, kind]) => ({ pref, name, slug, kind }));
 
 export const prefBySlug = new Map(PREFS.map((p) => [p.slug, p]));

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { muniCode, countBasho, countHinanjo, readHistory } from '../src/lib/hinan.mjs';
+import { muniCode, countBasho, countHinanjo, readHistory, missingLists, rebuildReason } from '../src/lib/hinan.mjs';
 import { parseCsv } from '../src/lib/csv.mjs';
 
 // 2026-10-22 に確かめた全国CSVの見出しと同じ形（行は作った例）
@@ -42,4 +42,23 @@ test('公開・更新情報の一覧', () => {
   const h = readHistory(parseCsv('27140,大阪府堺市,2017-03-16,2026-09-08,,\n01234,北海道どこか町,,,9,データ未登録\n'));
   assert.equal(h.get('27140').updated, '2026-09-08');
   assert.equal(h.get('01234').note, 'データ未登録');
+});
+
+test('ページを作る街の一覧ファイルが足りないか（数が0の街は数えない）', () => {
+  const cities = [{ code: '27140' }, { code: '01100' }, { code: '99999' }, { code: '12345' }];
+  const counts = { areas: { 27140: [2, 2], '01100': [1, 0], '99999': [0, 0] } };
+  const has = (code) => code === '27140';
+  assert.deepEqual(missingLists(cities, counts, has), ['01100']);
+  assert.deepEqual(missingLists(cities, counts, () => true), []);
+  assert.deepEqual(missingLists(cities, null, has), []);
+});
+
+test('ETag が同じでも、一覧ファイルが足りなければ作り直す', () => {
+  const base = { same: true, hasCounts: true, force: false, missing: [] };
+  assert.equal(rebuildReason(base), null, '変化なし・そろっている → 作り直さない');
+  assert.match(rebuildReason({ ...base, missing: ['01204', '01202'] }), /一覧ファイルがない街 2/);
+  assert.match(rebuildReason({ ...base, missing: ['1', '2', '3', '4', '5', '6'] }), /ほか/);
+  assert.equal(rebuildReason({ ...base, force: true }), 'FORCE=1');
+  assert.ok(rebuildReason({ ...base, same: false }));
+  assert.ok(rebuildReason({ ...base, hasCounts: false }));
 });
