@@ -18,6 +18,7 @@ on:
     paths:
       - 'data/sources.yml'
       - 'data/bichiku.yml'
+      - 'data/estat/meta.json'
       - 'src/**'
       - 'scripts/check-links.mjs'
       - '.github/workflows/check-links.yml'
@@ -64,10 +65,11 @@ jobs:
         run: cat report.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Issue に書く・閉じる（週1回のとき）
-        if: github.event_name != 'pull_request' && steps.chk.outcome == 'success'
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && steps.chk.outcome == 'success'
         env:
           GH_TOKEN: ${{ github.token }}
           GONE: ${{ steps.chk.outputs.gone }}
+          NOTES: ${{ steps.chk.outputs.notes }}
         run: |
           gh label create "リンクの点検" --color D93F0B --description "毎週のリンクの点検" --repo "$GITHUB_REPOSITORY" 2>/dev/null || true
           N=$(gh issue list --repo "$GITHUB_REPOSITORY" --label "リンクの点検" --state open --json number --jq '.[0].number')
@@ -77,12 +79,12 @@ jobs:
             else
               gh issue create --repo "$GITHUB_REPOSITORY" --title "リンクの点検：消えたリンクがあります" --label "リンクの点検" --body-file report.md
             fi
-          elif [ -n "$N" ]; then
+          elif [ -n "$N" ] && [ "$NOTES" = "0" ]; then
             gh issue close "$N" --repo "$GITHUB_REPOSITORY" --comment "$(TZ=Asia/Tokyo date +%F) の点検で、消えたリンクはなくなりました。"
           fi
 
       - name: 止まったら Issue（週1回のとき）
-        if: github.event_name != 'pull_request' && steps.chk.outcome == 'failure'
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && steps.chk.outcome == 'failure'
         env:
           GH_TOKEN: ${{ github.token }}
           RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

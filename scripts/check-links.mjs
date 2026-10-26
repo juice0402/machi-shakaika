@@ -30,4 +30,4 @@ const report = buildReport(results, { notes, date: new Date().toLocaleDateString
 console.log(report);
 if (process.env.GITHUB_ACTIONS) for (const l of annotationLines(results, { notes })) console.log(l);
 if (arg('--report')) writeFileSync(arg('--report'), report);
-if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `gone=${c.gone}\nrefused=${c.refused}\ntotal=${c.total}\n`);
+if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `gone=${c.gone}\nrefused=${c.refused}\ntotal=${c.total}\nnotes=${notes.length}\n`);

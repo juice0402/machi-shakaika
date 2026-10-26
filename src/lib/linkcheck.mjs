@@ -32,10 +32,10 @@ export function legacyFetch(url, method, d, hops = 0) {
     const u = new URL(url);
     const mod = u.protocol === 'http:' ? http : https;
     const req = mod.request(u, { method, headers: { 'User-Agent': UA }, secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT, timeout: d.timeoutMs }, (res) => {
-      res.resume();
+      res.destroy(); // 本文は読まない
       const loc = res.headers.location;
-      if (res.statusCode >= 300 && res.statusCode < 400 && loc && hops < 5) {
-        resolve(legacyFetch(new URL(loc, u).href, method, d, hops + 1));
+      if (res.statusCode >= 300 && res.statusCode < 400 && loc) {
+        resolve(hops < 5 ? legacyFetch(new URL(loc, u).href, method, d, hops + 1) : { error: 'TOO_MANY_REDIRECTS' });
         return;
       }
       resolve({ status: res.statusCode, finalUrl: u.href, retryAfter: Number(res.headers['retry-after']) || 0 });

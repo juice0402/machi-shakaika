@@ -221,3 +221,16 @@ test('legacyFetch はリダイレクトをたどり、最後のURLと返事を�
     server.close();
   }
 });
+
+test('legacyFetch はリダイレクトが5回をこえたら「断られた」側にする', async () => {
+  const server = http.createServer((req, res) => { res.writeHead(302, { Location: '/loop' }); res.end(); });
+  await new Promise((ok) => server.listen(0, '127.0.0.1', ok));
+  const url = `http://127.0.0.1:${server.address().port}/loop`;
+  try {
+    const r = await legacyFetch(url, 'HEAD', DEFAULTS);
+    assert.equal(r.error, 'TOO_MANY_REDIRECTS');
+    assert.equal(classify(url, r).kind, 'refused');
+  } finally {
+    server.close();
+  }
+});

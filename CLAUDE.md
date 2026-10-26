@@ -63,7 +63,7 @@
 | `src/lib/csv.mjs` | CSV の読み取りと文字コードの見分け |
 | `src/lib/hinan.mjs` | 国土地理院の避難場所の全国CSV（hinanmap.gsi.go.jp）のURLと、市区町村ごと・災害の種類ごとの数え方 |
 | `data/sources.yml`・`items.yml`・`shogo.yml` | 出典台帳・備えの数字・照らし合わせ用の公式の数字 |
-| `data/bichiku.yml` | 自治体の備蓄の公表ページ（10/26、58の街）。市区町村ページの「この街の備え」に1行とリンク。ない街は行ごと出さない。年1回の公表なので題が変わることがある |
+| `data/bichiku.yml` | 自治体の備蓄の公表ページ（10/26、57の街）。市区町村ページの「この街の備え」に1行とリンク。ない街は行ごと出さない。年1回の公表なので題が変わることがある |
 | `scripts/check-links.mjs`・`src/lib/links.mjs`・`linkcheck.mjs` | リンクの点検の本体・集め方・開き方（同じホストは2秒あけ、HEAD→GET、1回だけやり直し） |
 | `scripts/build.mjs`・`verify-dist.mjs`・`changed.mjs` | ビルド・全ページ点検・本番とのちがい |
 | `data/estat.yml` | e-Stat から取る表と項目（名前で指定）。年齢・世帯・住宅は不詳補完値の表 |
