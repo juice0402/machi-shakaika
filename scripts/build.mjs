@@ -21,6 +21,7 @@ import { hinmokuPages } from '../src/pages/hinmoku.mjs';
 import { quizPages } from '../src/pages/quiz.mjs';
 import { machiData } from '../src/quiz.mjs';
 import { PRODUCTS_PATH } from '../src/rakuten.mjs';
+import { TOWN_SVG } from '../src/art.mjs';
 
 const DIST = 'dist';
 const stop = (msg) => {
@@ -81,6 +82,8 @@ writeFileSync(`${DIST}/quiz/machi.json`, JSON.stringify(machi));
 
 // ファビコン（A 森と川。10/23 しょーくんが3案から選んだ）。static/ の中をそのまま置く
 for (const f of readdirSync('static')) copyFileSync(`static/${f}`, `${DIST}/${f}`);
+// いちばん下の街並み（全ページで同じ絵を遅れて読み込む。src/art.mjs で描く）
+writeFileSync(`${DIST}/town.svg`, TOWN_SVG);
 
 // 避難場所の一覧（市区町村ページで「開く」を押したときだけ読み込む）
 mkdirSync(`${DIST}/hinan`, { recursive: true });
