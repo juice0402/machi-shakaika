@@ -1,0 +1,355 @@
+# 自治体の備蓄の公表ページ（市区町村ページに1行のリンク）
+# 市区町村が自分のホームページで出している、備蓄の状況や一覧のページ。見つからない街は書かない（ページにも出さない）。
+# city は src/areas.mjs の「都道府県の英字/市区町村の英字」。publisher はその街の名前（areas.mjs と同じ）
+# title は開いて確かめたページの題そのまま（サイト名の部分は除く）。checked は開いて確かめた日
+# 並びは areas.mjs の CITIES の順。県・国のページ、防災のトップ、家庭の備えだけのページは入れない
+
+cities:
+  - city: hokkaido/sapporo
+    publisher: 札幌市
+    title: "災害用備蓄物資"
+    url: https://www.city.sapporo.jp/kikikanri/torikumi/saigaibitiku/saigaiyoubitiku_index.html
+    checked: 2026-10-26
+
+  - city: aomori/aomori
+    publisher: 青森市
+    title: "青森市　備蓄状況"
+    url: https://www.city.aomori.aomori.jp/anzen_kinkyu/bousai_shoubou/1002623/1009966.html
+    checked: 2026-10-26
+
+  - city: miyagi/sendai
+    publisher: 仙台市
+    title: "仙台市の備蓄状況"
+    url: https://www.city.sendai.jp/kikaku/bichikumokuhyou.html
+    checked: 2026-10-26
+
+  - city: ibaraki/mito
+    publisher: 水戸市
+    title: "水戸市の備蓄状況"
+    url: https://www.city.mito.lg.jp/site/saigaiinfo/114054.html
+    checked: 2026-10-26
+
+  - city: saitama/saitama
+    publisher: さいたま市
+    title: "非常用物資の備蓄"
+    url: https://www.city.saitama.lg.jp/001/011/015/009/001/p000037.html
+    checked: 2026-10-26
+
+  - city: chiba/chiba
+    publisher: 千葉市
+    title: "災害用備蓄品の整備状況等と備蓄食料の原材料について"
+    url: https://www.city.chiba.jp/somu/kikikanri/bosai/bitikuseibijyoukyou.html
+    checked: 2026-10-26
+
+  - city: tokyo/chiyoda
+    publisher: 千代田区
+    title: "備蓄状況の公表"
+    url: https://www.city.chiyoda.lg.jp/koho/kurashi/bosai/bosai-taisaku/kitaku/bichikujokyo.html
+    checked: 2026-10-26
+
+  - city: tokyo/chuo
+    publisher: 中央区
+    title: "食料・生活必需品の備蓄"
+    url: https://www.city.chuo.lg.jp/a0011/bousaianzen/bousai/bousaitaisaku/kunotorikumi/saigaitaisaku/bitiku01.html
+    checked: 2026-10-26
+
+  - city: tokyo/minato
+    publisher: 港区
+    title: "備蓄倉庫・備蓄物資について"
+    url: https://www.city.minato.tokyo.jp/bousai/bosai-anzen/bosai/daishinsai/bichiku.html
+    checked: 2026-10-26
+
+  - city: tokyo/bunkyo
+    publisher: 文京区
+    title: "備蓄状況の公表"
+    url: https://www.city.bunkyo.lg.jp/b009/p000248.html
+    checked: 2026-10-26
+
+  - city: tokyo/koto
+    publisher: 江東区
+    title: "備蓄物資の公表及び防災倉庫"
+    url: https://www.city.koto.lg.jp/057102/bosai/bosai-top/taisakukeikaku/info_7055_7063.html
+    checked: 2026-10-26
+
+  - city: tokyo/meguro
+    publisher: 目黒区
+    title: "区の災害用備蓄物資について"
+    url: https://www.city.meguro.tokyo.jp/bousai/bousaianzen/bousai/busshi.html
+    checked: 2026-10-26
+
+  - city: tokyo/ota
+    publisher: 大田区
+    title: "学校防災備蓄倉庫"
+    url: https://www.city.ota.tokyo.jp/seikatsu/chiiki/bousai/hinanjyo/bichikusouko.html
+    checked: 2026-10-26
+
+  - city: tokyo/setagaya
+    publisher: 世田谷区
+    title: "備蓄状況の公表"
+    url: https://www.city.setagaya.lg.jp/02049/34052.html
+    checked: 2026-10-26
+
+  - city: tokyo/nakano
+    publisher: 中野区
+    title: "備蓄物資・防災資機材"
+    url: https://www.city.tokyo-nakano.lg.jp/bosai/suigai-sonae/keikaku/bichikubusshi.html
+    checked: 2026-10-26
+
+  - city: tokyo/toshima
+    publisher: 豊島区
+    title: "豊島区備蓄物資計画"
+    url: https://www.city.toshima.lg.jp/514/kuse/shisaku/shisaku/kekaku/documents/2303131135.html
+    checked: 2026-10-26
+
+  - city: tokyo/arakawa
+    publisher: 荒川区
+    title: "備蓄状況の公表（令和7年7月1日時点）"
+    url: https://www.city.arakawa.tokyo.jp/a013/bousai/saigaitaisaku/bitikutaisei/bitikukouhyou.html
+    checked: 2026-10-26
+
+  - city: tokyo/itabashi
+    publisher: 板橋区
+    title: "備蓄物資について"
+    url: https://www.city.itabashi.tokyo.jp/bousai/bousai/1005690.html
+    checked: 2026-10-26
+
+  - city: tokyo/nerima
+    publisher: 練馬区
+    title: "資器材・備蓄品"
+    url: https://www.city.nerima.tokyo.jp/kurashi/bosai/jishinsonae/zukan/index.html
+    checked: 2026-10-26
+
+  - city: tokyo/adachi
+    publisher: 足立区
+    title: "避難所の備蓄物資"
+    url: https://www.city.adachi.tokyo.jp/senryaku/bosai/bosai/bitiku-itiran.html
+    checked: 2026-10-26
+
+  - city: tokyo/edogawa
+    publisher: 江戸川区
+    title: "避難所の備蓄物資"
+    url: https://www.city.edogawa.tokyo.jp/e008/bosaianzen/bosai/kojo/hinanjobichiku.html
+    checked: 2026-10-26
+
+  - city: kanagawa/yokohama
+    publisher: 横浜市
+    title: "地域防災拠点　備蓄品一覧"
+    url: https://www.city.yokohama.lg.jp/bousai-kyukyu-bohan/bousai-saigai/moshimo/wagaya/jishin/place/kyoten/kyoten02-1.html
+    checked: 2026-10-26
+
+  - city: niigata/niigata
+    publisher: 新潟市
+    title: "災害備蓄について"
+    url: https://www.city.niigata.lg.jp/kurashi/bosai/bosai_taisaku/index_koujo/saigaibichiku/bitiku.html
+    checked: 2026-10-26
+
+  - city: toyama/toyama
+    publisher: 富山市
+    title: "市の備蓄物資・備蓄場所"
+    url: https://www.city.toyama.lg.jp/bosai/bosai/1010655/1017500.html
+    checked: 2026-10-26
+
+  - city: gifu/gifu
+    publisher: 岐阜市
+    title: "岐阜市の備蓄状況（備蓄計画等）"
+    url: https://www.city.gifu.lg.jp/kurashi/bousai/1001411/1001348.html
+    checked: 2026-10-26
+
+  - city: aichi/nagoya
+    publisher: 名古屋市
+    title: "本市における備蓄物資及び指定避難所資機材"
+    url: https://www.city.nagoya.jp/bousaiportal/hinan/1013390/1013600.html
+    checked: 2026-10-26
+
+  - city: shiga/otsu
+    publisher: 大津市
+    title: "大津市の公的備蓄物資について"
+    url: https://www.city.otsu.lg.jp/bosai/b/ji/plan/1427763033173.html
+    checked: 2026-10-26
+
+  - city: osaka/osaka
+    publisher: 大阪市
+    title: "災害への備え（大阪市の備蓄体制）"
+    url: https://www.city.osaka.lg.jp/kikikanrishitsu/page/0000388272.html
+    checked: 2026-10-26
+
+  - city: nara/nara
+    publisher: 奈良市
+    title: "災害備蓄"
+    url: https://www.city.nara.lg.jp/site/bousai-saigai/93724.html
+    checked: 2026-10-26
+
+  - city: wakayama/wakayama
+    publisher: 和歌山市
+    title: "災害に備えた和歌山市の備蓄"
+    url: https://www.city.wakayama.wakayama.jp/kurashi/bousai_bouhan_koutsu/1000032/1036580/1035575.html
+    checked: 2026-10-26
+
+  - city: tottori/tottori
+    publisher: 鳥取市
+    title: "防災備蓄について"
+    url: https://www.city.tottori.lg.jp/www/contents/1639773571114/index.html
+    checked: 2026-10-26
+
+  - city: okayama/okayama
+    publisher: 岡山市
+    title: "岡山市備蓄計画について"
+    url: https://www.city.okayama.jp/kurashi/0000012058.html
+    checked: 2026-10-26
+
+  - city: hiroshima/hiroshima
+    publisher: 広島市
+    title: "広島市の備蓄"
+    url: https://www.city.hiroshima.lg.jp/saigaiinfo/bousai-torikumi/1021075/1013382.html
+    checked: 2026-10-26
+
+  - city: yamaguchi/yamaguchi
+    publisher: 山口市
+    title: "山口市の災害用物資・機材等の備蓄状況の公表について（令和８年３月３１日現在）"
+    url: https://www.city.yamaguchi.lg.jp/soshiki/4/190985.html
+    checked: 2026-10-26
+
+  - city: kagawa/takamatsu
+    publisher: 高松市
+    title: "災害時緊急物資の備蓄について"
+    url: https://www.city.takamatsu.kagawa.jp/kurashi/kurashi/shobo/sonae/saigaibusshi_bichiku.html
+    checked: 2026-10-26
+
+  - city: ehime/matsuyama
+    publisher: 松山市
+    title: "災害用備蓄物資"
+    url: https://www.city.matsuyama.ehime.jp/kurashi/bosai/bousai/bitiku/bitiku.html
+    checked: 2026-10-26
+
+  - city: kochi/kochi
+    publisher: 高知市
+    title: "高知市備蓄計画"
+    url: https://www.city.kochi.kochi.jp/site/bousai/bitikukeikaku.html
+    checked: 2026-10-26
+
+  - city: fukuoka/fukuoka
+    publisher: 福岡市
+    title: "公的備蓄について"
+    url: https://www.city.fukuoka.lg.jp/bousai/koutekibitiku.html
+    checked: 2026-10-26
+
+  - city: fukuoka/kitakyushu
+    publisher: 北九州市
+    title: "公的備蓄について"
+    url: https://www.city.kitakyushu.lg.jp/contents/138_00012.html
+    checked: 2026-10-26
+
+  - city: saga/saga
+    publisher: 佐賀市
+    title: "佐賀市の災害備蓄品の備蓄状況"
+    url: https://www.city.saga.lg.jp/bosai-anzen/bosai/1/8064.html
+    checked: 2026-10-26
+
+  - city: oita/oita
+    publisher: 大分市
+    title: "被災者救援物資等の備蓄状況"
+    url: https://www.city.oita.oita.jp/o009/bichikujoukyou.html
+    checked: 2026-10-26
+
+  - city: okinawa/naha
+    publisher: 那覇市
+    title: "災害備蓄品"
+    url: https://www.city.naha.okinawa.jp/safety/saigai/1001598/1011429.html
+    checked: 2026-10-26
+
+  # ---------- 中核市 ----------
+  - city: hokkaido/asahikawa
+    publisher: 旭川市
+    title: "旭川市備蓄計画"
+    url: https://www.city.asahikawa.hokkaido.jp/kurashi/320/328001/382001/d000000.html
+    checked: 2026-10-26
+
+  - city: hokkaido/hakodate
+    publisher: 函館市
+    title: "災害用備蓄"
+    url: https://www.city.hakodate.hokkaido.jp/docs/2014022500422/
+    checked: 2026-10-26
+
+  - city: aomori/hachinohe
+    publisher: 八戸市
+    title: "八戸市の災害用備蓄物資について"
+    url: https://www.city.hachinohe.aomori.jp/kurashi_tetsuzuki/kurashinoanzen_anshin/bosaijoho/4/25369.html
+    checked: 2026-10-26
+
+  - city: fukushima/iwaki
+    publisher: いわき市
+    title: "～災害時非常用備蓄品の備蓄状況について～"
+    url: https://www.city.iwaki.lg.jp/www/contents/1680657233855/index.html
+    checked: 2026-10-26
+
+  - city: saitama/kawaguchi
+    publisher: 川口市
+    title: "避難所の備蓄状況について"
+    url: https://www.city.kawaguchi.lg.jp/soshiki/01040/010/7/10/47311.html
+    checked: 2026-10-26
+
+  - city: chiba/funabashi
+    publisher: 船橋市
+    title: "非常用物資の備蓄について"
+    url: https://www.city.funabashi.lg.jp/bousai/taisaku/p008927.html
+    checked: 2026-10-26
+
+  - city: tokyo/hachioji
+    publisher: 八王子市
+    title: "備蓄状況の公表"
+    url: https://www.city.hachioji.tokyo.jp/emergency/bousai/m12873/001/p037677.html
+    checked: 2026-10-26
+
+  - city: kanagawa/yokosuka
+    publisher: 横須賀市
+    title: "非常用食糧・飲料水などの備蓄"
+    url: https://www.city.yokosuka.kanagawa.jp/0525/bousainavi/torikumi/bousai/syokuryou-mizu.html
+    checked: 2026-10-26
+
+  - city: aichi/ichinomiya
+    publisher: 一宮市
+    title: "市の災害用備蓄について"
+    url: https://www.city.ichinomiya.aichi.jp/sougouseisaku/kikikanri/1044073/1044446/1044076/1032125.html
+    checked: 2026-10-26
+
+  - city: osaka/hirakata
+    publisher: 枚方市
+    title: "枚方市防災備蓄品について"
+    url: https://www.city.hirakata.osaka.jp/0000003856.html
+    checked: 2026-10-26
+
+  - city: osaka/higashiosaka
+    publisher: 東大阪市
+    title: "災害時用備蓄物資"
+    url: https://www.city.higashiosaka.lg.jp/0000000610.html
+    checked: 2026-10-26
+
+  - city: hyogo/himeji
+    publisher: 姫路市
+    title: "避難所と備蓄物資"
+    url: https://www.city.himeji.lg.jp/anzen/0000004086.html
+    checked: 2026-10-26
+
+  - city: hyogo/nishinomiya
+    publisher: 西宮市
+    title: "西宮市の備蓄状況"
+    url: https://www.nishi.or.jp/kurashi/anshin/bosaijoho/shinotaisaku/bousaitaisei/bitikuitirann.html
+    checked: 2026-10-26
+
+  - city: okayama/kurashiki
+    publisher: 倉敷市
+    title: "災害備蓄について"
+    url: https://www.city.kurashiki.okayama.jp/anzen/disaster/1002640/1011270.html
+    checked: 2026-10-26
+
+  - city: fukuoka/kurume
+    publisher: 久留米市
+    title: "久留米市の備蓄状況について"
+    url: https://www.city.kurume.fukuoka.jp/1050kurashi/2040bousaianzen/3003shiru/2026-0617-1040-87.html
+    checked: 2026-10-26
+
+  - city: nagasaki/sasebo
+    publisher: 佐世保市
+    title: "災害時用備蓄品及び保管場所"
+    url: https://www.city.sasebo.lg.jp/siminseikatu/simian/bitiku.html
+    checked: 2026-10-26

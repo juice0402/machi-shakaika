@@ -4,7 +4,7 @@ import { rmSync, mkdirSync, writeFileSync, readFileSync, readdirSync, statSync, 
 import { createHash } from 'node:crypto';
 import { dirname } from 'node:path';
 import { SITE } from '../src/site.mjs';
-import { readYaml, checkSources, checkItems, checkShogo } from '../src/data.mjs';
+import { readYaml, checkSources, checkItems, checkShogo, readBichiku, bichikuMap, checkBichiku } from '../src/data.mjs';
 import { page, esc } from '../src/layout.mjs';
 import { readMunis, checkMunis } from '../src/munis.mjs';
 import { PREFS, resolveCities } from '../src/areas.mjs';
@@ -37,7 +37,8 @@ const stop = (msg) => {
 const sources = readYaml('sources.yml');
 const items = readYaml('items.yml');
 const shogo = readYaml('shogo.yml');
-const errors = [...checkSources(sources), ...checkItems(items, sources), ...checkShogo(shogo, sources)];
+const bichiku = readBichiku();
+const errors = [...checkSources(sources), ...checkItems(items, sources), ...checkShogo(shogo, sources), ...checkBichiku(bichiku)];
 const munis = readMunis();
 if (!munis) errors.push('data/estat/munis.json がない');
 else errors.push(...checkMunis(munis, shogo));
@@ -73,7 +74,8 @@ const urlOf = (code) => cityUrl.get(code) ?? null;
 
 add(topPage({ cc, munis, hinanMeta, nMunis: list.length }));
 for (const pref of PREFS) add(prefPage({ pref, munis, list, z, cc, urlOf }));
-for (const city of cities) add(cityPage({ city, munis, list, z, cc, hinan, hinanMeta, urlOf }));
+const bichikuOf = bichikuMap(bichiku);
+for (const city of cities) add(cityPage({ city, munis, list, z, cc, hinan, hinanMeta, urlOf, bichiku: bichikuOf.get(`${city.pref}/${city.slug}`) ?? null }));
 for (const p of sonaePages({ cc, items, sources })) add(p);
 for (const p of fuyuTeidenPages({ cc, items, sources })) add(p);
 for (const p of douguPages({ cc, items, sources })) add(p);
