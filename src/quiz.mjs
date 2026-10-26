@@ -5,6 +5,7 @@
 import { derive, prefOf, muniList } from './stats.mjs';
 import { need } from './calc.mjs';
 import { PREFS } from './areas.mjs';
+import { srcTitle } from './layout.mjs';
 
 // くらべる数字（どっちが多い・ドボンクイズで使う）
 // digits：表示の小数のけた。store：machi.json に入れるけた。diff：どっちが多いで出す最小の差。rel：数の大きいものの最小の割合の差
@@ -154,7 +155,7 @@ export function sonaeData(items, sources) {
   const name = (id) => {
     const s = src.get(id);
     const [y, mo, d] = String(s.checked).split('-').map(Number);
-    return `${s.publisher}${s.title ? `「${s.title}」` : ''}（${y}年${mo}月${d}日確認）`;
+    return `${s.publisher}${srcTitle(s)}（${y}年${mo}月${d}日確認）`;
   };
   return {
     w: by.mizu.per_day,

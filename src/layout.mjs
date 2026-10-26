@@ -3,6 +3,7 @@
 //   「この街の備え」は細い川の線で区切る
 import { SITE, ESTAT_CREDIT } from './site.mjs';
 import { townHtml, ART_CSS } from './art.mjs';
+import { SAIGAI, SAIGAI_BAR } from './mode.mjs';
 
 export const esc = (s) =>
   String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -23,6 +24,9 @@ export function priceBand(p) {
   if (p < 10000) return `${Math.floor(p / 1000).toLocaleString('ja-JP')},000円台から`;
   return `${Math.floor(p / 10000)}万円台から`;
 }
+// 出典の題（相手のページの題そのまま）：「題」。題の中の「」は『』にする。<cite> に入れて、使わない言葉の点検から外す（verify-dist.mjs）
+export const srcTitle = (s) => (s.title ? `「${String(s.title).replace(/「/g, '『').replace(/」/g, '』')}」` : '');
+export const srcName = (s) => `${esc(s.publisher)}${s.title ? `<cite>${esc(srcTitle(s))}</cite>` : ''}`;
 export const fmt = (n) => (n == null ? '-' : Number(n).toLocaleString('ja-JP'));
 
 const MINCHO = '"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif';
@@ -150,6 +154,7 @@ button.go{font:inherit;font-size:15px;font-weight:700;background:none;border:0;p
 .gogun .w.miss::before,.gogun .w.miss::after{content:"";position:absolute;left:15%;right:15%;top:50%;height:2px;background:var(--accent);transform:rotate(18deg)}.gogun .w.miss::after{transform:rotate(-18deg)}
 .t5l{margin:10px 0 6px;padding-left:2.2em;font-size:14px;line-height:1.5}.t5l li{padding:4px 0;border-bottom:1px dotted var(--line)}.t5l li.got{color:var(--accent);font-weight:700}.t5l li.rest{color:var(--sub)}
 .dbr .score{margin:10px 0 2px}.dbm{font:700 17px/1.5 ${MINCHO};color:var(--accent);margin:0 0 4px}
+.sg{margin:0;padding:8px 16px;background:#e8ebe9;color:var(--ink);font-size:13px;line-height:1.5;text-align:center}.sg a{color:inherit;font-weight:700}cite{font-style:normal}
 .ft{max-width:430px;margin:0 auto;padding:16px 16px 28px;font-size:11px;color:var(--sub);border-top:1px solid var(--line)}.ft p{margin:0 0 6px}
 .ft .fl{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;margin:0 0 12px}.ft .fl a{padding:4px 0;color:var(--ink)}
 `.replace(/\n/g, '');
@@ -185,12 +190,14 @@ export const FOOT_LINKS = [
  * @param {string} [p.script]  ページの最後に入れるスクリプト
  * @param {string} [p.head]    head に足すもの（構造化データなど）
  * @param {boolean}[p.rakuten] 楽天の商品を出すページ（AdSense を置かない・フッターに楽天のクレジット）
+ * @param {boolean}[p.saigai]  災害時モード（ふだんは data/mode.yml のとおり。テスト用に変えられる）：上に案内の帯・AdSense なし
  */
 export function page(p) {
   const full = p.path === '/' ? SITE.name : `${p.title}｜${SITE.name}`;
   const robots = !SITE.launched || p.noindex ? '<meta name="robots" content="noindex">' : '';
   const canonical = p.path ? `<link rel="canonical" href="${SITE.url}${p.path}">` : '';
-  const ads = Boolean(SITE.adsense) && SITE.launched && !p.noAds && !p.noindex && !p.rakuten;
+  const saigai = p.saigai ?? SAIGAI;
+  const ads = Boolean(SITE.adsense) && SITE.launched && !p.noAds && !p.noindex && !p.rakuten && !saigai;
   const isTop = p.path === '/';
   return `<!doctype html>
 <html lang="ja">
@@ -205,7 +212,7 @@ ${robots}${canonical}
 ${ads ? `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${SITE.adsense}" crossorigin="anonymous"></script>\n` : ''}<style>${CSS}${ART_CSS}</style>${p.head ?? ''}
 </head>
 <body${ads ? '' : ' data-ads="off"'}>
-<div class="pg">
+${saigai ? `${SAIGAI_BAR}\n` : ''}<div class="pg">
 <header><span class="deco">${TREES('trh')}</span><div class="bar">${isTop ? `<h1 class="logo">${esc(SITE.name)}</h1>` : `<a class="logo" href="/">${esc(SITE.name)}</a>`}${NAV}</div></header>
 <main>
 ${p.body}

@@ -58,41 +58,41 @@ sources:
   - id: hiroshima-toilet
     kind: sonae
     publisher: 広島市
-    title: null
+    title: 避難所等でのトイレ問題に備える
     url: https://www.city.hiroshima.lg.jp/saigaiinfo/saigai/1021018/1025517/1049251.html
-    checked: 2026-10-21
-    about: 内閣府「避難所におけるトイレの確保・管理ガイドライン」の1日5回。1人1日5回×人数×最低3日、できれば1週間
+    checked: 2026-10-26
+    about: 5回×家族の人数×3日分（できれば1週間分）がめやす。最低3日分、できれば1週間分
 
   - id: kanagawa-toilet
     kind: sonae
     publisher: 神奈川県
-    title: null
+    title: 携帯トイレを備蓄しましょう
     url: https://www.pref.kanagawa.jp/docs/j8g/bousai/keitaitoirebitiku.html
-    checked: 2026-10-21
+    checked: 2026-10-26
     about: 断水・停電・配管の被害でトイレが使えなくなる。集合住宅で気づかず流すと下の階であふれるおそれ。最低3日、できれば7日
 
   - id: suginami-toilet
     kind: sonae
     publisher: 杉並区
-    title: null
+    title: "災害用トイレは備えていますか?(2026年9月1日)"
     url: https://www.city.suginami.tokyo.jp/s015/news/27750.html
-    checked: 2026-10-21
-    about: 1人1日5回、最低3日・できれば7日
+    checked: 2026-10-26
+    about: 災害用トイレの備蓄のめやすは1人1日5回分、最低3日・推奨7日
 
   - id: nerima-yohairyo
     kind: sonae
     publisher: 練馬区
-    title: null
+    title: いざという時の食に備えて～家庭での備蓄のポイント～
     url: https://www.city.nerima.tokyo.jp/hokenfukushi/hoken/shokuiku/izatoiutoki/index.files/060326iza.pdf
-    checked: 2026-10-21
+    checked: 2026-10-26
     about: 乳幼児・妊産婦・高齢者・慢性疾患・食物アレルギーなどは少なくとも2週間分
 
   - id: ota-pet
     kind: sonae
     publisher: 大田区
-    title: null
+    title: ペットのための災害対策
     url: https://www.city.ota.tokyo.jp/seikatsu/hoken/pet_dog_cat/saigaitaisaku.html
-    checked: 2026-10-21
+    checked: 2026-10-26
     about: フードと水は最低5日分。環境省のガイドラインが改訂中なので、ペットのページを作る前に確かめ直す
 
   - id: tokyo-bichiku
@@ -155,19 +155,19 @@ sources:
   - id: chuo-kokusei
     kind: estat
     publisher: 中央区
-    title: null
+    title: 令和7年国勢調査の人口及び世帯数の集計結果について
     url: https://www.city.chuo.lg.jp/a0012/kusei/gaiyou/toukeidate/kokuseichousa/kokuseichosar07.html
-    checked: 2026-10-21
+    checked: 2026-10-26
     about: 令和7年国勢調査の人口等基本集計が2026年9月29日に総務省から公表されたことの確認
 
   # ---------- 照らし合わせ用（公式の発表） ----------
   - id: sakai-kakuho
     kind: shogo
     publisher: 堺市
-    title: null
+    title: 令和7年国勢調査の人口等基本集計結果（確報値）の公表について
     url: https://www.city.sakai.lg.jp/shisei/tokei/kokucho_kakuho.html
-    checked: 2026-10-22
-    about: 人口802,648人（男380,536・女422,112）、世帯数371,987。数字は data/shogo.yml
+    checked: 2026-10-26
+    about: 確報値で人口802,648人（男380,536・女422,112）、世帯数371,987。数字は data/shogo.yml
 
   - id: sakai-kakuho-pdf
     kind: shogo
@@ -180,9 +180,9 @@ sources:
   - id: nagoya-kokusei
     kind: shogo
     publisher: 名古屋市
-    title: null
+    title: 「令和7年国勢調査 名古屋市の人口と世帯数（確定値）」の公表について
     url: https://www.city.nagoya.jp/houdou/3003942/3003948/3005709.html
-    checked: 2026-10-22
+    checked: 2026-10-26
     about: 令和7年国勢調査の確定値（2026年9月29日の報道発表）。人口2,345,186人、世帯数1,187,231。数字は data/shogo.yml
 
   # ---------- 避難場所データ ----------

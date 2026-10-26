@@ -27,11 +27,12 @@
   - `SITE.launched`（`src/site.mjs`）が false のあいだは全ページ noindex・robots.txt は全部おことわり（AdSense の審査もこの間はできない）。pages.dev はいつも noindex
 - AdSense：`SITE.adsense` に運営者ID（ca-pub-）を入れると、公開後の全ページの head にスクリプト、/ads.txt を置く。審査に向けて、空のリンク・「準備中」のページ・中身のない棚の入口を作らない。運営者情報・プライバシーポリシー（広告の Cookie の説明）・ナビを全ページに
 - 流れ：ブランチ `claude/...` → PR → CI が緑・プレビューで確認 → しょーくんに知らせてから Merge。修正はまとめて少ない push で
-- Claude の予約タスクは使わない。毎週の更新は GitHub Actions の `update.yml`（月曜0:07）と、災害時モードの手動ボタン（これから作る）
+- Claude の予約タスクは使わない。毎週の更新は GitHub Actions の `update.yml`（月曜0:07）
+- 災害時モード（10/26）：しょーくんが Actions の「災害時モードの切りかえ」（`saigai.yml`）でオン／オフ → `data/mode.yml` をコミットして公開。オンのあいだは全ページの上に灰色の帯で気象庁と市区町村への案内1行（`src/mode.mjs`）、楽天の商品（取りもしない）と AdSense を外す。避難場所の数・注記はそのまま。災害を見て自動で切りかえることはしない
 - このクラウドの作業場からは e-Stat と国土地理院につながらない。データは Actions が取って data/ にコミットしたものを使う
 
 ## データの決まり
-- 出典はすべて `data/sources.yml`（出典台帳）。ページ・計算は出典の id を指す。title はページの題そのもの（まだ確かめていないものは null。ページに出す前に確かめる）。checked は開いて確かめた日。計算に使う出典は90日を過ぎるとテストが止まる
+- 出典はすべて `data/sources.yml`（出典台帳）。ページでは `srcName()`（layout.mjs）で 発行元<cite>「題」</cite> と出す（題は相手の言葉なので、使わない言葉の点検から外す）。ページ・計算は出典の id を指す。title はページの題そのもの（まだ確かめていないものは null。ページに出す前に確かめる）。checked は開いて確かめた日。計算に使う出典は90日を過ぎるとテストが止まる
 - 備えの数字は `data/items.yml` の1か所だけ。本文・計算・チェックリスト・クイズはここから読む（数字を本文に直接書かない）。チェックリストの並びも items.yml の checklists
 - ランキングは増えた街だけ（減った順・「ワースト」を作らない）
 - 照らし合わせ：`data/shogo.yml` の公式の数字（堺市 802,648人など）と e-Stat の値が合わなければ公開しない
@@ -65,5 +66,6 @@
 | `data/estat.yml` | e-Stat から取る表と項目（名前で指定）。年齢・世帯・住宅は不詳補完値の表 |
 | `scripts/fetch-estat.mjs` → `data/estat/munis.json`・`meta.json` | 表の更新日を見て、変わったときだけ全市区町村の数字を取る。照らし合わせに通らなければ書きかえない |
 | `scripts/fetch-hinan.mjs` → `data/hinan/counts.json`・`list/<コード>.json`・`meta.json` | 避難場所の全国CSV（ETagが変わったときだけ作り直す）。数は全市区町村、一覧はページを作る街だけ。件数の見張り |
+| `scripts/fetch-yomi.mjs` → `data/yomi.json`・`src/yomi.mjs`・`src/lib/zip.mjs` | 市区町村さがしの読みがな（日本郵便の郵便番号データ ken_all.zip。ETag が変わったときだけ。郡を外し、政令市は区の読みの頭から）。取れなくても止めない。トップのさがすスクリプトは漢字・ひらがな・カタカナで、頭が合うものが先 |
 | `src/munis.mjs`・`src/areas.mjs` | munis.json の読み書きと点検・都道府県とページを作る74の街（英字のURL） |
-| `.github/workflows/update.yml` | 毎週月曜0:07に上の2つ → 変わったら data/ をコミットして deploy.yml を呼ぶ。止まったら Issue。データの取り方を変えたPRでも動き、PRのブランチにコミットする |
+| `.github/workflows/update.yml` | 毎週月曜0:07に上の3つ → 変わったら data/ をコミットして deploy.yml を呼ぶ。止まったら Issue。データの取り方を変えたPRでも動き、PRのブランチにコミットする |
