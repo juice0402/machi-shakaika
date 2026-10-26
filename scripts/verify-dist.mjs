@@ -63,7 +63,7 @@ for (const f of html) {
     // 楽天の商品を出すページは、楽天から取った情報（画像のURLなど）をログに出さない（楽天ウェブサービス規約 第10条9号。公開リポジトリのログは誰でも見られる）
     fail(f, rakuten ? '外のファイルを読み込んでいる（楽天のページなので中身はログに出さない）' : `外のファイルを読み込んでいる：${m[0].slice(0, 80)}`);
   }
-  if (SITE.adsense && SITE.launched && !f.endsWith('404.html') && !rakuten && !s.includes('<body data-ads="off">') && !s.includes(adsTag)) fail(f, 'AdSense のスクリプトがない');
+  if (SITE.adsense && SITE.launched && !f.endsWith('404.html') && !rakuten && !s.includes('<body data-ads="off">') && !s.includes(adsTag) && !s.includes(`<body data-ads-late="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${SITE.adsense}">`)) fail(f, 'AdSense のスクリプトがない');
   // クイズは AdSense なし（答えのボタンの近くに自動広告が入ると誤クリックをまねくため。設計：広告は結果の下だけ）
   if (/\/quiz\//.test(f) && s.includes('adsbygoogle')) fail(f, 'クイズのページに AdSense がある');
   if (rakuten) {

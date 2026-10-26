@@ -55,6 +55,14 @@ sources:
     checked: 2026-10-22
     about: 非常持出品の例（飲料水・食料品・貴重品・懐中電灯・携帯ラジオ・モバイルバッテリー・ヘルメット・救急用品・感染予防・衣類・洗面用具・携帯トイレ・生理用品、乳児はミルク・紙おむつ・ほ乳びん）。2026年7月1日更新
 
+  - id: osaka-bichiku
+    kind: sonae
+    publisher: 大阪府
+    title: 備蓄品や非常持ち出し品などの準備
+    url: https://www.pref.osaka.lg.jp/kikikanri/bousaiportal_hp/hizyoumotidasihin.html
+    checked: 2026-10-26
+    about: 備蓄品のリスト例の生活用品に「懐中電灯・予備電池・携帯電話の充電器・モバイルバッテリー」。2025年11月14日更新
+
   # 冬の停電と寒さ（/sonae/fuyu-teiden/）。title は題のうち、サイト名の末尾（「 - ほくでんネットワーク」など）を除いたもの
   - id: hepco-saigai
     kind: sonae

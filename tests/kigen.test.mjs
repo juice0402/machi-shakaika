@@ -1,3 +1,4 @@
+import { SITE } from '../src/site.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readYaml, checkItems } from '../src/data.mjs';
@@ -18,7 +19,7 @@ const L = [
 
 test('えらべる品目：items.yml のチェックリストから、記号は1字で重ならない。品目ページは items.yml にあるものだけ', () => {
   assert.deepEqual(checkItems(items, sources), []);
-  assert.deepEqual(C.map((c) => c[1]), ['水', '主食', '缶詰', '携帯トイレ', 'カセットボンベ']);
+  assert.deepEqual(C.map((c) => c[1]), ['水', '主食', '缶詰', '携帯トイレ', 'カセットボンベ', '乾電池']);
   assert.equal(new Set(C.map((c) => c[0])).size, C.length);
   for (const c of C) if (c[2]) assert.ok(items.items.some((it) => it.hinmoku && c[2] === `/hinmoku/${it.id}/`), c[1]);
   assert.equal(C.find((c) => c[1] === '缶詰')[2], '');
@@ -142,10 +143,12 @@ test('ページに入れる部品は、外の変数を使わずに動く', () =>
   assert.deepEqual(f(C, L), [kStr(L, C), L.length, true]);
 });
 
-test('期限メモのページ：AdSense なし・品目は items.yml から・災害時モードでも同じ・説明は1行', () => {
+test('期限メモのページ：広告は # のメモを消してから読む・品目は items.yml から・災害時モードは広告なし・説明は1行', () => {
   const [p] = kigenPages({ items });
   assert.equal(p.path, '/dougu/kigen/');
-  assert.equal(p.noAds, true);
+  assert.equal(p.adsLate, true);
+  assert.ok(!p.script.includes('adsbygoogle') && !p.script.includes("'#'+s:"));
+  assert.ok(p.script.indexOf('clean();') < p.script.indexOf('dataset.adsLate'));
   for (const c of C) assert.ok(p.body.includes(`>${c[1]}</button>`), c[1]);
   assert.ok(p.description.includes(`${KIGEN_NOTICE_DAYS}日前`));
   const n = [...p.description].length;
@@ -155,9 +158,10 @@ test('期限メモのページ：AdSense なし・品目は items.yml から・�
   assert.ok(!/使い方/.test(p.body));
   for (const saigai of [true, false]) {
     const html = page({ ...p, saigai });
-    assert.ok(!html.includes('adsbygoogle'));
+    assert.ok(!/<script[^>]*adsbygoogle/.test(html), 'head で広告を読まない');
     assert.ok(!/rakuten/.test(html));
-    assert.ok(html.includes('<body data-ads="off">'));
+    if (saigai || !SITE.adsense || !SITE.launched) assert.ok(html.includes('<body data-ads="off">') && !html.includes('adsbygoogle'));
+    else assert.ok(html.includes(`<body data-ads-late="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${SITE.adsense}">`));
   }
   // スクリプトが文法として正しい
   assert.doesNotThrow(() => new Function(p.script));

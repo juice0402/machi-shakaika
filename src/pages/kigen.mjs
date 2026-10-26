@@ -79,7 +79,8 @@ for(let m=1;m<=12;m++)mm.add(new Option(m+'月',m));mm.value=T[1];
 for(let d=1;d<=31;d++)dd.add(new Option(d+'日',d));
 const link=()=>location.origin+location.pathname+(kStr(L,C)?'#'+kStr(L,C):'');
 function say(t,act){msg.textContent=t;if(act){const b=document.createElement('button');b.type='button';b.textContent=act[0];b.addEventListener('click',act[1]);msg.append(b)}}
-function save(){const s=kStr(L,C);ls.set(s);history.replaceState(null,'',s?'#'+s:location.pathname)}
+function save(){ls.set(kStr(L,C))}
+function clean(){if(location.hash)history.replaceState(null,'',location.pathname+location.search)}
 function draw(){ul.textContent='';
 L.forEach((e,i)=>{const r=kLeft(e,T),li=document.createElement('li');if(r.days<=NEAR)li.className='near';
 const x=document.createElement('button');x.type='button';x.className='kx';x.textContent='済';x.setAttribute('aria-label',e.n+' '+kDate(e)+' を使った・入れかえたので消す');
@@ -97,13 +98,14 @@ if(!n){say('品目の名前を入れてください');nm.focus();return}
 if(d>kMonthEnd(y,m)){say(y+'年'+m+'月は'+kMonthEnd(y,m)+'日までです');return}
 if(L.length>=50){say('入れられるのは50件までです');return}
 L=kSort(L.concat([{n,y,m,d,q}]));save();draw();qt.value='';say(n+'（'+y+'年'+m+'月'+(d?d+'日':'')+'）を入れました')});
-function load(){ask.hidden=true;asking=false;say('');const mine=kRead(ls.get(),C).list,r=kRead(location.hash,C);
+function load(){ask.hidden=true;asking=false;say('');const h=location.hash;clean();const mine=kRead(ls.get(),C).list,r=kRead(h,C);
 if(!r.ok||!r.list.length){L=mine;save();draw();if(!r.ok||r.bad)say('URLのメモは読めませんでした');return}
 if(!mine.length||kStr(mine,C)===kStr(r.list,C)){L=r.list;save();draw();if(r.bad)say('読めない'+r.bad+'件を外しました');return}
 L=r.list;asking=true;draw();$('#kau').textContent=r.list.length;$('#kam').textContent=mine.length;ask.hidden=false;if(r.bad)say('読めない'+r.bad+'件を外しました');
 $('#kuse').onclick=()=>{asking=false;ask.hidden=true;save();draw();say('URLのメモを使います')};
 $('#kmine').onclick=()=>{asking=false;ask.hidden=true;L=mine;save();draw();say('この端末のメモを使います')}}
 window.addEventListener('hashchange',load);load();
+const ad=document.body.dataset.adsLate;if(ad){const s=document.createElement('script');s.async=true;s.crossOrigin='anonymous';s.src=ad;document.head.append(s)}
 async function copy(t,ok){try{await navigator.clipboard.writeText(t);say(ok)}catch(e){out.value=t;out.hidden=false;out.select();say('下の文字をコピーしてください')}}
 $('#kshare').addEventListener('click',async()=>{const u=link();if(navigator.share){try{await navigator.share({title:'期限メモ',url:u});return}catch(e){if(e&&e.name==='AbortError')return}}copy(u,'URLをコピーしました')});
 $('#kics').addEventListener('click',()=>{const b=new Blob([kIcs(L,{now:new Date(),url:link(),before:NEAR})],{type:'text/calendar;charset=utf-8'}),a=document.createElement('a');
@@ -125,14 +127,14 @@ export function kigenPages({ items }) {
           [`期限ごとの予定を${n}日前の通知つきでカレンダーに入れられ、メモはブラウザとURLの中だけに残ります。`, `期限ごとに${n}日前の通知つきでカレンダーに入れられます。`],
         ],
       ),
-      noAds: true,
+      adsLate: true,
       head: CSS,
       body: `<p class="crumb"><a href="/">トップ</a> / <a href="/sonae/">備えの知識</a></p>
 <h1 class="city">期限メモ</h1>
 <p class="lead">家の備えの期限を入れると、近い順に並びます</p>
 <p class="ask" id="kask" hidden aria-live="polite">URLとこの端末で、メモがちがいます。どちらを使いますか<br><button type="button" id="kuse">URLの<span id="kau">0</span>件</button><button type="button" id="kmine">この端末の<span id="kam">0</span>件</button></p>
 <form class="kf" id="kf" autocomplete="off">
-<div class="row"><label class="k" for="kn">品目</label><input id="kn" type="text" maxlength="20" placeholder="電池など" enterkeyhint="done"><label class="qk" for="kq">数</label><input id="kq" type="number" inputmode="numeric" min="1" max="999" placeholder="-"></div>
+<div class="row"><label class="k" for="kn">品目</label><input id="kn" type="text" maxlength="20" placeholder="薬など" enterkeyhint="done"><label class="qk" for="kq">数</label><input id="kq" type="number" inputmode="numeric" min="1" max="999" placeholder="-"></div>
 <p class="kw" id="kw">${names.map((x) => `<button type="button" aria-pressed="false">${esc(x)}</button>`).join('')}</p>
 <div class="row"><span class="k">期限</span><select id="ky" aria-label="年"></select><select id="km" aria-label="月"></select><select id="kd" aria-label="日（なくてもよい）"><option value="">日</option></select><button class="add" id="kadd" type="submit">入れる</button></div>
 </form>
@@ -145,12 +147,12 @@ export function kigenPages({ items }) {
 ${h2('このメモを残す')}
 <p class="src">この端末の中のメモは、しばらく開かないと消えることがあります</p>
 <ul class="kk">
-<li><button class="go" type="button" id="kshare">URLを送る・コピーする</button><small>ブックマークや家族に送ると、同じメモが開きます</small></li>
+<li><button class="go" type="button" id="kshare">URLを送る・コピーする</button><small>送ったURLを開くと、同じメモが出ます</small></li>
 <li><button class="go" type="button" id="kics">カレンダーに入れる</button><small><span id="kn2">0</span>件の期限の日に予定、${n}日前に通知</small></li>
 <li><button class="go" type="button" id="ktext">文字で書き出す</button></li>
 </ul>
 <textarea id="kout" readonly hidden aria-label="書き出した文字"></textarea>
-<p class="note">メモはこの端末とURLの中だけに入り、当サイトには送りません</p>
+<p class="note">メモはこの端末と、送ったURLの中だけに入り、当サイトには送りません</p>
 <p><button class="clr" type="button" id="kclr">すべて消す</button></p>
 </section>
 ${h2('あわせて')}

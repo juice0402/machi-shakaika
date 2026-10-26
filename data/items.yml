@@ -150,6 +150,9 @@ checklists:
         sources: [kantei-sonae, miyagi-mizu]
       - name: マッチ・ろうそく
         sources: [kantei-sonae, miyagi-mizu]
+      - name: 乾電池（ライトやラジオの予備）
+        kigen: [d, 乾電池]
+        sources: [osaka-bichiku]
 
   - id: mochidashi
     name: 持ち出す袋
