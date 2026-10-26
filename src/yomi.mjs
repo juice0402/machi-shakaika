@@ -4,7 +4,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-export const YOMI_URL = 'https://www.post.japanpost.jp/zipcode/dl/kogaki/zip/ken_all.zip';
+export const YOMI_URL = 'https://www.post.japanpost.jp/service/search/zipcode/download/kogaki/zip/ken_all.zip';
 const root = fileURLToPath(new URL('../', import.meta.url));
 export const YOMI_PATH = `${root}data/yomi.json`;
 
