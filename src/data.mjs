@@ -67,6 +67,7 @@ export function checkItems(items, src) {
   if (seen.size === 0) errors.push('品目が1つもありません');
   // チェックリスト：品目を指すか、名前と出典があるか
   const lists = new Set();
+  const kigen = new Set();
   for (const cl of items?.checklists ?? []) {
     const at = `チェックリスト ${cl?.id ?? '(id なし)'}`;
     if (!cl?.id || lists.has(cl.id) || !/^[a-z0-9-]+$/.test(cl.id)) errors.push(`${at}: id がないか2回あります`);
@@ -83,6 +84,13 @@ export function checkItems(items, src) {
       names.add(name);
       srcOk(e?.sources, `${at} ${name}`);
       if (!(e?.sources?.length || it?.sources?.length)) errors.push(`${at} ${name}: 出典がありません`);
+      // 期限メモでえらべる品目：[記号（英小文字1字。メモのURLに入る）, 短い名前]
+      if (e?.kigen != null) {
+        const [k, n] = Array.isArray(e.kigen) ? e.kigen : [];
+        if (e.kigen.length !== 2 || !/^[a-z]$/.test(k ?? '') || !n || [...String(n)].length > 10) errors.push(`${at} ${name}: kigen は [英小文字1字, 10文字までの名前]`);
+        else if (kigen.has(k) || kigen.has(n)) errors.push(`${at} ${name}: kigen の記号か名前が2回あります`);
+        kigen.add(k).add(n);
+      }
     }
   }
   return errors;
