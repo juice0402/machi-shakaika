@@ -61,7 +61,13 @@ jobs:
         run: node scripts/fetch-yomi.mjs
 
       - name: テスト（照らし合わせをふくむ）
-        run: npm test
+        # 止まったら、どのテストかを注記（annotation）に出す（ログを開けなくても、PR の画面と API で見えるように）
+        run: |
+          if ! node --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=tap --test-reporter-destination=test.tap "tests/**/*.test.mjs"; then
+            awk '/^[ \t]*not ok/{sub(/^[ \t]+/,"");print;next} /^[ \t]*error: /{e=$0;sub(/^[ \t]*error: /,"",e);if(e=="|-"||e=="|"){getline;e=$0;sub(/^[ \t]+/,"",e)};print "  " e}' test.tap \
+              | head -20 | sed 's/^/::error title=テストで止まった::/'
+            exit 1
+          fi
 
       - name: コミット
         id: commit
