@@ -283,9 +283,20 @@ function draw(v, shapes, seed, id, { textured = false } = {}) {
   return out.join('');
 }
 
-export const ARTS = { 1: 'えんぴつの挿絵', 2: '切り絵', 3: '木版画' };
+export const ARTS = { 1: 'えんぴつの挿絵', 2: '切り絵', 3: '木版画', 4: 'Canva 切り絵', 5: 'Canva ペンと水彩', 6: 'Canva 川ぞいの街（司令塔）' };
+// Canva で作った絵（10/26）：トップの1枚だけ。下の帯・地図の飾りは、合う描き方の SVG
+const CANVA = {
+  4: { file: 'mihon-kirie-860.webp', w: 860, h: 381, svg: '2', alt: '緑の紙を切って重ねた街のビルと、川にかかる橋と、朱の屋根の家と水のボトルの絵' },
+  5: { file: 'mihon-pen-860.webp', w: 860, h: 378, svg: '1', alt: '高さのちがうビルの街と、川にかかる石の橋と、朱の屋根の家と水のボトルのペン画' },
+  6: { file: 'mihon-shirei-860.webp', w: 860, h: 335, svg: '1', alt: '山にかこまれた川ぞいの街と、橋と田んぼのペン画' },
+};
+const base = (v) => CANVA[v]?.svg ?? v;
 
 export function heroArt(v) {
+  const c = CANVA[v];
+  if (c)
+    return `<div class="hero hero-img"><img src="/${c.file}" width="${c.w}" height="${c.h}" alt="${c.alt}" decoding="async" fetchpriority="high"></div>
+<p class="cap"><span>街の数字を調べて</span><span>わが家の備えの量を出す</span></p>`;
   const seal =
     v === '3'
       ? `<g transform="rotate(-3 376 16)"><path d="${wobble(rect(367, 5, 18, 23), rng(7), { j: 0.6, step: 5, smooth: false })}" fill="#c53d43"/><text x="376" y="15" font-size="8.5" text-anchor="middle" fill="#fff" font-family="'Hiragino Mincho ProN','Yu Mincho','Noto Serif JP',serif" font-weight="700">ま</text><text x="376" y="25" font-size="8.5" text-anchor="middle" fill="#fff" font-family="'Hiragino Mincho ProN','Yu Mincho','Noto Serif JP',serif" font-weight="700">ち</text></g>`
@@ -295,6 +306,7 @@ export function heroArt(v) {
 }
 
 export function townArt(v) {
+  v = base(v);
   const st = { 1: '', 2: 'town2', 3: 'town3' }[v];
   if (v === '2') {
     // 切り絵の街並みは、うすい緑の1色（窓だけ白く切りぬく）
@@ -314,10 +326,11 @@ export function townArt(v) {
 }
 
 export function mapArt(v) {
+  v = base(v);
   return `<svg class="mapart" viewBox="0 0 358 330" aria-hidden="true">${draw(v, mapShapes(), 47, `mp${v}`)}<text x="34" y="29" font-size="12" text-anchor="middle" fill="${v === '2' ? '#2f5d3e' : INK}" font-family="'Hiragino Mincho ProN','Yu Mincho','Noto Serif JP',serif" font-weight="700">北</text></svg>`;
 }
 
-export const ART_CSS = `.hero{margin:6px -16px 0;line-height:0}.hero svg{display:block;width:100%;height:auto}
+export const ART_CSS = `.hero{margin:6px -16px 0;line-height:0}.hero svg,.hero img{display:block;width:100%;height:auto}
 .cap{display:flex;justify-content:space-between;margin:2px 0 12px;font:13.5px/1.5 "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;color:var(--sub)}
 .mapw{position:relative}.mapart{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .town{max-width:430px;margin:24px auto 0;line-height:0}.town svg{display:block;width:100%;height:auto}
