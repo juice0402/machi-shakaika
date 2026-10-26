@@ -1,5 +1,5 @@
 // 市区町村のページ（/都道府県/市区町村/）。上が「この街の数字」、下が「この街の備え」
-import { esc, fmt, h2, scale, srcKokusei, jpDate, RIVER, fit } from '../layout.mjs';
+import { esc, fmt, h2, scale, srcName, srcKokusei, jpDate, RIVER, fit } from '../layout.mjs';
 import { derive, feature, prefRank, similar, sonaeLinks, prefOf, r1 } from '../stats.mjs';
 import { need } from '../calc.mjs';
 import { machiQuiz } from '../quiz.mjs';
@@ -8,7 +8,15 @@ import { machiQuizHtml, MACHI_JS } from './quiz.mjs';
 const pct = (v) => `${r1(v).toFixed(1)}%`;
 const signed = (v) => `${v > 0 ? '+' : ''}${r1(v).toFixed(1)}%`;
 
-export function cityPage({ city, munis, list, z, cc, hinan, hinanMeta, urlOf }) {
+// 「この街の備え」の1行：街の備蓄は避難所に来た人の分、家の分は家で。街が出している備蓄のページへのリンクつき
+// b は data/bichiku.yml の1件。無い街は行ごと出さない（東京23区は「区」）
+export function bichikuLine(city, b) {
+  if (!b) return '';
+  const who = city.kind === 'ku' ? '区' : '市';
+  return `<p class="why">${who}の備蓄は避難所に来た人の分です。<br>家の分は家で備えます。<br><a href="${esc(b.url)}" rel="noopener">${srcName(b)}</a></p>`;
+}
+
+export function cityPage({ city, munis, list, z, cc, hinan, hinanMeta, urlOf, bichiku = null }) {
   const a = derive(munis.areas[city.code]);
   const pref = prefOf(a.code);
   const per = r1(a.per);
@@ -63,6 +71,7 @@ ${srcKokusei(munis)}
 <section class="sonae"><span class="edge">${RIVER}</span>
 ${h2('この街の備え')}
 ${links.map((l) => `<p class="why">${esc(l.why)}<a href="${l.href}">${esc(l.text)}</a></p>`).join('\n')}
+${bichikuLine(city, bichiku)}
 ${
   h
     ? `<div class="cnt"><p>指定緊急避難場所<b>${fmt(h[0])}</b></p><p>指定避難所<b>${fmt(h[1])}</b></p></div>

@@ -2,6 +2,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { parseYaml } from './lib/yaml.mjs';
+import { CITIES } from './areas.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 export const readYaml = (name) => parseYaml(readFileSync(`${root}data/${name}`, 'utf8'));
@@ -120,6 +121,39 @@ export function checkShogo(shogo, src) {
     if (!/^\d{5}$/.test(String(c?.area))) errors.push(`${at}: area は5けたの市区町村コード（"27140" のように引用符で）`);
     if (typeof c?.value !== 'number') errors.push(`${at}: value は数`);
     if (!ids.has(c?.source)) errors.push(`${at}: 出典 ${c?.source} が sources.yml にありません`);
+  }
+  return errors;
+}
+
+// 自治体の備蓄の公表ページ（data/bichiku.yml）。ファイルがない・空のときは1件もないものとして読む
+export function readBichiku() {
+  try {
+    return readYaml('bichiku.yml') ?? { cities: [] };
+  } catch (e) {
+    if (e.code === 'ENOENT') return { cities: [] };
+    throw e;
+  }
+}
+
+// 街のキー（都道府県の英字/市区町村の英字）→ その街の公表ページ
+export const bichikuMap = (b) => new Map((b?.cities ?? []).map((c) => [c.city, c]));
+
+// 備蓄の公表ページの形。街が areas.mjs にある・2回書かない・発行元は街の名前・題がある・https・確かめた日
+export function checkBichiku(b, cities = CITIES) {
+  const errors = [];
+  const names = new Map(cities.map((c) => [`${c.pref}/${c.slug}`, c.name]));
+  const seen = new Set();
+  if (b != null && !Array.isArray(b.cities)) return ['bichiku: cities のリストがありません'];
+  for (const c of b?.cities ?? []) {
+    const at = c?.city ?? '(city なし)';
+    if (!names.has(c?.city)) errors.push(`${at}: この街は src/areas.mjs にありません（都道府県の英字/市区町村の英字）`);
+    if (seen.has(c?.city)) errors.push(`${at}: 2回書かれています`);
+    seen.add(c?.city);
+    if (!c?.publisher) errors.push(`${at}: publisher がありません`);
+    else if (names.has(c.city) && c.publisher !== names.get(c.city)) errors.push(`${at}: publisher は街の名前（${names.get(c.city)}）で`);
+    if (typeof c?.title !== 'string' || !c.title.trim()) errors.push(`${at}: title（ページの題）がありません`);
+    if (!/^https:\/\/[^\s]+$/.test(c?.url ?? '')) errors.push(`${at}: url は https で`);
+    if (!DATE.test(String(c?.checked))) errors.push(`${at}: checked（確かめた日）は 2026-10-26 の形で`);
   }
   return errors;
 }
