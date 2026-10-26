@@ -1,6 +1,6 @@
 // 備えの知識（/sonae/）と計算のページ（/dougu/keisan/）
 // 数字はすべて data/items.yml から。出典は data/sources.yml の id で書き、ページの下に確認日つきで出す
-import { esc, h2, jpDate } from '../layout.mjs';
+import { esc, h2, jpDate, fit } from '../layout.mjs';
 import { calcHtml, CALC_JS, need } from '../calc.mjs';
 
 export function sourceList(ids, sources) {
@@ -34,7 +34,10 @@ export function sonaePages({ cc, items, sources }) {
   out.push({
     path: '/sonae/',
     title: '備えの知識',
-    description: '家の備蓄の量のめやす、ローリングストック、携帯トイレの備え。公的な資料の数字をもとに、わが家の人数で計算できます。',
+    description: fit(
+      [`家の備えを人数と日数で考える知識のページ。備蓄は最低${days.min}日分・できれば${days.better}日分、水は1人1日${w}L、携帯トイレは1人1日${t}回がめやす。`],
+      [['量の計算、チェックリスト、品目ごとのめやす、備えの数字クイズへ。', '量の計算とチェックリストへ。']],
+    ),
     body: `<p class="crumb"><a href="/">トップ</a></p>
 <h1 class="city">備えの知識</h1>
 <p class="lead">公的な資料の数字をもとに、家の備えを人数と日数で考える</p>
@@ -45,7 +48,10 @@ export function sonaePages({ cc, items, sources }) {
   out.push({
     path: '/sonae/bichiku/',
     title: '家の備蓄の量のめやす（水・食事・携帯トイレ）',
-    description: `家の備蓄は最低${days.min}日分、できれば${days.better}日分。水は1人1日${w}L、食事は${m}食、携帯トイレは${t}回が公的な資料のめやすです。人数ごとの早見表つき。`,
+    description: fit(
+      [`家の備蓄は最低${days.min}日分、できれば${days.better}日分。水は1人1日${w}L、食事は${m}食、携帯トイレは${t}回がめやすで、4人家族の${days.better}日分なら水${need(w, 4, days.better)}L・携帯トイレ${need(t, 4, days.better)}回分。`],
+      [[`人数ごとの早見表と、高齢の家族がいる家の${y}日分のめやすつき。`, '人数ごとの早見表つき。']],
+    ),
     body: `<p class="crumb"><a href="/">トップ</a> / <a href="/sonae/">備えの知識</a></p>
 <h1 class="city">備蓄の量のめやす</h1>
 <div class="prose">
@@ -70,7 +76,10 @@ ${sourceList([...new Set([...days.sources, ...by.mizu.sources, ...by.shushoku.so
   out.push({
     path: '/sonae/rolling-stock/',
     title: 'ローリングストック（ふだんの食品で備える）',
-    description: 'ふだん食べている食品を少し多めに買い置きして、使った分を買い足す備え方。家族の人数と日数からの量のめやすつき。',
+    description: fit(
+      [`ふだん食べている食品を少し多めに買い置きして、使った分を買い足す備え方。めやすは最低${days.min}日分・できれば${days.better}日分で、4人家族の${days.better}日分は主食${need(m, 4, days.better)}食・水${need(w, 4, days.better)}L。`],
+      ['回し方と、カセットコンロとボンベの話も。'],
+    ),
     body: `<p class="crumb"><a href="/">トップ</a> / <a href="/sonae/">備えの知識</a></p>
 <h1 class="city">ローリングストック</h1>
 <div class="prose">
@@ -92,7 +101,10 @@ ${sourceList(['maff-guide', 'maff-sonae', 'maff-stock'], sources)}`,
   out.push({
     path: '/sonae/keitai-toilet/',
     title: '携帯トイレの備え（1人1日5回のめやす）',
-    description: `断水や停電、配管の被害で水洗トイレが使えなくなることがあります。携帯トイレは1人1日${t}回、最低${days.min}日・できれば${days.better}日分。4人家族の1週間は${need(t, 4, 7)}回分です。`,
+    description: fit(
+      [`断水や停電、配管の被害で水洗トイレが使えなくなることがあります。携帯トイレは1人1日${t}回、最低${days.min}日・できれば${days.better}日分で、4人家族の1週間は${need(t, 4, 7)}回分。`],
+      [['マンションなど集合住宅で、配管の状態がわかるまで使う理由も。', '人数ごとの早見表つき。']],
+    ),
     body: `<p class="crumb"><a href="/">トップ</a> / <a href="/sonae/">備えの知識</a></p>
 <h1 class="city">携帯トイレの備え</h1>
 <div class="prose">
@@ -112,7 +124,10 @@ ${sourceList(by['keitai-toilet'].sources, sources)}`,
   out.push({
     path: '/dougu/keisan/',
     title: '備蓄の量の計算（水・食事・携帯トイレ）',
-    description: `家族の人数と日数（${days.choices.join('日・')}日）から、水・食事・携帯トイレの備えの量を計算します。1人1日 水${w}L・${m}食・トイレ${t}回のめやす。`,
+    description: fit(
+      [`家族の人数と日数（${days.choices.join('日か')}日）から、水・食事・携帯トイレの備えの量をその場で計算します。1人1日 水${w}L・${m}食・トイレ${t}回のめやすで、4人家族の${days.min}日分は水${need(w, 4, days.min)}L・食事${need(m, 4, days.min)}食・携帯トイレ${need(t, 4, days.min)}回分。`],
+      [],
+    ),
     body: `<p class="crumb"><a href="/">トップ</a> / <a href="/sonae/">備えの知識</a></p>
 <h1 class="city">備蓄の量の計算</h1>
 ${calcHtml(cc)}

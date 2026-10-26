@@ -5,6 +5,23 @@ import { SITE, ESTAT_CREDIT } from './site.mjs';
 
 export const esc = (s) =>
   String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+// 説明文（meta description）：決まった文のあとに、120文字をこえない分だけ足す文をつなぐ（10/26 検索結果での見え方）
+//   opt の1つずつは文か、文の配列（入る中でいちばん前の1つだけ使う。長い言い方・短い言い方の順に書く）
+export const DESC_MAX = 120;
+export function fit(req, opt = []) {
+  let s = req.join('');
+  for (const o of opt) {
+    const alt = (Array.isArray(o) ? o : [o]).find((x) => x && [...(s + x)].length <= DESC_MAX);
+    if (alt) s += alt;
+  }
+  return s;
+}
+// 値段は幅で（検索結果に古い値段が残るため）：698 → 600円台から、1,980 → 1,000円台から、12,800 → 1万円台から
+export function priceBand(p) {
+  if (p < 1000) return `${Math.floor(p / 100) * 100}円台から`;
+  if (p < 10000) return `${Math.floor(p / 1000).toLocaleString('ja-JP')},000円台から`;
+  return `${Math.floor(p / 10000)}万円台から`;
+}
 export const fmt = (n) => (n == null ? '-' : Number(n).toLocaleString('ja-JP'));
 
 const MINCHO = '"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif';
@@ -169,7 +186,7 @@ export const FOOT_LINKS = [
  * @param {boolean}[p.rakuten] 楽天の商品を出すページ（AdSense を置かない・フッターに楽天のクレジット）
  */
 export function page(p) {
-  const full = p.path === '/' ? `${SITE.name}｜街の数字と家の備え` : `${p.title}｜${SITE.name}`;
+  const full = p.path === '/' ? SITE.name : `${p.title}｜${SITE.name}`;
   const robots = !SITE.launched || p.noindex ? '<meta name="robots" content="noindex">' : '';
   const canonical = p.path ? `<link rel="canonical" href="${SITE.url}${p.path}">` : '';
   const ads = Boolean(SITE.adsense) && SITE.launched && !p.noAds && !p.noindex && !p.rakuten;
@@ -183,7 +200,7 @@ export function page(p) {
 <title>${esc(full)}</title>
 <meta name="description" content="${esc(p.description)}">
 ${robots}${canonical}
-<meta property="og:title" content="${esc(full)}"><meta property="og:description" content="${esc(p.description)}"><meta property="og:type" content="${isTop ? 'website' : 'article'}">${p.path ? `<meta property="og:url" content="${SITE.url}${p.path}">` : ''}
+<meta property="og:site_name" content="${esc(SITE.name)}"><meta property="og:title" content="${esc(full)}"><meta property="og:description" content="${esc(p.description)}"><meta property="og:type" content="${isTop ? 'website' : 'article'}">${p.path ? `<meta property="og:url" content="${SITE.url}${p.path}">` : ''}
 ${ads ? `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${SITE.adsense}" crossorigin="anonymous"></script>\n` : ''}<style>${CSS}</style>${p.head ?? ''}
 </head>
 <body${ads ? '' : ' data-ads="off"'}>

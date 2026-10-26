@@ -1,5 +1,6 @@
 // トップ（/）：上に街さがし、すぐ下に計算。その下に都道府県の地図と備えの知識
-import { esc, h2, jpDate } from '../layout.mjs';
+import { esc, h2, jpDate, fmt, fit } from '../layout.mjs';
+import { SITE } from '../site.mjs';
 import { calcHtml, CALC_JS } from '../calc.mjs';
 import { PREFS } from '../areas.mjs';
 
@@ -22,7 +23,7 @@ function show(){const v=norm(i.value);ul.textContent='';msg.textContent='';if(!v
 hit.forEach(([n,p,u])=>{const li=document.createElement('li'),a=document.createElement('a');a.href=u;a.textContent=n;const s=document.createElement('small');s.textContent=p;a.append(s);li.append(a);ul.append(li)})})}
 i.addEventListener('focus',load,{once:true});i.addEventListener('input',show);f.addEventListener('submit',e=>{e.preventDefault();show();const a=ul.querySelector('a');if(a&&ul.children.length===1)location.href=a.href})})();`;
 
-export function topPage({ cc, munis, hinanMeta }) {
+export function topPage({ cc, munis, hinanMeta, nMunis }) {
   const tiles = PREFS.map((p) => {
     const [x, y] = TILES[p.slug];
     return `<a class="tile" href="/${p.slug}/" style="grid-column:${x + 1};grid-row:${y + 1}" aria-label="${esc(p.name)}">${short(p.name)}</a>`;
@@ -37,7 +38,12 @@ ${calcHtml(cc)}
   return {
     path: '/',
     title: 'まちの社会科',
-    description: '全国の市区町村の人口・世帯の数字（2025年国勢調査）と、わが家の人数で計算する水・食事・携帯トイレの備えの量。指定緊急避難場所と指定避難所の数も。',
+    description: fit(
+      [`全国${fmt(nMunis)}市区町村の人口と世帯の数（${munis.survey.slice(0, 4)}年国勢調査・${jpDate(munis.published)}公表）と、家族の人数で出す水・食事・携帯トイレの備えの量。`],
+      [[`全国${fmt(hinanMeta.total.basho)}か所の指定緊急避難場所の数や、街の数字のクイズも。`, '街の数字のクイズも。']],
+    ),
+    // Google の「サイト名」がドメインのまま出ないように（WebSite の構造化データ）
+    head: `<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'WebSite', name: SITE.name, alternateName: SITE.project, url: `${SITE.url}/` })}</script>`,
     body,
     script: CALC_JS + FIND_JS,
   };

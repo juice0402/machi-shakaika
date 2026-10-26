@@ -7,7 +7,18 @@ import { esc, h2, srcKokusei } from '../layout.mjs';
 import { PREFS } from '../areas.mjs';
 import { TILES, short } from './top.mjs';
 import { sonaeData } from '../quiz.mjs';
-import { CORE_JS } from '../quiz-core.mjs';
+import { CORE_JS, qFair, qDobonTopics } from '../quiz-core.mjs';
+import { fit } from '../layout.mjs';
+
+// どっちが多いの組み合わせの数（都道府県どうし・人口10万人以上どうし・県の中どうし）
+function docchiPairs(D) {
+  const groups = [D.prefs, D.munis.filter((r) => r[3] >= 100000), ...D.prefs.map((p) => D.munis.filter((r) => r[0].slice(0, 2) === p[0]))];
+  let n = 0;
+  for (const g of groups) D.m.forEach((m, mi) => {
+    for (let i = 0; i < g.length; i++) for (let j = i + 1; j < g.length; j++) if (qFair(m, g[i][3 + mi], g[j][3 + mi])) n++;
+  });
+  return n;
+}
 
 const KANA = 'アイウ';
 const data = (obj) => `<script type="application/json" id="qd">${JSON.stringify(obj).replace(/</g, '\\u003c')}</script>`;
@@ -65,14 +76,40 @@ tiles.forEach(x=>x.addEventListener('click',()=>tap(x)));
 $('.next',nav).addEventListener('click',()=>{topic();box.scrollIntoView()});sel.addEventListener('change',()=>{save();if(D)topic()});share($('.send',nav),()=>last);
 $('.qq',box).textContent='読み込み中';load().then(d=>{D=d;D.prefs.forEach(p=>PN[p[0]]=p);TP=qDobonTopics(D);topic()}).catch(()=>{$('.qq',box).textContent='読み込めませんでした'})})();`;
 
-export function quizPages({ munis, items, sources }) {
+// 備えの数字クイズのひな形（1つが1種類の問題。人数と日数は毎回えらぶ）
+const SONAE_T = `[()=>calc(D.w,'L','水','mizu','飲み水と調理に使う水の量です'),()=>calc(D.m,'食','主食','shoku','1人1日'+D.m+'食で数えます'),()=>calc(D.t,'回分','携帯トイレ','toilet','断水や停電で水洗トイレが使えないときの量です'),
+()=>{const [n,d]=nd(),l=D.w*n*d,c=Math.ceil(l/2);return{q:n+'人家族の'+d+'日分の水を、2Lのペットボトルでそろえると何本？',...three(c,'本'),ex:D.w+'L×'+n+'人×'+d+'日＝'+f(l)+'L。2Lずつで'+f(c)+'本です',src:'bottle',link:['/hinmoku/mizu/','備蓄の水']}},
+()=>{const [n,d]=nd(),l=D.w*n*d,c=Math.ceil(l/12);return{q:n+'人家族の'+d+'日分の水を、2L×6本入りの箱でそろえると何箱？',...three(c,'箱',[c+1,c*2,Math.max(1,c-1)]),ex:D.w+'L×'+n+'人×'+d+'日＝'+f(l)+'L。1箱は12Lなので'+f(c)+'箱です',src:'bottle',link:['/hinmoku/mizu/','備蓄の水']}},
+()=>{const [n,d]=nd(),l=D.w*n*d,ch=[D.min,D.better,D.y];return{q:n+'人家族で、水を'+f(l)+'L用意しました。何日分？',ch:ch.map(v=>v+'日分'),a:ch.indexOf(d),ex:f(l)+'L ÷（1人1日'+D.w+'L×'+n+'人）＝'+d+'日分です',src:'mizu',link:['/dougu/keisan/?n='+n+'&d='+d,'計算で確かめる']}},
+()=>{const [n,d]=nd(),c=D.t*n*d;return{q:'携帯トイレ'+f(c)+'回分は、'+d+'日分なら何人分？',...three(n,'人分',[n+1,n+2,n>1?n-1:n+3]),ex:f(c)+'回 ÷（1人1日'+D.t+'回×'+d+'日）＝'+n+'人分です',src:'toilet',link:['/sonae/keitai-toilet/','携帯トイレの備え']}},
+()=>{const n=1+R(4),c=D.w*n*D.y;return{q:'高齢の家族がいる'+n+'人家族。少なくとも'+D.y+'日分の水は？',...three(c,'L'),ex:'1人1日'+D.w+'L×'+n+'人×'+D.y+'日＝'+f(c)+'Lです',src:'y',link:['/sonae/bichiku/#yohairyo','高齢の家族や小さな子どもがいる家']}},
+()=>{const n=1+R(4),c=D.t*n*D.y;return{q:'小さな子どもがいる'+n+'人家族。少なくとも'+D.y+'日分の携帯トイレは？',...three(c,'回分'),ex:'1人1日'+D.t+'回×'+n+'人×'+D.y+'日＝'+f(c)+'回分です',src:'y',link:['/sonae/bichiku/#yohairyo','高齢の家族や小さな子どもがいる家']}},
+()=>({q:'水は1人1日どれだけがめやす？（飲み水と調理の水）',ch:[D.w,Math.max(1,D.w-2),D.w*2].map(v=>v+'L'),a:0,ex:'1人1日'+D.w+'L。トイレを流す水などは別に要ります',src:'mizu',link:['/sonae/bichiku/','備蓄の量のめやす']}),
+()=>({q:'携帯トイレは1人1日何回分がめやす？',ch:[D.t,1,D.t*2].map(v=>v+'回'),a:0,ex:'1人1日'+D.t+'回。4人家族の1週間なら'+f(D.t*4*7)+'回分です',src:'toilet',link:['/sonae/keitai-toilet/','携帯トイレの備え']}),
+()=>({q:'主食（ご飯など）は、1人1日何食で数える？',ch:[D.m,1,D.m+2].map(v=>v+'食'),a:0,ex:'1人1日'+D.m+'食で数えます',src:'shoku',link:['/sonae/bichiku/','備蓄の量のめやす']}),
+()=>({q:'家の備蓄は、最低何日分がめやす？',ch:[D.min,1,30].map(v=>v+'日分'),a:0,ex:'最低'+D.min+'日分、できれば'+D.better+'日分です',src:'days',link:['/sonae/bichiku/','備蓄の量のめやす']}),
+()=>({q:'家の備蓄は、できれば何日分あるとよい？',ch:[D.better,2,30].map(v=>v+'日分'),a:0,ex:'最低'+D.min+'日分、できれば'+D.better+'日分です',src:'days',link:['/sonae/bichiku/','備蓄の量のめやす']}),
+()=>({q:'高齢の家族や小さな子どもがいる家は、少なくとも何日分？',ch:[D.y,D.min,60].map(v=>v+'日分'),a:0,ex:'少なくとも'+D.y+'日分がめやすです。ふだんの食事や薬が手に入りにくくなると困りやすいためです',src:'y',link:['/sonae/bichiku/#yohairyo','高齢の家族や小さな子どもがいる家']}),
+()=>({q:'農林水産省の「大人1人1週間」の例で、カセットボンベは何本？',ch:[D.gas,1,20].map(v=>v+'本'),a:0,ex:D.gas+'本です。家族の人数での数え方は家の使い方で変わります',src:'gas',link:['/hinmoku/gas/','カセットコンロとボンベ']}),
+()=>({q:'飲み水とは別に要る、トイレを流したりするための水は？',ch:['生活用水','保存水','雨水'],a:0,ex:'生活用水です。飲み水の量（1人1日'+D.w+'L）とは別に考えます',src:'seikatsu',link:['/dougu/check/','チェックリスト']}),
+()=>({q:'「1人1日'+D.w+'L」の水にふくまれるのは？',ch:['飲み水と調理の水','トイレを流す水','お風呂の水'],a:0,ex:'飲み水と調理の水です。トイレを流す水などの生活用水は別に要ります',src:'mizu',link:['/sonae/bichiku/','備蓄の量のめやす']}),
+()=>({q:'ふだん食べている食品を少し多めに買い、食べた分を買い足して備える方法は？',ch:['ローリングストック','フードバンク','まとめ買い'],a:0,ex:'ローリングストックです。期限の近いものから食べていけば、むだになりにくくなります',src:'rolling',link:['/sonae/rolling-stock/','ローリングストック']})]`;
+export const SONAE_KINDS = (SONAE_T.match(/\(\)=>/g) ?? []).length;
+
+export function quizPages({ munis, items, sources, machi }) {
+  const nMunis = machi.munis.length;
+  const docchiMan = Math.floor(docchiPairs(machi) / 10000);
+  const dobonN = qDobonTopics(machi).length;
   const out = [];
   const src = srcKokusei(munis);
 
   out.push({
     path: '/quiz/',
     title: 'クイズ（街の数字・備えの数字）',
-    description: '2025年国勢調査の数字でくらべる「どっちが多い？」「ドボンクイズ」と、家の備えの量の「備えの数字クイズ」。全国の市区町村から毎回ちがう問題、答えはその場で出典つき。',
+    description: fit(
+      [`${munis.survey.slice(0, 4)}年国勢調査の数字でくらべる「どっちが多い？」は組み合わせ${docchiMan}万通り以上、「ドボンクイズ」はお題${dobonN}。家の備えの量の「備えの数字クイズ」もあります。`],
+      ['答えはその場で、出典つき。'],
+    ),
     noAds: true,
     body: `<p class="crumb"><a href="/">トップ</a></p>
 <h1 class="city">クイズ</h1>
@@ -87,7 +124,10 @@ ${h2('備えの数字クイズ')}
   out.push({
     path: '/quiz/docchi/',
     title: 'どっちが多い？ 街と都道府県の数字クイズ',
-    description: '2つの市区町村・都道府県の人口や面積、1世帯の人数、一戸建ての割合などをくらべる2択クイズ。全国の市区町村から毎回ちがう10問、2025年国勢調査の数字です。',
+    description: fit(
+      [`全国${nMunis.toLocaleString('ja-JP')}市区町村と47都道府県の人口・面積・一戸建ての割合など${machi.m.length}の数字をくらべる2択クイズ。都道府県・人口10万人以上・県の中から毎回ちがう10問で、組み合わせは${docchiMan}万通り以上。`],
+      [`${munis.survey.slice(0, 4)}年国勢調査の数字です。`],
+    ),
     noAds: true,
     body: `<p class="crumb"><a href="/">トップ</a> / <a href="/quiz/">クイズ</a></p>
 <h1 class="city">どっちが多い？</h1>
@@ -107,7 +147,10 @@ ${src}`,
   out.push({
     path: '/quiz/dobon/',
     title: 'ドボンクイズ（都道府県・市区町村のトップ10を当てる）',
-    description: '人口が多い・面積が広い・一戸建ての割合が高いなど、トップ10に入る都道府県や市区町村を1つずつえらぶクイズ。11位より下をえらんだらドボン。全国と47都道府県それぞれのお題、2025年国勢調査の数字です。',
+    description: fit(
+      [`人口・面積・一戸建ての割合など${machi.m.length}の数字で、トップ10に入る都道府県や市区町村を1つずつ当てるクイズ。全国と47都道府県それぞれのお題が${dobonN}あり、11位より下をえらぶとドボン。`],
+      [`${munis.survey.slice(0, 4)}年国勢調査の数字です。`],
+    ),
     noAds: true,
     body: `<p class="crumb"><a href="/">トップ</a> / <a href="/quiz/">クイズ</a></p>
 <h1 class="city">ドボンクイズ</h1>
@@ -127,7 +170,10 @@ ${src}`,
   out.push({
     path: '/quiz/sonae/',
     title: '備えの数字クイズ（水・食事・携帯トイレの量）',
-    description: `家族の人数と日数で、水・食事・携帯トイレはどれだけ？ 公的な資料の数字（水は1人1日${sd.w}L、携帯トイレは${sd.t}回など）から毎回ちがう5問。答えに出典つき。`,
+    description: fit(
+      [`家族の人数と日数で、水・食事・携帯トイレはどれだけ？ 水は1人1日${sd.w}L、携帯トイレは${sd.t}回などの公的なめやすから、${SONAE_KINDS}種類の問題で毎回ちがう5問。`],
+      ['答えに出典と確かめた日つき。'],
+    ),
     noAds: true,
     body: `<p class="crumb"><a href="/">トップ</a> / <a href="/quiz/">クイズ</a></p>
 <h1 class="city">備えの数字クイズ</h1>
@@ -142,23 +188,7 @@ const dist=(c,x=[Math.max(1,Math.round(c/2)),c*2])=>{const s=[...new Set(x.filte
 const three=(c,unit,o)=>{const ch=[c,...dist(c,o)];return{ch:ch.map(v=>f(v)+unit),a:0}};
 const U=u=>u==='回分'?'回':u;
 function calc(per,unit,what,src,extra,link){const [n,d]=nd(),c=per*n*d;return{q:n+'人家族の'+d+'日分、'+what+'は？',...three(c,unit),ex:'1人1日'+per+U(unit)+'×'+n+'人×'+d+'日＝'+f(c)+unit+'。'+extra,src,link:link||['/dougu/keisan/?n='+n+'&d='+d,'計算で確かめる']}}
-const T=[()=>calc(D.w,'L','水','mizu','飲み水と調理に使う水の量です'),()=>calc(D.m,'食','主食','shoku','1人1日'+D.m+'食で数えます'),()=>calc(D.t,'回分','携帯トイレ','toilet','断水や停電で水洗トイレが使えないときの量です'),
-()=>{const [n,d]=nd(),l=D.w*n*d,c=Math.ceil(l/2);return{q:n+'人家族の'+d+'日分の水を、2Lのペットボトルでそろえると何本？',...three(c,'本'),ex:D.w+'L×'+n+'人×'+d+'日＝'+f(l)+'L。2Lずつで'+f(c)+'本です',src:'bottle',link:['/hinmoku/mizu/','備蓄の水']}},
-()=>{const [n,d]=nd(),l=D.w*n*d,c=Math.ceil(l/12);return{q:n+'人家族の'+d+'日分の水を、2L×6本入りの箱でそろえると何箱？',...three(c,'箱',[c+1,c*2,Math.max(1,c-1)]),ex:D.w+'L×'+n+'人×'+d+'日＝'+f(l)+'L。1箱は12Lなので'+f(c)+'箱です',src:'bottle',link:['/hinmoku/mizu/','備蓄の水']}},
-()=>{const [n,d]=nd(),l=D.w*n*d,ch=[D.min,D.better,D.y];return{q:n+'人家族で、水を'+f(l)+'L用意しました。何日分？',ch:ch.map(v=>v+'日分'),a:ch.indexOf(d),ex:f(l)+'L ÷（1人1日'+D.w+'L×'+n+'人）＝'+d+'日分です',src:'mizu',link:['/dougu/keisan/?n='+n+'&d='+d,'計算で確かめる']}},
-()=>{const [n,d]=nd(),c=D.t*n*d;return{q:'携帯トイレ'+f(c)+'回分は、'+d+'日分なら何人分？',...three(n,'人分',[n+1,n+2,n>1?n-1:n+3]),ex:f(c)+'回 ÷（1人1日'+D.t+'回×'+d+'日）＝'+n+'人分です',src:'toilet',link:['/sonae/keitai-toilet/','携帯トイレの備え']}},
-()=>{const n=1+R(4),c=D.w*n*D.y;return{q:'高齢の家族がいる'+n+'人家族。少なくとも'+D.y+'日分の水は？',...three(c,'L'),ex:'1人1日'+D.w+'L×'+n+'人×'+D.y+'日＝'+f(c)+'Lです',src:'y',link:['/sonae/bichiku/#yohairyo','高齢の家族や小さな子どもがいる家']}},
-()=>{const n=1+R(4),c=D.t*n*D.y;return{q:'小さな子どもがいる'+n+'人家族。少なくとも'+D.y+'日分の携帯トイレは？',...three(c,'回分'),ex:'1人1日'+D.t+'回×'+n+'人×'+D.y+'日＝'+f(c)+'回分です',src:'y',link:['/sonae/bichiku/#yohairyo','高齢の家族や小さな子どもがいる家']}},
-()=>({q:'水は1人1日どれだけがめやす？（飲み水と調理の水）',ch:[D.w,Math.max(1,D.w-2),D.w*2].map(v=>v+'L'),a:0,ex:'1人1日'+D.w+'L。トイレを流す水などは別に要ります',src:'mizu',link:['/sonae/bichiku/','備蓄の量のめやす']}),
-()=>({q:'携帯トイレは1人1日何回分がめやす？',ch:[D.t,1,D.t*2].map(v=>v+'回'),a:0,ex:'1人1日'+D.t+'回。4人家族の1週間なら'+f(D.t*4*7)+'回分です',src:'toilet',link:['/sonae/keitai-toilet/','携帯トイレの備え']}),
-()=>({q:'主食（ご飯など）は、1人1日何食で数える？',ch:[D.m,1,D.m+2].map(v=>v+'食'),a:0,ex:'1人1日'+D.m+'食で数えます',src:'shoku',link:['/sonae/bichiku/','備蓄の量のめやす']}),
-()=>({q:'家の備蓄は、最低何日分がめやす？',ch:[D.min,1,30].map(v=>v+'日分'),a:0,ex:'最低'+D.min+'日分、できれば'+D.better+'日分です',src:'days',link:['/sonae/bichiku/','備蓄の量のめやす']}),
-()=>({q:'家の備蓄は、できれば何日分あるとよい？',ch:[D.better,2,30].map(v=>v+'日分'),a:0,ex:'最低'+D.min+'日分、できれば'+D.better+'日分です',src:'days',link:['/sonae/bichiku/','備蓄の量のめやす']}),
-()=>({q:'高齢の家族や小さな子どもがいる家は、少なくとも何日分？',ch:[D.y,D.min,60].map(v=>v+'日分'),a:0,ex:'少なくとも'+D.y+'日分がめやすです。ふだんの食事や薬が手に入りにくくなると困りやすいためです',src:'y',link:['/sonae/bichiku/#yohairyo','高齢の家族や小さな子どもがいる家']}),
-()=>({q:'農林水産省の「大人1人1週間」の例で、カセットボンベは何本？',ch:[D.gas,1,20].map(v=>v+'本'),a:0,ex:D.gas+'本です。家族の人数での数え方は家の使い方で変わります',src:'gas',link:['/hinmoku/gas/','カセットコンロとボンベ']}),
-()=>({q:'飲み水とは別に要る、トイレを流したりするための水は？',ch:['生活用水','保存水','雨水'],a:0,ex:'生活用水です。飲み水の量（1人1日'+D.w+'L）とは別に考えます',src:'seikatsu',link:['/dougu/check/','チェックリスト']}),
-()=>({q:'「1人1日'+D.w+'L」の水にふくまれるのは？',ch:['飲み水と調理の水','トイレを流す水','お風呂の水'],a:0,ex:'飲み水と調理の水です。トイレを流す水などの生活用水は別に要ります',src:'mizu',link:['/sonae/bichiku/','備蓄の量のめやす']}),
-()=>({q:'ふだん食べている食品を少し多めに買い、食べた分を買い足して備える方法は？',ch:['ローリングストック','フードバンク','まとめ買い'],a:0,ex:'ローリングストックです。期限の近いものから食べていけば、むだになりにくくなります',src:'rolling',link:['/sonae/rolling-stock/','ローリングストック']})];
+const T=${SONAE_T};;
 const box=$('#quiz'),meta=$('.meta',box),qq=$('.qq',box),ul=$('.ch',box),ex=$('.ex',box),next=$('.next',box),res=$('#res');let qs,i,score,last='';
 function show(){const q=qs[i];meta.textContent=(i+1)+'／'+N;qq.textContent=q.q;ex.hidden=true;next.hidden=true;delete ul.dataset.done;const idx=shuffle([0,1,2]);
 choices(ul,idx.map(j=>q.ch[j]),null,null,idx.indexOf(q.a),ok=>{if(ok)score++;ex.textContent='';const p=document.createElement('p');p.textContent=q.ex;const s=document.createElement('p');s.className='src';s.textContent='出典：'+D.src[q.src];ex.append(p,s);

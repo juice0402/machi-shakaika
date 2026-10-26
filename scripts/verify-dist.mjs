@@ -8,6 +8,7 @@ const walk = (d) => readdirSync(d).flatMap((x) => (statSync(`${d}/${x}`).isDirec
 const files = walk(DIST);
 const html = files.filter((f) => f.endsWith('.html'));
 let bad = 0;
+const descs = new Map(); // 説明文 → ページ（同じ説明文を量産しない）
 const fail = (f, msg) => {
   bad++;
   console.error(`NG ${f.slice(DIST.length)}：${msg}`);
@@ -29,6 +30,16 @@ for (const f of html) {
   const titles = s.match(/<title>([^<]*)<\/title>/g) ?? [];
   if (titles.length !== 1 || /<title>\s*<\/title>/.test(s)) fail(f, 'title が1つでない・空');
   if (!/<meta name="description" content="[^"]+">/.test(s)) fail(f, 'description がない');
+  // 検索結果での見え方（10/26）：説明文は全角80〜120文字・ページごとにちがう。サイト名は og:site_name
+  const desc = (s.match(/<meta name="description" content="([^"]*)">/) ?? [])[1] ?? '';
+  const indexable = !/<meta name="robots" content="noindex/.test(s) && !f.endsWith('404.html');
+  if (indexable) {
+    const n = [...desc.replace(/&amp;/g, '&')].length;
+    if (n < 80 || n > 120) fail(f, `説明文が${n}文字（80〜120文字にする）`);
+    if (descs.has(desc)) fail(f, `説明文が ${descs.get(desc)} と同じ`);
+    descs.set(desc, f.slice(DIST.length));
+  }
+  if (!s.includes(`<meta property="og:site_name" content="${SITE.name}">`)) fail(f, 'og:site_name がない');
   if ((s.match(/<h1[\s>]/g) ?? []).length !== 1) fail(f, 'h1 が1つでない');
   if (!f.endsWith('404.html') && !/<link rel="canonical" href="https:\/\/[^"]+">/.test(s)) fail(f, 'canonical がない');
   if (!SITE.launched && !/<meta name="robots" content="noindex">/.test(s)) fail(f, '公開前なのに noindex がない');
@@ -69,6 +80,15 @@ for (const f of html) {
   const ids = [...s.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
   const dup = ids.filter((x, i) => ids.indexOf(x) !== i);
   if (dup.length) fail(f, `id の重複：${[...new Set(dup)].join(' ')}`);
+}
+// トップ：WebSite の構造化データ（name・url）と、title がサイト名
+{
+  const top = readFileSync(`${DIST}/index.html`, 'utf8');
+  const ld = [...top.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => JSON.parse(m[1]));
+  const ws = ld.find((x) => x['@type'] === 'WebSite');
+  if (!ws || ws.name !== SITE.name || ws.url !== `${SITE.url}/`) fail(`${DIST}/index.html`, 'WebSite の構造化データ（name・url）がない・ちがう');
+  if (!top.includes(`<title>${SITE.name}</title>`)) fail(`${DIST}/index.html`, 'トップの title がサイト名とちがう');
+  if (/pages\.dev/.test(top.replace(/<script[\s\S]*?<\/script>/g, ''))) fail(`${DIST}/index.html`, 'pages.dev のURLが残っている');
 }
 for (const need of ['robots.txt', '_headers', 'fingerprint.json', 'index.html', '404.html', 'favicon.ico', 'favicon.svg', 'apple-touch-icon.png', 'quiz/machi.json']) {
   if (!existsSync(`${DIST}/${need}`)) fail(`${DIST}/${need}`, 'ない');

@@ -1,5 +1,5 @@
 // 都道府県のページ（/都道府県/）。県全体の数字と、県内の市区町村の一覧（人口の多い順）
-import { esc, fmt, h2, srcKokusei } from '../layout.mjs';
+import { esc, fmt, h2, srcKokusei, fit } from '../layout.mjs';
 import { derive, r1 } from '../stats.mjs';
 import { need } from '../calc.mjs';
 
@@ -30,7 +30,13 @@ ${srcKokusei(munis)}`;
   return {
     path: `/${pref.slug}/`,
     title: `${pref.name}の市区町村の人口と備え`,
-    description: `${pref.name}の人口${fmt(a.pop)}人と、県内${inPref.length}市区町村の人口・5年の増減・1世帯の人数（2025年国勢調査）。`,
+    description: fit(
+      [
+        `${pref.name}の人口は${fmt(a.pop)}人、世帯は${fmt(a.hh)}（${munis.survey.slice(0, 4)}年国勢調査）。`,
+        `${inPref.length}市区町村で人口が多いのは${inPref.slice(0, 3).map((x) => x.name).join('・')}${up ? `、2020年から人口が増えたのは${up}市区町村` : ''}。`,
+      ],
+      [[`1世帯${per.toFixed(1)}人で1週間に水約${need(cc.per.mizu, per, 7)}L・携帯トイレ約${need(cc.per.toilet, per, 7)}回分。`, `1世帯の平均は${per.toFixed(1)}人。`]],
+    ),
     body,
   };
 }

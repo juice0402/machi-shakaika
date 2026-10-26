@@ -1,6 +1,6 @@
 // 人口が増えた市区町村（/ranking/jinko/）。増えた街だけを並べる（減った順・「ワースト」は作らない）
 // 割合の順は人口1万人以上の街だけ（小さな町村は数十人で大きく動くため）
-import { esc, fmt, h2, srcKokusei } from '../layout.mjs';
+import { esc, fmt, h2, srcKokusei, fit } from '../layout.mjs';
 import { prefOf, r1 } from '../stats.mjs';
 
 const TOP = 20;
@@ -45,7 +45,13 @@ ${srcKokusei(munis)}`;
     {
       path: '/ranking/jinko/',
       title: '人口が増えた市区町村（2020年→2025年）',
-      description: `2025年国勢調査で、2020年から人口が増えたのは全国${fmt(list.length)}市区町村のうち${fmt(up.length)}。増えた割合が大きい街・増えた人数が多い街の上位${TOP}。`,
+      description: fit(
+        [
+          `2020年から2025年に人口が増えたのは、全国${fmt(list.length)}市区町村のうち${fmt(up.length)}（${munis.survey.slice(0, 4)}年国勢調査）。`,
+          `増えた割合は${byRate[0].name}の+${r1(byRate[0].rate).toFixed(1)}%、人数は${byCount[0].name}の+${fmt(byCount[0].popChange)}人がいちばん大きい。`,
+        ],
+        [prefUp.length === 1 ? `都道府県で増えたのは${prefUp[0].name}だけ。` : prefUp.length ? `都道府県で増えたのは${prefUp.length}。` : '', `上位${TOP}の街を一覧に。`],
+      ),
       body,
     },
   ];
