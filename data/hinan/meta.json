@@ -1,24 +1,24 @@
 {
- "fetched": "2026-10-22",
+ "fetched": "2026-10-26",
  "checked": "2026-10-26",
  "total": {
-  "basho": 115913,
-  "hinanjo": 83433
+  "basho": 115925,
+  "hinanjo": 83454
  },
  "files": {
   "basho": {
-   "etag": "\"103875d-65e26f8ec0238\"",
-   "lastModified": "Mon, 19 Oct 2026 00:55:38 GMT",
-   "bytes": 17008477
+   "etag": "\"1038e78-65eb6ec23af1c\"",
+   "lastModified": "Mon, 26 Oct 2026 04:39:59 GMT",
+   "bytes": 17010296
   },
   "hinanjo": {
-   "etag": "\"b2ba79-65e26f8ec255f\"",
-   "lastModified": "Mon, 19 Oct 2026 00:55:38 GMT",
-   "bytes": 11713145
+   "etag": "\"b2c7f7-65eb6ec23ce5b\"",
+   "lastModified": "Mon, 26 Oct 2026 04:39:59 GMT",
+   "bytes": 11716599
   },
   "history": {
-   "etag": "\"1615b-65e26f8ebd741\"",
-   "lastModified": "Mon, 19 Oct 2026 00:55:38 GMT",
+   "etag": "\"1615b-65eb6ec23803d\"",
+   "lastModified": "Mon, 26 Oct 2026 04:39:59 GMT",
    "bytes": 90459
   }
  }
