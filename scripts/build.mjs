@@ -21,6 +21,7 @@ import { hinmokuPages } from '../src/pages/hinmoku.mjs';
 import { quizPages } from '../src/pages/quiz.mjs';
 import { machiData } from '../src/quiz.mjs';
 import { PRODUCTS_PATH } from '../src/rakuten.mjs';
+import { ARTS } from '../src/art.mjs';
 
 const DIST = 'dist';
 const stop = (msg) => {
@@ -74,6 +75,12 @@ for (const p of hinmokuPages({ items, sources, products })) add(p);
 const machi = machiData(munis.areas, urlOf);
 for (const p of quizPages({ munis, items, sources, machi })) add(p);
 for (const p of infoPages({ munis, estatMeta, hinanMeta })) add(p);
+// デザインの見本（専用の絵・10/26）：しょーくんにくらべてもらうためだけ。このPRはマージしない
+for (const v of Object.keys(ARTS)) {
+  const t = topPage({ cc, munis, hinanMeta, nMunis: list.length, art: v });
+  add({ ...t, path: `/mihon/${v}/`, title: `見本${v} ${ARTS[v]}`, head: '', noindex: true, noAds: true, art: v, topLike: true });
+}
+add({ path: '/mihon/', title: '専用の絵の見本', description: '専用の絵の見本（3案）。', noindex: true, noAds: true, body: `<h1 class="city">専用の絵の見本</h1><ul class="list">${Object.entries(ARTS).map(([v, n]) => `<li><a href="/mihon/${v}/">${v} ${n}</a></li>`).join('')}</ul>` });
 add({ path: null, title: 'ページが見つかりません', description: 'ページが見つかりません。', noindex: true, noAds: true, body: '<h1 class="city">ページが見つかりません</h1><p><a href="/">トップへ</a></p>' });
 
 // クイズの数字（どっちが多い・ドボンクイズを開いたときだけ読む）：都道府県47と全国の市区町村

@@ -3,6 +3,7 @@ import { esc, h2, jpDate, fmt, fit } from '../layout.mjs';
 import { SITE } from '../site.mjs';
 import { calcHtml, CALC_JS } from '../calc.mjs';
 import { PREFS } from '../areas.mjs';
+import { heroArt, mapArt } from '../art.mjs';
 
 // 47都道府県のタイル地図（列, 行）
 export const TILES = {
@@ -23,16 +24,16 @@ function show(){const v=norm(i.value);ul.textContent='';msg.textContent='';if(!v
 hit.forEach(([n,p,u])=>{const li=document.createElement('li'),a=document.createElement('a');a.href=u;a.textContent=n;const s=document.createElement('small');s.textContent=p;a.append(s);li.append(a);ul.append(li)})})}
 i.addEventListener('focus',load,{once:true});i.addEventListener('input',show);f.addEventListener('submit',e=>{e.preventDefault();show();const a=ul.querySelector('a');if(a&&ul.children.length===1)location.href=a.href})})();`;
 
-export function topPage({ cc, munis, hinanMeta, nMunis }) {
+export function topPage({ cc, munis, hinanMeta, nMunis, art }) {
   const tiles = PREFS.map((p) => {
     const [x, y] = TILES[p.slug];
     return `<a class="tile" href="/${p.slug}/" style="grid-column:${x + 1};grid-row:${y + 1}" aria-label="${esc(p.name)}">${short(p.name)}</a>`;
   }).join('');
-  const body = `<p class="lead">街の数字を調べて、わが家の備えの量を出す</p>
+  const body = `${art ? heroArt(art) : '<p class="lead">街の数字を調べて、わが家の備えの量を出す</p>'}
 <form class="find" data-find role="search"><label for="q">市区町村</label><input id="q" type="search" placeholder="例 堺市" autocomplete="off" enterkeyhint="search"><button>さがす</button><ul class="hits"></ul><p class="msg" aria-live="polite"></p></form>
 ${calcHtml(cc)}
 <p class="src">${cc.perText}（農林水産省・内閣府のガイドラインほか）<br>${esc(munis.statName)}（${jpDate(munis.published)}公表）・避難場所データ ${jpDate(hinanMeta.checked)}取得</p>
-<section id="map">${h2('都道府県から')}<div class="tiles">${tiles}</div><ul class="list"><li><a href="/ranking/jinko/">人口が増えた市区町村</a></li></ul></section>
+<section id="map">${h2('都道府県から')}${art ? `<div class="mapw"><div class="tiles">${tiles}</div>${mapArt(art)}</div>` : `<div class="tiles">${tiles}</div>`}<ul class="list"><li><a href="/ranking/jinko/">人口が増えた市区町村</a></li></ul></section>
 <section>${h2('備えの知識')}<ul class="list"><li><a href="/sonae/bichiku/">備蓄の量のめやす</a></li><li><a href="/sonae/rolling-stock/">ローリングストック</a></li><li><a href="/sonae/keitai-toilet/">携帯トイレの備え</a></li><li><a href="/dougu/check/">チェックリスト</a></li><li><a href="/hinmoku/">品目ごとのめやす</a></li></ul></section>
 <section>${h2('クイズ')}<ul class="list"><li><a href="/quiz/docchi/">どっちが多い？</a></li><li><a href="/quiz/dobon/">ドボンクイズ</a></li><li><a href="/quiz/sonae/">備えの数字クイズ</a></li></ul></section>`;
   return {
