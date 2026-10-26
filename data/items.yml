@@ -15,6 +15,15 @@ days:
 yohairyo_days: 14
 yohairyo_sources: [nerima-yohairyo, maff-stock]
 
+# 冬の停電と寒さ（/sonae/fuyu-teiden/）。ページに出る数字は、ここと days・gas の例・mizu の per_day だけ
+#   ボンベの本数は gas の例（農林水産省）、日数は days、水は mizu。毛布・カイロ・ストーブ・ライト・バッテリーは目安の数を出典で確かめていないので数を出さない
+#   sources はページの出典に並べる id（順番もこのとおり）
+fuyu:
+  toketsu:
+    celsius: -4        # 最低気温がこの温度（度）以下になると水道管が凍結・破裂するおそれ（新潟市）
+    sources: [niigata-ooyuki]
+  sources: [hepco-saigai, asahikawa-sonae, niigata-ooyuki, maff-sonae, kyuden-ecocute, hokkaido-gas-teiden, bousai-teiden, caa-hakkaden, sapporo-yukigai]
+
 items:
   - id: mizu
     name: 水
