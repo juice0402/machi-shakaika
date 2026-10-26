@@ -10,6 +10,9 @@ const files = walk(DIST);
 const html = files.filter((f) => f.endsWith('.html'));
 let bad = 0;
 const descs = new Map(); // 説明文 → ページ（同じ説明文を量産しない）
+const missingHinan = []; // ALLOW_MISSING_HINAN_LIST=1 のとき、ない一覧
+// 逃げ道はローカルだけ（GitHub Actions の中では、設定されていても使わない）
+const allowMissingHinan = process.env.ALLOW_MISSING_HINAN_LIST === '1' && !process.env.GITHUB_ACTIONS;
 const fail = (f, msg) => {
   bad++;
   console.error(`NG ${f.slice(DIST.length)}：${msg}`);
@@ -87,6 +90,13 @@ for (const f of html) {
     const ok = existsSync(`${DIST}${p}`) && statSync(`${DIST}${p}`).isFile() ? true : existsSync(`${DIST}${p.replace(/\/?$/, '/')}index.html`);
     if (!ok) fail(f, `リンク切れ：${p}`);
   }
+  // 避難場所の一覧（「開く」で読む data-src）がないと 404 になる。CI では止める
+  //   ローカルでは一覧を作れない（国土地理院に届かない）ので、ALLOW_MISSING_HINAN_LIST=1 のときだけ注記にする（deploy.yml では使わない）
+  for (const m of s.matchAll(/data-src="(\/hinan\/\d{5}\.json)"/g)) {
+    if (existsSync(`${DIST}${m[1]}`)) continue;
+    if (allowMissingHinan) missingHinan.push(m[1]);
+    else fail(f, `避難場所の一覧がない：${m[1]}（update.yml が作る。data/hinan/list）`);
+  }
   const ids = [...s.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
   const dup = ids.filter((x, i) => ids.indexOf(x) !== i);
   if (dup.length) fail(f, `id の重複：${[...new Set(dup)].join(' ')}`);
@@ -111,5 +121,6 @@ if (SITE.launched) {
   if (SITE.adsense && !existsSync(`${DIST}/ads.txt`)) fail(`${DIST}/ads.txt`, 'ない');
 }
 
+if (missingHinan.length) console.log(`注記：避難場所の一覧がない ${missingHinan.length}（ALLOW_MISSING_HINAN_LIST=1・ローカルなので止めない。公開の前に update.yml で作る）`);
 console.log(`点検：${html.length} ページ${bad ? `・NG ${bad}` : '・OK'}`);
 if (bad) process.exit(1);

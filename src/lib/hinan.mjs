@@ -73,3 +73,24 @@ export function readHistory(rows) {
   }
   return out;
 }
+
+// ページを作る街のうち、避難場所の数があるのに一覧ファイル（data/hinan/list/<コード>.json）がない街のコード
+//   has(code) は一覧ファイルがあるか。数が0の街は一覧を作らないので数えない
+export function missingLists(cities, counts, has) {
+  return cities
+    .filter((c) => {
+      const n = counts?.areas?.[c.code];
+      return n && n[0] + n[1] > 0 && !has(c.code);
+    })
+    .map((c) => c.code);
+}
+
+// 全国CSVから作り直すわけ（作り直さないときは null）
+//   ETag が前回と同じでも、FORCE のとき・counts.json がないとき・ページを作る街の一覧が足りないとき（街を足したとき）は作り直す
+export function rebuildReason({ same, hasCounts, force, missing }) {
+  if (force) return 'FORCE=1';
+  if (!same) return 'ファイルの更新あり';
+  if (!hasCounts) return 'counts.json がない';
+  if (missing.length) return `一覧ファイルがない街 ${missing.length}（${missing.slice(0, 5).join(' ')}${missing.length > 5 ? ' ほか' : ''}）`;
+  return null;
+}
