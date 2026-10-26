@@ -120,27 +120,33 @@ items:
 # チェックリスト（/dougu/check/）。並びはページに出す順
 # item は上の品目を指す（calc: true の品目は、人数と日数で量を出す。qty: false で量を出さない）
 # item のないものは name と出典（sources）を書く。sub は名前の下の小さな1行
+# kigen は期限メモ（/dougu/kigen/）でえらべる品目：[記号（英小文字1字）, 短い名前]。記号はメモのURLに入るので、あとで変えない
 checklists:
   - id: bichiku
     name: 家に置く備え
     entries:
       - item: mizu
         name: 水（飲み水と調理の水）
+        kigen: [w, 水]
         sources: [kantei-sonae, miyagi-mizu]
       - name: 生活用水
         sub: トイレを流す水など。飲み水とは別
         sources: [kantei-sonae, miyagi-mizu]
       - item: shushoku
         name: 主食（ご飯・アルファ米・乾パンなど）
+        kigen: [s, 主食]
         sources: [kantei-sonae]
       - name: おかずになる缶詰など
+        kigen: [k, 缶詰]
         sources: [kantei-sonae]
       - item: keitai-toilet
         name: 携帯トイレ・簡易トイレ
+        kigen: [t, 携帯トイレ]
         sources: [kantei-sonae]
       - name: トイレットペーパー・ティッシュペーパー
         sources: [kantei-sonae, miyagi-mizu]
       - item: gas
+        kigen: [g, カセットボンベ]
         sources: [kantei-sonae, miyagi-mizu]
       - name: マッチ・ろうそく
         sources: [kantei-sonae, miyagi-mizu]

@@ -131,7 +131,7 @@ ${sourceList(by['keitai-toilet'].sources, sources)}`,
 <h1 class="city">備蓄の量の計算</h1>
 ${calcHtml(cc)}
 <p class="src">${cc.perText}。最低${days.min}日分、できれば${days.better}日分</p>
-<p><a class="go" data-keep href="/dougu/check/">この人数でチェックリストを見る</a></p>
+<p><a class="go" data-keep href="/dougu/check/">この人数でチェックリストを見る</a><br><a class="go" href="/dougu/kigen/">賞味期限をメモする</a></p>
 ${h2('量のめやすのもと')}
 <div class="prose"><p>水は飲む水と調理の水の合計で、トイレや体をふく生活用水は別です。高齢の家族や小さな子どもがいる家は、<a href="/sonae/bichiku/#yohairyo">少なくとも${y}日分</a>がめやすです。</p></div>
 ${h2('出典')}
