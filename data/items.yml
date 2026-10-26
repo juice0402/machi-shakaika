@@ -66,7 +66,7 @@ items:
       must: [トイレ]
       also: [携帯, 簡易, 非常用, 防災, 凝固]
       ng: [ペット, 猫, 犬, トイレットペーパー, カバー, おむつ]
-    sources: [hiroshima-toilet, kanagawa-toilet, suginami-toilet]
+    sources: [hiroshima-toilet, kanagawa-toilet]
     about: 断水・停電・配管の被害で水洗トイレが使えなくなることがある
 
   - id: gas

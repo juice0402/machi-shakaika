@@ -1,7 +1,8 @@
 // リンクを開く部分の動き：ネットにはつながず、fetch と sleep を差しかえて確かめる
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { UA, DEFAULTS, checkUrl, classify, runChecks } from '../src/lib/linkcheck.mjs';
+import { UA, DEFAULTS, LEGACY_TLS, checkUrl, classify, runChecks, legacyFetch } from '../src/lib/linkcheck.mjs';
+import http from 'node:http';
 
 // 作りものの fetch。reply(url, method, n) が { status, url?, retryAfter? } を返すか、Error を投げる（n はそのURLへの何回目か）
 function fake(reply, { wait = 0 } = {}) {
@@ -189,4 +190,34 @@ test('点検する URL がなければ何もしない', async () => {
   const f = fake(() => ({ status: 200 }));
   assert.equal((await runChecks([], deps(f))).size, 0);
   assert.equal(f.calls.length, 0);
+});
+
+test('古い TLS のつなぎ方しかできないサーバーは、古いつなぎ方で開き直す', async () => {
+  const f = fake(() => { throw err(LEGACY_TLS); });
+  const seen = [];
+  const legacy = async (url, method) => { seen.push(method); return { status: 200, finalUrl: url, retryAfter: 0 }; };
+  const r = await checkUrl('https://www.gsi.go.jp/x.html', deps(f, clock(), { legacyFetch: legacy }));
+  assert.equal(r.status, 200);
+  assert.deepEqual(seen, ['HEAD']);
+  assert.equal(classify('https://www.gsi.go.jp/x.html', r).kind, 'alive');
+  // 開き直す道具がなければ、これまでどおり「つながらない」
+  const r2 = await checkUrl('https://www.gsi.go.jp/x.html', deps(fake(() => { throw err(LEGACY_TLS); })));
+  assert.equal(classify('https://www.gsi.go.jp/x.html', r2).kind, 'refused');
+});
+
+test('legacyFetch はリダイレクトをたどり、最後のURLと返事を返す', async () => {
+  const server = http.createServer((req, res) => {
+    if (req.url === '/old') { res.writeHead(301, { Location: '/new' }); res.end(); return; }
+    res.writeHead(req.url === '/new' ? 200 : 404); res.end();
+  });
+  await new Promise((ok) => server.listen(0, '127.0.0.1', ok));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  try {
+    const r = await legacyFetch(`${base}/old`, 'HEAD', DEFAULTS);
+    assert.equal(r.status, 200);
+    assert.equal(r.finalUrl, `${base}/new`);
+    assert.equal((await legacyFetch(`${base}/none`, 'GET', DEFAULTS)).status, 404);
+  } finally {
+    server.close();
+  }
 });

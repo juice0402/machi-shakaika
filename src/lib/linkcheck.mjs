@@ -5,7 +5,11 @@
 //   消えた：404・410・名前が引けない・トップページに飛ばされた。ほかの 4xx・5xx・時間切れ・証明書などは「断られた」
 // fetch と sleep は差しかえられる（tests/ がネットなしで確かめるため）
 
-export const UA = 'Mozilla/5.0 (compatible; machi-shakaika-linkcheck; +https://machi-shakaika.com/about/)';
+import http from 'node:http';
+import https from 'node:https';
+import { constants } from 'node:crypto';
+
+export const UA ='Mozilla/5.0 (compatible; machi-shakaika-linkcheck; +https://machi-shakaika.com/about/)';
 
 export const DEFAULTS = {
   gapMs: 2000, // 同じホストへの間
@@ -18,7 +22,29 @@ export const DEFAULTS = {
 };
 
 const NAME_GONE = new Set(['ENOTFOUND', 'EAI_NODATA', 'ENODATA']);
+export const LEGACY_TLS = 'ERR_SSL_UNSAFE_LEGACY_RENEGOTIATION_DISABLED';
 const isTop = (p) => p === '/' || p === '' || /^\/index\.html?$/.test(p);
+
+// 古い TLS のつなぎ方しかできないサーバー（国土地理院など）は fetch でつながらない。
+// 開けるかを見るだけなので、この点検の中だけ node:https に古いつなぎ方を許して開き直す（リダイレクトは5回までたどる）
+export function legacyFetch(url, method, d, hops = 0) {
+  return new Promise((resolve) => {
+    const u = new URL(url);
+    const mod = u.protocol === 'http:' ? http : https;
+    const req = mod.request(u, { method, headers: { 'User-Agent': UA }, secureOptions: constants.SSL_OP_LEGACY_SERVER_CONNECT, timeout: d.timeoutMs }, (res) => {
+      res.resume();
+      const loc = res.headers.location;
+      if (res.statusCode >= 300 && res.statusCode < 400 && loc && hops < 5) {
+        resolve(legacyFetch(new URL(loc, u).href, method, d, hops + 1));
+        return;
+      }
+      resolve({ status: res.statusCode, finalUrl: u.href, retryAfter: Number(res.headers['retry-after']) || 0 });
+    });
+    req.on('timeout', () => req.destroy(Object.assign(new Error('timeout'), { code: 'ETIMEDOUT' })));
+    req.on('error', (e) => resolve({ error: e?.code || e?.name || 'ERROR' }));
+    req.end();
+  });
+}
 
 async function probe(url, method, d) {
   try {
@@ -26,7 +52,9 @@ async function probe(url, method, d) {
     await r.body?.cancel().catch(() => {});
     return { status: r.status, finalUrl: r.url || url, retryAfter: Number(r.headers?.get?.('retry-after')) || 0 };
   } catch (e) {
-    return { error: e?.cause?.code || e?.code || e?.name || 'ERROR' };
+    const code = e?.cause?.code || e?.code || e?.name || 'ERROR';
+    if (code === LEGACY_TLS && d.legacyFetch) return d.legacyFetch(url, method, d);
+    return { error: code };
   }
 }
 
@@ -72,6 +100,7 @@ export async function runChecks(urls, opts = {}) {
   const d = {
     ...DEFAULTS,
     fetch: globalThis.fetch,
+    legacyFetch,
     sleep: (ms) => new Promise((ok) => setTimeout(ok, ms)),
     now: Date.now,
     ...opts,

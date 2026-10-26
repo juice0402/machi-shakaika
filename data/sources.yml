@@ -152,14 +152,6 @@ sources:
     checked: 2026-10-26
     about: 断水・停電・配管の被害でトイレが使えなくなる。集合住宅で気づかず流すと下の階であふれるおそれ。最低3日、できれば7日
 
-  - id: suginami-toilet
-    kind: sonae
-    publisher: 杉並区
-    title: "災害用トイレは備えていますか?(2026年9月1日)"
-    url: https://www.city.suginami.tokyo.jp/s015/news/27750.html
-    checked: 2026-10-26
-    about: 災害用トイレの備蓄のめやすは1人1日5回分、最低3日・推奨7日
-
   - id: nerima-yohairyo
     kind: sonae
     publisher: 練馬区
