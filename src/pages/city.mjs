@@ -1,5 +1,5 @@
 // 市区町村のページ（/都道府県/市区町村/）。上が「この街の数字」、下が「この街の備え」
-import { esc, fmt, h2, scale, srcKokusei, jpDate, RIVER } from '../layout.mjs';
+import { esc, fmt, h2, scale, srcKokusei, jpDate, RIVER, fit } from '../layout.mjs';
 import { derive, feature, prefRank, similar, sonaeLinks, prefOf, r1 } from '../stats.mjs';
 import { need } from '../calc.mjs';
 import { machiQuiz } from '../quiz.mjs';
@@ -85,7 +85,16 @@ const h2=document.createElement('li');h2.textContent='指定避難所';h2.style.
   return {
     path,
     title: `${a.name}（${pref.name}）の人口と備え`,
-    description: `${a.name}の人口${fmt(a.pop)}人・世帯${fmt(a.hh)}（2025年国勢調査）。1世帯の平均人数で計算した1週間の水と携帯トイレの量、指定緊急避難場所と指定避難所の数。`,
+    description: fit(
+      [
+        `${pref.name}${a.name}の人口は${fmt(a.pop)}人、世帯は${fmt(a.hh)}（${munis.survey.slice(0, 4)}年国勢調査）。`,
+        `${pref.name}の${of}市区町村で${rank === 1 ? '人口がいちばん多く' : `人口は${rank}番目`}、1世帯は${per.toFixed(1)}人。`,
+      ],
+      [
+        `平均の1世帯で1週間に水約${need(cc.per.mizu, per, 7)}L・携帯トイレ約${need(cc.per.toilet, per, 7)}回分。`,
+        h ? [`指定緊急避難場所${fmt(h[0])}か所・指定避難所${fmt(h[1])}か所。`, `指定緊急避難場所${fmt(h[0])}か所。`] : '',
+      ],
+    ),
     body,
     script,
     gsi: true,

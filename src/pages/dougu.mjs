@@ -1,6 +1,6 @@
 // チェックリスト（/dougu/check/）：家に置く備えと持ち出す袋。品目と出典は data/items.yml の checklists から
 // チェックはこの端末のブラウザの中だけ（localStorage）。どこにも送らない
-import { esc, h2 } from '../layout.mjs';
+import { esc, h2, fit } from '../layout.mjs';
 import { calcHtml, CALC_JS, need } from '../calc.mjs';
 import { checkEntries } from '../data.mjs';
 import { sourceList } from './sonae.mjs';
@@ -33,7 +33,10 @@ export function douguPages({ cc, items, sources }) {
     {
       path: '/dougu/check/',
       title: '備えのチェックリスト（家に置く備え・持ち出す袋）',
-      description: `家に置く備え（水・主食・携帯トイレ・カセットコンロなど）と持ち出す袋のチェックリスト。家族の人数と日数（${days.choices.join('日・')}日）で量が出ます。チェックはこの端末の中だけに残ります。`,
+      description: fit(
+        [`${lists.map(({ cl, entries }) => `${cl.name}${entries.length}品目`).join('と')}のチェックリスト。家族の人数と日数（${days.choices.join('日か')}日）で、水・主食・携帯トイレの量が出ます。`],
+        [['チェックはこの端末の中だけに残り、どこにも送りません。', 'チェックはこの端末の中だけに残ります。']],
+      ),
       body: `<p class="crumb"><a href="/">トップ</a> / <a href="/sonae/">備えの知識</a></p>
 <h1 class="city">チェックリスト</h1>
 ${calcHtml(cc, { n, d, q: '人数と日数', ans: false })}

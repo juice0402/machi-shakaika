@@ -81,3 +81,16 @@ test('チェックリスト：家に置く備えと持ち出す袋。量を出�
   assert.ok(e.some((x) => x.includes('出典なし: 出典がありません')));
 });
 
+
+test('説明文の部品：120文字をこえない分だけ足す・言いかえは1つだけ・値段は幅で', async () => {
+  const { fit, priceBand, DESC_MAX } = await import('../src/layout.mjs');
+  assert.equal(DESC_MAX, 120);
+  const a = 'あ'.repeat(100);
+  assert.equal(fit([a], ['い'.repeat(30), 'う'.repeat(10)]), a + 'う'.repeat(10));
+  assert.equal(fit([a], [['え'.repeat(30), 'お'.repeat(5)], 'か'.repeat(5)]), a + 'お'.repeat(5) + 'か'.repeat(5));
+  assert.equal(fit(['a'], [['bb', 'c']]), 'abb');
+  assert.equal(priceBand(698), '600円台から');
+  assert.equal(priceBand(1980), '1,000円台から');
+  assert.equal(priceBand(3280), '3,000円台から');
+  assert.equal(priceBand(12800), '1万円台から');
+});

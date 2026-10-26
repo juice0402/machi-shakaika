@@ -1,5 +1,5 @@
 // このサイトについて（/about/）・プライバシーポリシー（/privacy/）
-import { esc, h2, jpDate } from '../layout.mjs';
+import { esc, h2, jpDate, fit } from '../layout.mjs';
 import { SITE, ESTAT_CREDIT } from '../site.mjs';
 
 export function infoPages({ munis, estatMeta, hinanMeta }) {
@@ -49,7 +49,10 @@ ${h2('変更')}
 </div>`;
 
   return [
-    { path: '/about/', title: 'このサイトについて', description: `${SITE.name}で使っている統計・避難場所データ・備えの量のめやすと、計算のしかた、運営について。`, body: about, gsi: true },
-    { path: '/privacy/', title: 'プライバシーポリシー', description: `${SITE.name}のプライバシーポリシー。入力した内容の扱い、アクセス解析、広告配信について。`, body: privacy },
+    { path: '/about/', title: 'このサイトについて', description: fit(
+        [`${SITE.name}で使っている国勢調査の統計表${Object.keys(estatMeta.tables).length}つ（${jpDate(munis.published)}公表）と避難場所データ、備えの量のめやすの出典、計算のしかた、運営者について。`],
+        [[`毎週月曜に更新を確かめていて、避難場所データの確認は${jpDate(hinanMeta.checked)}。`, '毎週月曜に更新を確かめています。']],
+      ), body: about, gsi: true },
+    { path: '/privacy/', title: 'プライバシーポリシー', description: `${SITE.name}のプライバシーポリシー。計算や市区町村さがし、チェックリストに入れた内容は送らないこと、アクセス解析、Google AdSense の広告とCookie、楽天アフィリエイトの扱いについて。`, body: privacy },
   ];
 }

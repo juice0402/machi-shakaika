@@ -64,19 +64,20 @@ const z = derive(munis.areas['00000']);
 const cityUrl = new Map(cities.map((c) => [c.code, `/${c.pref}/${c.slug}/`]));
 const urlOf = (code) => cityUrl.get(code) ?? null;
 
-add(topPage({ cc, munis, hinanMeta }));
+add(topPage({ cc, munis, hinanMeta, nMunis: list.length }));
 for (const pref of PREFS) add(prefPage({ pref, munis, list, z, cc, urlOf }));
 for (const city of cities) add(cityPage({ city, munis, list, z, cc, hinan, hinanMeta, urlOf }));
 for (const p of sonaePages({ cc, items, sources })) add(p);
 for (const p of douguPages({ cc, items, sources })) add(p);
 for (const p of rankingPages({ munis, list, urlOf })) add(p);
 for (const p of hinmokuPages({ items, sources, products })) add(p);
-for (const p of quizPages({ munis, items, sources })) add(p);
+const machi = machiData(munis.areas, urlOf);
+for (const p of quizPages({ munis, items, sources, machi })) add(p);
 for (const p of infoPages({ munis, estatMeta, hinanMeta })) add(p);
 add({ path: null, title: 'ページが見つかりません', description: 'ページが見つかりません。', noindex: true, noAds: true, body: '<h1 class="city">ページが見つかりません</h1><p><a href="/">トップへ</a></p>' });
 
 // クイズの数字（どっちが多い・ドボンクイズを開いたときだけ読む）：都道府県47と全国の市区町村
-writeFileSync(`${DIST}/quiz/machi.json`, JSON.stringify(machiData(munis.areas, urlOf)));
+writeFileSync(`${DIST}/quiz/machi.json`, JSON.stringify(machi));
 
 // ファビコン（A 森と川。10/23 しょーくんが3案から選んだ）。static/ の中をそのまま置く
 for (const f of readdirSync('static')) copyFileSync(`static/${f}`, `${DIST}/${f}`);
