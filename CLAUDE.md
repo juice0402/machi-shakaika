@@ -29,6 +29,7 @@
 - 流れ：ブランチ `claude/...` → PR → CI が緑・プレビューで確認 → しょーくんに知らせてから Merge。修正はまとめて少ない push で
 - Claude の予約タスクは使わない。毎週の更新は GitHub Actions の `update.yml`（月曜0:07）
 - 災害時モード（10/26）：しょーくんが Actions の「災害時モードの切りかえ」（`saigai.yml`）でオン／オフ → `data/mode.yml` をコミットして公開。オンのあいだは全ページの上に灰色の帯で気象庁と市区町村への案内1行（`src/mode.mjs`）、楽天の商品（取りもしない）と AdSense を外す。避難場所の数・注記はそのまま。災害を見て自動で切りかえることはしない
+- リンクの点検（10/26 連絡 C-005）：`check-links.yml` が毎週水曜10:41と、データ・ページのコードを変えた PR で、sources.yml・bichiku.yml・ページの外部リンクを GitHub から開く。消えた（404・410・名前が引けない・トップに飛ばされた）は PR の注記と Issue「リンクの点検」→ 同じ発行元の新しいページに差しかえる。403・429 などは消えたとは限らない。PR は止めない。対象は `node scripts/check-links.mjs --list`
 - このクラウドの作業場からは e-Stat と国土地理院につながらない。データは Actions が取って data/ にコミットしたものを使う
 
 ## データの決まり
@@ -62,6 +63,8 @@
 | `src/lib/csv.mjs` | CSV の読み取りと文字コードの見分け |
 | `src/lib/hinan.mjs` | 国土地理院の避難場所の全国CSV（hinanmap.gsi.go.jp）のURLと、市区町村ごと・災害の種類ごとの数え方 |
 | `data/sources.yml`・`items.yml`・`shogo.yml` | 出典台帳・備えの数字・照らし合わせ用の公式の数字 |
+| `data/bichiku.yml` | 自治体の備蓄の公表ページ（10/26、57の街）。市区町村ページの「この街の備え」に1行とリンク。ない街は行ごと出さない。年1回の公表なので題が変わることがある |
+| `scripts/check-links.mjs`・`src/lib/links.mjs`・`linkcheck.mjs` | リンクの点検の本体・集め方・開き方（同じホストは2秒あけ、HEAD→GET、1回だけやり直し） |
 | `scripts/build.mjs`・`verify-dist.mjs`・`changed.mjs` | ビルド・全ページ点検・本番とのちがい |
 | `data/estat.yml` | e-Stat から取る表と項目（名前で指定）。年齢・世帯・住宅は不詳補完値の表 |
 | `scripts/fetch-estat.mjs` → `data/estat/munis.json`・`meta.json` | 表の更新日を見て、変わったときだけ全市区町村の数字を取る。照らし合わせに通らなければ書きかえない |
