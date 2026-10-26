@@ -3,6 +3,7 @@ name: データの更新
 # 毎週月曜 0:07（日本時間）に、国勢調査（e-Stat）と避難場所（国土地理院）のデータを確かめる
 #   e-Stat：使っている表の更新日だけ見て、更新された表があるときだけ取る
 #   避難場所：全国CSVの ETag を見て、変わったときだけ作り直す（確かめた日は毎回書きかえる）
+#   読みがな：日本郵便の郵便番号データの ETag が変わったときだけ作り直す（市区町村さがしをひらがなでも。取れなくても止めない）
 #   照らし合わせ（公式の数字）・件数の見張りに通らなければ止めて Issue を立てる（前の公開がそのまま残る）
 #   変わったら data/ をコミットして、ビルドと公開（deploy.yml）を動かす
 # データの取り方を変えたPRでも動き、取ったデータをそのPRのブランチにコミットする（公開はしない）
@@ -15,6 +16,8 @@ on:
     paths:
       - 'scripts/fetch-estat.mjs'
       - 'scripts/fetch-hinan.mjs'
+      - 'scripts/fetch-yomi.mjs'
+      - 'src/yomi.mjs'
       - 'src/munis.mjs'
       - 'src/areas.mjs'
       - 'data/estat.yml'
@@ -53,6 +56,9 @@ jobs:
 
       - name: 避難場所（国土地理院）
         run: node scripts/fetch-hinan.mjs
+
+      - name: 読みがな（日本郵便）
+        run: node scripts/fetch-yomi.mjs
 
       - name: テスト（照らし合わせをふくむ）
         run: npm test

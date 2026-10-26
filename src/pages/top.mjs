@@ -1,4 +1,4 @@
-// トップ（/）：上に街さがし、すぐ下に計算。その下に都道府県の地図と備えの知識
+// トップ（/）：上に街さがし（漢字・ひらがな・カタカナ。読みがなは data/yomi.json）、すぐ下に計算。その下に都道府県の地図と備えの知識
 import { esc, h2, jpDate, fmt, fit } from '../layout.mjs';
 import { SITE } from '../site.mjs';
 import { calcHtml, CALC_JS } from '../calc.mjs';
@@ -19,8 +19,9 @@ export const short = (n) => (n === '北海道' ? '北海' : n.replace(/[都府�
 
 export const FIND_JS = `(()=>{const f=document.querySelector('[data-find]');if(!f)return;const i=f.querySelector('input'),ul=f.querySelector('.hits'),msg=f.querySelector('.msg');let all=null;
 const load=()=>all?Promise.resolve(all):fetch('/search.json').then(r=>r.json()).then(j=>all=j);
-const norm=s=>s.normalize('NFKC').replace(/[\\s　]/g,'');
-function show(){const v=norm(i.value);ul.textContent='';msg.textContent='';if(!v)return;load().then(a=>{const hit=a.filter(x=>norm(x[0]).includes(v)).slice(0,8);if(!hit.length){msg.textContent='見つかりません。市区町村の名前で入れてください';return}
+const norm=s=>s.normalize('NFKC').replace(/[\\s　]/g,'').replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-96));
+const score=(x,v)=>{const n=norm(x[0]),y=x[3]||'';return n.startsWith(v)||y.startsWith(v)?2:n.includes(v)||y.includes(v)?1:0};
+function show(){const v=norm(i.value);ul.textContent='';msg.textContent='';if(!v)return;load().then(a=>{const hit=a.map(x=>[score(x,v),x]).filter(e=>e[0]).sort((p,q)=>q[0]-p[0]).slice(0,8).map(e=>e[1]);if(!hit.length){msg.textContent='見つかりません。市区町村の名前か読みがなで入れてください';return}
 hit.forEach(([n,p,u])=>{const li=document.createElement('li'),a=document.createElement('a');a.href=u;a.textContent=n;const s=document.createElement('small');s.textContent=p;a.append(s);li.append(a);ul.append(li)})})}
 i.addEventListener('focus',load,{once:true});i.addEventListener('input',show);f.addEventListener('submit',e=>{e.preventDefault();show();const a=ul.querySelector('a');if(a&&ul.children.length===1)location.href=a.href})})();`;
 
@@ -30,7 +31,7 @@ export function topPage({ cc, munis, hinanMeta, nMunis }) {
     return `<a class="tile" href="/${p.slug}/" style="grid-column:${x + 1};grid-row:${y + 1}" aria-label="${esc(p.name)}">${short(p.name)}</a>`;
   }).join('');
   const body = `${heroHtml()}
-<form class="find" data-find role="search"><label for="q">市区町村</label><input id="q" type="search" placeholder="例 堺市" autocomplete="off" enterkeyhint="search"><button>さがす</button><ul class="hits"></ul><p class="msg" aria-live="polite"></p></form>
+<form class="find" data-find role="search"><label for="q">市区町村</label><input id="q" type="search" placeholder="例 堺市・さかい" autocomplete="off" enterkeyhint="search"><button>さがす</button><ul class="hits"></ul><p class="msg" aria-live="polite"></p></form>
 ${calcHtml(cc)}
 <p class="src">${cc.perText}（農林水産省・内閣府のガイドラインほか）<br>${esc(munis.statName)}（${jpDate(munis.published)}公表）・避難場所データ ${jpDate(hinanMeta.checked)}取得</p>
 <section id="map">${h2('都道府県から')}<div class="mapw"><div class="tiles">${tiles}</div>${mapArt()}</div><ul class="list"><li><a href="/ranking/jinko/">人口が増えた市区町村</a></li></ul></section>

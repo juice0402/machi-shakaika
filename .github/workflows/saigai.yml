@@ -1,0 +1,74 @@
+name: 災害時モードの切りかえ
+
+# スマホの GitHub から「Run workflow」で動かす（しょーくんが手で。災害を見て自動で切りかえることはしない）
+#   オンにする：全ページの上に気象庁と市区町村への案内を1行出し、楽天の商品と AdSense を外して公開
+#   オフにする：元にもどして公開（楽天の商品はとりなおす）
+# data/mode.yml を書きかえて main にコミットし、ビルドと公開（deploy.yml）を動かす。同じほうを2回押しても変わらない
+# 市区町村ページの避難場所の数・注記・取得日はそのまま残る
+
+run-name: 災害時モードを「${{ inputs.mode }}」
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 災害時モード
+        type: choice
+        options:
+          - オンにする
+          - オフにする
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: saigai
+  cancel-in-progress: false
+
+jobs:
+  switch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      sha: ${{ steps.commit.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+
+      - name: data/mode.yml を書きかえる
+        id: commit
+        env:
+          MODE: ${{ inputs.mode }}
+        run: |
+          if [ "$MODE" = "オンにする" ]; then
+            SAIGAI=true; SINCE="$(TZ=Asia/Tokyo date +%F)"
+          else
+            SAIGAI=false; SINCE=null
+          fi
+          # もう同じほうになっているときは、コミットしないで公開だけやり直す（オンにした日 since も変えない）
+          if [ "$(sed -n 's/^saigai: *//p' data/mode.yml)" = "$SAIGAI" ]; then
+            echo "### 災害時モード：もともと「${MODE}」のとおりでした（公開だけやり直します）" >> "$GITHUB_STEP_SUMMARY"
+          else
+            cat > data/mode.yml <<EOF
+          # 災害時モード（Actions の「災害時モードの切りかえ」が書きかえる。手で直さない）
+          # true のあいだ：全ページの上に気象庁と市区町村への案内を1行出し、楽天の商品と AdSense を外す
+          saigai: $SAIGAI
+          since: $SINCE
+          EOF
+            git add data/mode.yml
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+              commit -q -m "災害時モードを「${MODE}」"
+            git push -q
+            echo "### 災害時モード：「${MODE}」にしました" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: switch
+    uses: ./.github/workflows/deploy.yml
+    with:
+      ref: ${{ needs.switch.outputs.sha }}
+    secrets: inherit

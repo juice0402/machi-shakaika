@@ -1,9 +1,10 @@
 // 品目ページ（/hinmoku/ と /hinmoku/<id>/）：量のめやす（items.yml）と、楽天市場の商品（毎日とりなおす）
 // 楽天の商品を出すページは、AdSense を置かない・楽天以外へのリンクを置かない（楽天ウェブサービス規約 第8条4項・第10条1項4号）
 //   出典はリンクにせず名前と確認日だけ（リンクは備えの知識のページにある）。フッターに楽天のクレジット（layout.mjs）
-import { esc, fmt, h2, jpDate, fit, priceBand } from '../layout.mjs';
+import { esc, fmt, h2, jpDate, fit, priceBand, srcName } from '../layout.mjs';
 import { need } from '../calc.mjs';
 import { SHOW, cleanName } from '../rakuten.mjs';
+import { SAIGAI } from '../mode.mjs';
 
 const SONAE = { mizu: ['/sonae/bichiku/', '備蓄の量のめやす'], shushoku: ['/sonae/rolling-stock/', 'ローリングストック'], 'keitai-toilet': ['/sonae/keitai-toilet/', '携帯トイレの備え'] };
 
@@ -30,7 +31,7 @@ function sourceText(ids, sources) {
   return `<ul class="notes">${ids
     .map((id) => {
       const s = by.get(id);
-      return `<li>${esc(s.title ? `${s.publisher}「${s.title}」` : s.publisher)}（${jpDate(s.checked)}確認）</li>`;
+      return `<li>${srcName(s)}（${jpDate(s.checked)}確認）</li>`;
     })
     .join('')}</ul>`;
 }
@@ -60,7 +61,9 @@ function amountDesc(it, days, sources) {
   return `${it.page}。${it.page_note}。`;
 }
 
-export function hinmokuPages({ items, sources, products }) {
+// 災害時モード（saigai）のときは、楽天の商品を出さない（題・説明文からも楽天を外す）。AdSense も置かない（layout.mjs）
+export function hinmokuPages({ items, sources, products, saigai = SAIGAI }) {
+  if (saigai) products = null;
   const days = items.days;
   const list = items.items.filter((it) => it.hinmoku);
   const out = [];
@@ -72,7 +75,7 @@ export function hinmokuPages({ items, sources, products }) {
         `${list.map((it) => it.name).join('・')}の${list.length}品目。`,
         `水は1人1日${list.find((x) => x.id === 'mizu').per_day}L、携帯トイレは1人1日${list.find((x) => x.id === 'keitai-toilet').per_day}回、主食は${list.find((x) => x.id === 'shushoku').per_day}食がめやす。`,
       ],
-      ['楽天市場の商品を毎朝入れかえて紹介しています。', 'チェックリストからもつながります。'],
+      saigai ? ['チェックリストや計算のページからもつながります。'] : ['楽天市場の商品を毎朝入れかえて紹介しています。', 'チェックリストからもつながります。'],
     ),
     body: `<p class="crumb"><a href="/">トップ</a> / <a href="/sonae/">備えの知識</a></p>
 <h1 class="city">備えの品目</h1>
@@ -84,14 +87,16 @@ export function hinmokuPages({ items, sources, products }) {
     const rel = SONAE[it.id];
     out.push({
       path: `/hinmoku/${it.id}/`,
-      title: `${it.page}の量のめやすと楽天市場の売れ筋`,
+      title: saigai ? `${it.page}の量のめやす` : `${it.page}の量のめやすと楽天市場の売れ筋`,
       description: fit(
         [amountDesc(it, days, sources)],
-        shop?.length
+        saigai
+          ? ['チェックリストや計算のページにもつながります。', '量は出典のページで確かめた日を下に書いています。']
+          : shop?.length
           ? [`楽天市場のランキングとレビューの数からえらんだ商品${shop.length}点を、${priceBand(Math.min(...shop.map((x) => x.price)))}並べています。`, '商品と価格は毎朝6時ごろに入れかわります。']
           : ['楽天市場の商品は、ランキングとレビューの数から毎朝6時ごろにえらび直します。', 'チェックリストや計算のページにもつながります。'],
       ),
-      rakuten: true,
+      rakuten: !saigai,
       body: `<p class="crumb"><a href="/">トップ</a> / <a href="/hinmoku/">備えの品目</a></p>
 <h1 class="city">${esc(it.page)}</h1>
 <p class="feat">${esc(amount(it, days))}</p>

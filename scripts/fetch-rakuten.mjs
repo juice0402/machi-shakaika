@@ -8,6 +8,13 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { readYaml } from '../src/data.mjs';
 import { cleanKeys, searchUrl, rankingUrl, parseItems, pick, topGenres, HEADERS, PRODUCTS_PATH, KEEP } from '../src/rakuten.mjs';
+import { SAIGAI } from '../src/mode.mjs';
+
+// 災害時モード（data/mode.yml）のあいだは商品を出さないので、取らない
+if (SAIGAI) {
+  console.log('災害時モードなので、楽天の商品は取りません');
+  process.exit(0);
+}
 
 const keys = cleanKeys(process.env);
 const note = (level, msg) => {

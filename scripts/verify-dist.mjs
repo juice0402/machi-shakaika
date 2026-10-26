@@ -2,6 +2,7 @@
 import { readdirSync, readFileSync, statSync, existsSync } from 'node:fs';
 import { SITE, ESTAT_CREDIT } from '../src/site.mjs';
 import { RAKUTEN_CREDIT } from '../src/layout.mjs';
+import { SAIGAI, SAIGAI_BAR } from '../src/mode.mjs';
 
 const DIST = 'dist';
 const walk = (d) => readdirSync(d).flatMap((x) => (statSync(`${d}/${x}`).isDirectory() ? walk(`${d}/${x}`) : [`${d}/${x}`]));
@@ -23,6 +24,8 @@ for (const f of html) {
   const rakuten = s.includes(RAKUTEN_CREDIT);
   const shown = s
     .replace(/<ul class="shop"[\s\S]*?<\/ul>/g, '')
+    // 出典の題（相手のページの題そのまま）は点検から外す
+    .replace(/<cite>[\s\S]*?<\/cite>/g, '')
     .replace(/<script[\s\S]*?<\/script>/gi, '')
     .replace(/<style[\s\S]*?<\/style>/gi, '')
     .replace(/<[^>]+>/g, ' ');
@@ -72,7 +75,13 @@ for (const f of html) {
         if (!m[0].includes('developers.rakuten.com') && !/rel="nofollow sponsored noopener"/.test(m[1])) fail(f, '商品のリンクに rel="nofollow sponsored noopener" がない');
       }
     }
-  } else if (/hinmoku\/[a-z-]+\/index\.html$/.test(f)) fail(f, '品目ページに楽天のクレジットがない');
+  } else if (!SAIGAI && /hinmoku\/[a-z-]+\/index\.html$/.test(f)) fail(f, '品目ページに楽天のクレジットがない');
+  // 災害時モード（data/mode.yml）：全ページに案内の帯・AdSense なし・楽天の商品なし。ふだんは帯を出さない
+  if (SAIGAI) {
+    if (!s.includes(SAIGAI_BAR)) fail(f, '災害時モードなのに案内の帯がない');
+    if (s.includes('adsbygoogle')) fail(f, '災害時モードなのに AdSense がある');
+    if (rakuten || /(afl|item|thumbnail\.image)\.rakuten\.co\.jp/.test(s)) fail(f, '災害時モードなのに楽天の商品がある');
+  } else if (s.includes('<p class="sg"')) fail(f, '災害時モードでないのに案内の帯がある');
   for (const m of s.matchAll(/href="(\/[^"#?]*)/g)) {
     const p = m[1];
     const ok = existsSync(`${DIST}${p}`) && statSync(`${DIST}${p}`).isFile() ? true : existsSync(`${DIST}${p.replace(/\/?$/, '/')}index.html`);

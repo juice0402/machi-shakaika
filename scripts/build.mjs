@@ -22,6 +22,8 @@ import { quizPages } from '../src/pages/quiz.mjs';
 import { machiData } from '../src/quiz.mjs';
 import { PRODUCTS_PATH } from '../src/rakuten.mjs';
 import { TOWN_SVG } from '../src/art.mjs';
+import { SAIGAI } from '../src/mode.mjs';
+import { readYomi } from '../src/yomi.mjs';
 
 const DIST = 'dist';
 const stop = (msg) => {
@@ -44,8 +46,10 @@ const estatMeta = JSON.parse(readFileSync('data/estat/meta.json', 'utf8'));
 const hinan = JSON.parse(readFileSync('data/hinan/counts.json', 'utf8'));
 const hinanMeta = JSON.parse(readFileSync('data/hinan/meta.json', 'utf8'));
 // 楽天の商品（Actions がビルドの前に取る。コミットしない）。キーのある Actions では無ければ止める
-const products = existsSync(PRODUCTS_PATH) ? JSON.parse(readFileSync(PRODUCTS_PATH, 'utf8')) : null;
-if (!products && process.env.REQUIRE_RAKUTEN === '1') stop('楽天の商品（data/rakuten/products.json）がありません');
+// 災害時モード（data/mode.yml）のあいだは商品を出さない（取ってもいない）
+const products = !SAIGAI && existsSync(PRODUCTS_PATH) ? JSON.parse(readFileSync(PRODUCTS_PATH, 'utf8')) : null;
+if (!products && !SAIGAI && process.env.REQUIRE_RAKUTEN === '1') stop('楽天の商品（data/rakuten/products.json）がありません');
+if (SAIGAI) console.log('災害時モード：オン（案内の帯を出し、楽天の商品と AdSense を外す）');
 
 rmSync(DIST, { recursive: true, force: true });
 const pages = [];
@@ -92,14 +96,16 @@ for (const c of cities) {
   if (existsSync(f)) copyFileSync(f, `${DIST}/hinan/${c.code}.json`);
 }
 
-// 市区町村さがし（トップで入力したときだけ読み込む）：[名前, 都道府県, URL]
+// 市区町村さがし（トップで入力したときだけ読み込む）：[名前, 都道府県, URL, 読みがな]
+//   読みがなは data/yomi.json（日本郵便の郵便番号データから。src/yomi.mjs）。ないときは漢字だけでさがす
+const yomi = readYomi();
 const search = [
-  ...PREFS.map((p) => [p.name, '', `/${p.slug}/`]),
+  ...PREFS.map((p) => [p.name, '', `/${p.slug}/`, yomi?.prefs?.[p.code] ?? '']),
   ...[...list]
     .sort((a, b) => b.pop - a.pop)
     .map((a) => {
       const pref = prefOf(a.code);
-      return [a.name, pref.name, urlOf(a.code) ?? `/${pref.slug}/#m${a.code}`];
+      return [a.name, pref.name, urlOf(a.code) ?? `/${pref.slug}/#m${a.code}`, yomi?.munis?.[a.code] ?? ''];
     }),
 ];
 writeFileSync(`${DIST}/search.json`, JSON.stringify(search));

@@ -1,6 +1,6 @@
 // 備えの知識（/sonae/）と計算のページ（/dougu/keisan/）
 // 数字はすべて data/items.yml から。出典は data/sources.yml の id で書き、ページの下に確認日つきで出す
-import { esc, h2, jpDate, fit } from '../layout.mjs';
+import { esc, h2, jpDate, fit, srcName } from '../layout.mjs';
 import { calcHtml, CALC_JS, need } from '../calc.mjs';
 
 export function sourceList(ids, sources) {
@@ -9,8 +9,7 @@ export function sourceList(ids, sources) {
     .map((id) => {
       const s = by.get(id);
       if (!s) throw new Error(`出典 ${id} が sources.yml にない`);
-      const name = s.title ? `${s.publisher}「${s.title}」` : s.publisher;
-      return `<li>${s.url ? `<a href="${esc(s.url)}" rel="noopener">${esc(name)}</a>` : esc(name)}（${jpDate(s.checked)}確認）</li>`;
+      return `<li>${s.url ? `<a href="${esc(s.url)}" rel="noopener">${srcName(s)}</a>` : srcName(s)}（${jpDate(s.checked)}確認）</li>`;
     })
     .join('')}</ul>`;
 }
