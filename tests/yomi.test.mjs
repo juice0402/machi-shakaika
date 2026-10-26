@@ -98,7 +98,7 @@ test('data/yomi.json：都道府県47・ページのある街・政令市の読�
   for (const p of PREFS) assert.match(yomi.prefs[p.code], /^[ぁ-ゖー]+$/, p.name);
   const areas = readMunis().areas;
   const byName = new Map(Object.values(areas).filter((a) => a.level === '4' || a.level === '6').map((a) => [`${a.code.slice(0, 2)}${a.name}`, a.code]));
-  for (const [pref, name] of CITIES) {
+  for (const { pref, name } of CITIES) {
     const code = byName.get(`${PREFS.find((p) => p.slug === pref).code}${name}`);
     assert.ok(yomi.munis[code], `${name} の読みがない`);
   }
