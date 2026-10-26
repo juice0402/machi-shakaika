@@ -54,7 +54,8 @@ for (const f of html) {
     // 楽天の商品画像（APIのURLのまま）は、楽天のページだけ
     if (rakuten && /^<img src="https:\/\/thumbnail\.image\.rakuten\.co\.jp\//.test(m[0])) continue;
     if (SITE.adsense && SITE.launched && m[0] === adsTag.replace('</script>', '')) continue;
-    fail(f, `外のファイルを読み込んでいる：${m[0].slice(0, 80)}`);
+    // 楽天の商品を出すページは、楽天から取った情報（画像のURLなど）をログに出さない（楽天ウェブサービス規約 第10条9号。公開リポジトリのログは誰でも見られる）
+    fail(f, rakuten ? '外のファイルを読み込んでいる（楽天のページなので中身はログに出さない）' : `外のファイルを読み込んでいる：${m[0].slice(0, 80)}`);
   }
   if (SITE.adsense && SITE.launched && !f.endsWith('404.html') && !rakuten && !s.includes('<body data-ads="off">') && !s.includes(adsTag)) fail(f, 'AdSense のスクリプトがない');
   // クイズは AdSense なし（答えのボタンの近くに自動広告が入ると誤クリックをまねくため。設計：広告は結果の下だけ）
@@ -63,7 +64,7 @@ for (const f of html) {
     // 楽天の商品を出すページ：AdSense なし・楽天以外へのリンクなし（規約 第8条4項）・商品のリンクに sponsored と「PR」
     if (s.includes('adsbygoogle')) fail(f, '楽天のページに AdSense がある');
     for (const m of s.matchAll(/href="(https?:\/\/[^"]+)"/g)) {
-      if (!m[1].startsWith(`${SITE.url}/`) && !/^https:\/\/([a-z0-9-]+\.)*rakuten\.(co\.jp|com)\//.test(m[1])) fail(f, `楽天のページに楽天以外へのリンク：${m[1].slice(0, 60)}`);
+      if (!m[1].startsWith(`${SITE.url}/`) && !/^https:\/\/([a-z0-9-]+\.)*rakuten\.(co\.jp|com)\//.test(m[1])) fail(f, '楽天のページに楽天以外へのリンクがある（中身はログに出さない）');
     }
     if (s.includes('class="shop"')) {
       if (!s.includes('<b>PR</b>')) fail(f, '商品の上に PR の表示がない');
