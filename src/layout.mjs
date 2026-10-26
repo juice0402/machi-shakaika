@@ -29,8 +29,8 @@ export const srcTitle = (s) => (s.title ? `「${String(s.title).replace(/「/g, 
 export const srcName = (s) => `${esc(s.publisher)}${s.title ? `<cite>${esc(srcTitle(s))}</cite>` : ''}`;
 export const fmt = (n) => (n == null ? '-' : Number(n).toLocaleString('ja-JP'));
 
-const MINCHO = '"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif';
-const GOTHIC = '"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif';
+export const MINCHO = '"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif';
+export const GOTHIC = '"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif';
 
 const CSS = `
 :root{--bg:#fff;--ink:#23312a;--sub:#5f6e66;--line:#d3dfd5;--accent:#c53d43;--num:#2f6b45;--h2:#2f5d3e;--bar:#4f8d5e;--bar2:#b5cfbb;--track:#e6efe8;--soft:#eef5ef;--water:#3f8fbf}

@@ -72,4 +72,5 @@
 | `scripts/fetch-yomi.mjs` → `data/yomi.json`・`src/yomi.mjs`・`src/lib/zip.mjs` | 市区町村さがしの読みがな（日本郵便の郵便番号データ ken_all.zip。ETag が変わったときだけ。郡を外し、政令市は区の読みの頭から）。取れなくても止めない。トップのさがすスクリプトは漢字・ひらがな・カタカナで、頭が合うものが先 |
 | `src/munis.mjs`・`src/areas.mjs` | munis.json の読み書きと点検・都道府県とページを作る102の街（県庁所在地46・東京23区・政令市5・中核市28 `chukaku`。英字のURL）。中核市のうち川越・越谷・柏・松本・豊田・岡崎・豊橋は「この街の備え」の世帯の数字が出ないので作らない（10/26） |
 | `src/kigen-core.mjs`・`src/pages/kigen.mjs` | 期限メモ（10/26、/dougu/kigen/）：近い順・あと何か月を目盛りで・30日以内は朱のはんこ。品目は items.yml の checklists の kigen（記号はURLに入るので変えない）。メモは localStorage だけ。URL（# のあと、k1_ 版つき）は「URLを送る」で作り、開いたらアドレス欄から消してから読む（ちがえばたずねる）。.ics（30日前の朝9時）・文字の書き出し。AdSense は # を消したあとに読む（`adsLate`、body の data-ads-late。しょーくん 10/26「下の方にさりげなく」） |
+| `src/pages/print.mjs` | 冷蔵庫に貼る紙（10/27、/dougu/print/、案1）：A4縦1枚。家に置く備え＝丸と期限の欄（kigen のある品目）・持ち出す袋＝丸（かっこの中は小さい2行目）。挿絵なし、2つの表の行は同じ高さ。画面は紙を縮めて見せ、印刷は紙だけ（@media print）。AdSense なし |
 | `.github/workflows/update.yml` | 毎週月曜0:07に上の3つ → 変わったら data/ をコミットして deploy.yml を呼ぶ。止まったら Issue。データの取り方を変えたPRでも動き、PRのブランチにコミットする |
