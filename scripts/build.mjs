@@ -28,6 +28,8 @@ import { PRODUCTS_PATH } from '../src/rakuten.mjs';
 import { TOWN_SVG } from '../src/art.mjs';
 import { SAIGAI } from '../src/mode.mjs';
 import { readYomi } from '../src/yomi.mjs';
+import { kazuData } from '../src/machi-tools.mjs';
+import { toolPages } from '../src/pages/kurabe.mjs';
 
 const DIST = 'dist';
 const stop = (msg) => {
@@ -73,11 +75,13 @@ const list = muniList(munis.areas);
 const z = derive(munis.areas['00000']);
 const cityUrl = new Map(cities.map((c) => [c.code, `/${c.pref}/${c.slug}/`]));
 const urlOf = (code) => cityUrl.get(code) ?? null;
+// 似てる街さがし・2つの街をくらべる の数字（/kurabe/kazu.json。市区町村ページの似ている街もこれから作る）
+const kazu = kazuData(munis.areas, urlOf);
 
 add(topPage({ cc, munis, hinanMeta, nMunis: list.length }));
 for (const pref of PREFS) add(prefPage({ pref, munis, list, z, cc, urlOf }));
 const bichikuOf = bichikuMap(bichiku);
-for (const city of cities) add(cityPage({ city, munis, list, z, cc, hinan, hinanMeta, urlOf, bichiku: bichikuOf.get(`${city.pref}/${city.slug}`) ?? null }));
+for (const city of cities) add(cityPage({ city, munis, list, z, cc, hinan, hinanMeta, urlOf, kazu, bichiku: bichikuOf.get(`${city.pref}/${city.slug}`) ?? null }));
 for (const p of sonaePages({ cc, items, sources })) add(p);
 for (const p of fuyuTeidenPages({ cc, items, sources })) add(p);
 for (const p of yomimonoPages({ cc, items, sources })) add(p);
@@ -85,6 +89,7 @@ for (const p of douguPages({ cc, items, sources })) add(p);
 for (const p of kigenPages({ items })) add(p);
 for (const p of printPages({ cc, items, sources })) add(p);
 for (const p of rankingPages({ munis, list, urlOf })) add(p);
+for (const p of toolPages({ munis, kazu })) add(p);
 for (const p of hinmokuPages({ items, sources, products })) add(p);
 const machi = machiData(munis.areas, urlOf);
 for (const p of quizPages({ munis, items, sources, machi })) add(p);
@@ -93,6 +98,8 @@ add({ path: null, title: 'ページが見つかりません', description: 'ペ�
 
 // クイズの数字（どっちが多い・ドボンクイズを開いたときだけ読む）：都道府県47と全国の市区町村
 writeFileSync(`${DIST}/quiz/machi.json`, JSON.stringify(machi));
+// 似てる街さがし・くらべるの数字（街をえらぶ欄にさわったときだけ読む）
+writeFileSync(`${DIST}/kurabe/kazu.json`, JSON.stringify(kazu));
 
 // ファビコン（A 森と川。10/23 しょーくんが3案から選んだ）。static/ の中をそのまま置く
 for (const f of readdirSync('static')) copyFileSync(`static/${f}`, `${DIST}/${f}`);
@@ -142,6 +149,8 @@ out(
     '/hinan/*',
     '  Cache-Control: public, max-age=86400',
     '/quiz/machi.json',
+    '  Cache-Control: public, max-age=86400',
+    '/kurabe/kazu.json',
     '  Cache-Control: public, max-age=86400',
     '/favicon.*',
     '  Cache-Control: public, max-age=604800',
