@@ -156,7 +156,7 @@ ${h2('このメモを残す')}
 <p><button class="clr" type="button" id="kclr">すべて消す</button></p>
 </section>
 ${h2('あわせて')}
-<ul class="list"><li><a href="/dougu/keisan/">備蓄の量を計算する</a></li><li><a href="/dougu/check/">チェックリスト</a></li><li><a href="/sonae/rolling-stock/">ローリングストック</a></li><li><a href="/hinmoku/">品目ごとのめやす</a></li></ul>`,
+<ul class="list"><li><a href="/dougu/keisan/">備蓄の量を計算する</a></li><li><a href="/dougu/check/">チェックリスト</a></li><li><a href="/dougu/print/">冷蔵庫に貼る紙（A4）</a></li><li><a href="/sonae/rolling-stock/">ローリングストック</a></li><li><a href="/hinmoku/">品目ごとのめやす</a></li></ul>`,
       script: kigenJs(C, n),
     },
   ];
