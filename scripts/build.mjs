@@ -16,6 +16,7 @@ import { cityPage } from '../src/pages/city.mjs';
 import { sonaePages } from '../src/pages/sonae.mjs';
 import { fuyuTeidenPages } from '../src/pages/sonae-fuyu.mjs';
 import { yomimonoPages } from '../src/pages/sonae-yomimono.mjs';
+import { sotoPages } from '../src/pages/sonae-soto.mjs';
 import { infoPages } from '../src/pages/info.mjs';
 import { douguPages } from '../src/pages/dougu.mjs';
 import { kigenPages } from '../src/pages/kigen.mjs';
@@ -85,6 +86,7 @@ for (const city of cities) add(cityPage({ city, munis, list, z, cc, hinan, hinan
 for (const p of sonaePages({ cc, items, sources })) add(p);
 for (const p of fuyuTeidenPages({ cc, items, sources })) add(p);
 for (const p of yomimonoPages({ cc, items, sources })) add(p);
+for (const p of sotoPages({ cc, items, sources })) add(p);
 for (const p of douguPages({ cc, items, sources })) add(p);
 for (const p of kigenPages({ items })) add(p);
 for (const p of printPages({ cc, items, sources })) add(p);

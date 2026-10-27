@@ -40,7 +40,7 @@ export function sonaePages({ cc, items, sources }) {
     body: `<p class="crumb"><a href="/">トップ</a></p>
 <h1 class="city">備えの知識</h1>
 <p class="lead">公的な資料の数字をもとに、家の備えを人数と日数で考える</p>
-<ul class="list"><li><a href="/sonae/bichiku/">備蓄の量のめやす</a></li><li><a href="/sonae/rolling-stock/">ローリングストック</a></li><li><a href="/sonae/keitai-toilet/">携帯トイレの備え</a></li><li><a href="/sonae/fuyu-teiden/">冬の停電と寒さの備え</a></li><li><a href="/sonae/jishin/">地震の前に足すもの</a></li><li><a href="/sonae/zaitaku-hinan/">在宅避難の備え</a></li><li><a href="/sonae/akachan-koureisha/">赤ちゃん・高齢の家族がいる家の備え</a></li><li><a href="/sonae/hitorigurashi/">ひとり暮らしの備え</a></li><li><a href="/sonae/mansion/">マンション（共同住宅）の備え</a></li><li><a href="/dougu/keisan/">備蓄の量を計算する</a></li><li><a href="/dougu/check/">チェックリスト</a></li><li><a href="/hinmoku/">品目ごとのめやす</a></li><li><a href="/quiz/sonae/">備えの数字クイズ</a></li></ul>
+<ul class="list"><li><a href="/sonae/bichiku/">備蓄の量のめやす</a></li><li><a href="/sonae/rolling-stock/">ローリングストック</a></li><li><a href="/sonae/keitai-toilet/">携帯トイレの備え</a></li><li><a href="/sonae/fuyu-teiden/">冬の停電と寒さの備え</a></li><li><a href="/sonae/jishin/">地震の前に足すもの</a></li><li><a href="/sonae/zaitaku-hinan/">在宅避難の備え</a></li><li><a href="/sonae/akachan-koureisha/">赤ちゃん・高齢の家族がいる家の備え</a></li><li><a href="/sonae/hitorigurashi/">ひとり暮らしの備え</a></li><li><a href="/sonae/mansion/">マンション（共同住宅）の備え</a></li><li><a href="/sonae/kuruma-taisetsu/">車の大雪の備え</a></li><li><a href="/sonae/kitaku-konnan/">職場と通勤の備え</a></li><li><a href="/dougu/keisan/">備蓄の量を計算する</a></li><li><a href="/dougu/check/">チェックリスト</a></li><li><a href="/hinmoku/">品目ごとのめやす</a></li><li><a href="/quiz/sonae/">備えの数字クイズ</a></li></ul>
 <p class="note">発生したときの行動や避難の判断は、お住まいの自治体の案内とハザードマップを優先してください。</p>`,
   });
 

@@ -315,6 +315,63 @@ sources:
     checked: 2026-10-26
     about: 令和7年国勢調査の確定値（2026年9月29日の報道発表）。人口2,345,186人、世帯数1,187,231。数字は data/shogo.yml
 
+  # ---------- 家の外の備え（/sonae/kuruma-taisetsu/・/sonae/kitaku-konnan/。10/28 #19） ----------
+  - id: mlit-ooyuki
+    kind: sonae
+    publisher: 国土交通省
+    title: 大雪に対する国土交通省発表
+    url: https://www.mlit.go.jp/report/press/content/001971171.pdf
+    checked: 2026-10-28
+    about: 令和7年12月2日。やむを得ず運転するときは冬用タイヤ、チェーンはつけ方を前に確かめて携行・早めに装着。スコップや砂などの冬用装備を携行
+
+  - id: cgr-ooyuki
+    kind: sonae
+    publisher: 国土交通省中国運輸局
+    title: 大雪に関するお知らせ ～外出の時は大雪に対する備えを！～
+    url: https://www.cgr.mlit.go.jp/kisya/pdf/260205-1top.pdf
+    checked: 2026-10-28
+    about: 令和8年2月5日。冬用タイヤとチェーン、雪かき用のスコップや砂。立ち往生に備えて水や食料。燃料を満タンにして外出
+
+  - id: cbr-mie-fuyu
+    kind: sonae
+    publisher: 国土交通省中部地方整備局 三重河川国道事務所
+    title: 積雪・凍結道路を走る前に準備しておきたいもの
+    url: https://www.cbr.mlit.go.jp/mie/snow/sp/prepare.html
+    checked: 2026-10-28
+    about: タイヤチェーン・ジャッキ・けん引ロープ・スコップ・ブースターケーブル・軍手と長靴・懐中電灯・アイスクレーパー・解氷剤・毛布・防寒着
+
+  - id: iida-fuyu
+    kind: sonae
+    publisher: 国土交通省中部地方整備局 飯田国道事務所
+    title: 出発前の心がけ
+    url: https://www.cbr.mlit.go.jp/iikoku/yuki/mind.html
+    checked: 2026-10-28
+    about: スタッドレスタイヤでもチェーンを備える。雪道は燃費が悪くなるので燃料は余裕を持って。ディーゼル車は軽油の凍結に注意
+
+  - id: fukushima-ooyuki
+    kind: sonae
+    publisher: 福島県
+    title: 大雪に備えましょう！
+    url: https://www.pref.fukushima.lg.jp/site/bousai/setugai-chui.html
+    checked: 2026-10-28
+    about: 車が長時間動けなくなるときに備え、スコップなどの除雪器具・毛布などの防寒具・非常用食料や水・携帯トイレ。立ち往生したときのエンジンと換気の注意もある
+
+  - id: bousai-kitaku
+    kind: sonae
+    publisher: 内閣府（防災担当）
+    title: 災害発生時における大規模な帰宅困難者等の発生への対策に関するガイドライン
+    url: https://www.bousai.go.jp/jishin/kitakukonnan/pdf/kitakukonnan_guideline.pdf
+    checked: 2026-10-28
+    about: 令和8年1月。企業の備蓄は3日分がめやす（水は1人1日3L・主食は1人1日3食・毛布は1人1枚）。簡易トイレ・携帯ラジオ・懐中電灯なども。家族との連絡は災害用伝言ダイヤル171・災害用伝言板・SNSなど複数の手段を前に確かめる。個人の備えの例に非常用食品・飲料水・運動靴・常備薬・携帯電話用の電源
+
+  - id: keishicho-kitaku
+    kind: sonae
+    publisher: 警視庁
+    title: 帰宅困難者対策
+    url: https://www.keishicho.metro.tokyo.lg.jp/kurashi/saigai/jishin/kitaku.html
+    checked: 2026-10-28
+    about: 東京都帰宅困難者対策条例（2013年4月施行）。職場に3日分の飲料水や食糧。ロッカーにスニーカー、机の中にチョコやキャラメル、携帯電話と携帯ラジオ、季節に応じて携帯カイロやタオル。家族で連絡手段と集合場所を話し合い、災害用伝言ダイヤル・伝言板
+
   # ---------- 避難場所データ ----------
   - id: gsi-hinanbasho
     kind: hinan
