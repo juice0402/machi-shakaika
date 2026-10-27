@@ -26,10 +26,10 @@ sources:
   - id: maff-guide
     kind: sonae
     publisher: 農林水産省
-    title: 食品ストックガイド
+    title: 災害時に備えた食品ストックガイド
     url: https://www.maff.go.jp/j/zyukyu/foodstock/guidebook.html
-    checked: 2026-10-21
-    about: 選び方、ローリングストック。要配慮者版あり
+    checked: 2026-10-27
+    about: 選び方、ローリングストック。要配慮者版あり（乳幼児のミルクと離乳食・高齢者・かむ力や飲みこむ力が弱い人の介護食品ととろみ調整食品・食物アレルギー・慢性疾患）
 
   - id: miyagi-mizu
     kind: sonae
@@ -136,6 +136,31 @@ sources:
     checked: 2026-10-26
     about: 電力10社の停電情報ページのリンク集（ガス・水道、通信もある）。停電の情報はここへのリンクだけにする。出典の一覧には出さない
 
+  # 読みもの3本（地震の前に足すもの・在宅避難・赤ちゃんと高齢の家族）
+  - id: tfd-jishin
+    kind: sonae
+    publisher: 東京消防庁
+    title: 地震に対する10の備え
+    url: https://www.tfd.metro.tokyo.lg.jp/lfe/bou_topic/jisin/sonae10.html
+    checked: 2026-10-27
+    about: 家具類を金具で固定・ガラスに飛散防止フィルム・懐中電灯とスリッパやスニーカー・家の耐震診断とブロック塀・消火器と風呂の水のくみ置き・住宅用火災警報器・感震ブレーカー（分電盤型）・食料品は1人3日分程度・飲料水は1人1日3L。2025年12月12日更新
+
+  - id: ota-kanshin
+    kind: sonae
+    publisher: 大田区
+    title: 感震ブレーカーについて
+    url: https://www.city.ota.tokyo.jp/seikatsu/chiiki/bousai/topics/kashin-breaker.html
+    checked: 2026-10-27
+    about: 大きな揺れを感じると屋内の電気を自動で止める器具。電気が戻ったときの通電火災を防ぐ。分電盤・コンセント・簡易の3つのタイプ（値段はページに出さない）。2026年6月24日更新
+
+  - id: chiba-zaitaku
+    kind: sonae
+    publisher: 千葉市
+    title: 在宅避難
+    url: https://www.city.chiba.jp/sogoseisaku/kikikanri/bosai/zaitakuhinan.html
+    checked: 2026-10-27
+    about: 周りの災害の危険が少なく、家が壊れておらず室内が使えるときは家で過ごす在宅避難。携帯トイレ1人1日5個・飲料水1人1日3L・食料・カセットコンロとボンベ・照明・ポータブル電源やモバイルバッテリー。7日分以上が目安。感震ブレーカー。2026年9月3日更新
+
   - id: hiroshima-toilet
     kind: sonae
     publisher: 広島市
@@ -152,13 +177,45 @@ sources:
     checked: 2026-10-26
     about: 断水・停電・配管の被害でトイレが使えなくなる。集合住宅で気づかず流すと下の階であふれるおそれ。最低3日、できれば7日
 
+  - id: chiba-pref-mansion
+    kind: sonae
+    publisher: 千葉県
+    title: マンション特有の課題と対策(マンション防災)
+    url: https://www.pref.chiba.lg.jp/bousaik/jibun/sonae/manshonbousai.html
+    checked: 2026-10-27
+    about: マンションではエレベーターが止まる・高層階の上り下りがむずかしい・ポンプの給水が止まって断水・排水管の損傷でトイレが使えない・長周期地震動。家ごとに水と食料・携帯トイレや簡易トイレ・家具の固定・消火器の場所・感震ブレーカー。排水管の無事がわかるまでトイレは流さず、点検が終わるまでエレベーターは使わない
+
+  - id: suginami-mansion
+    kind: sonae
+    publisher: 杉並区
+    title: マンション防災
+    url: https://www.city.suginami.tokyo.jp/guide/kyukyu/1095325.html
+    checked: 2026-10-27
+    about: 建物が無事でも停電で上下水道が使えず家で過ごすのがむずかしくなった例、エレベーターが止まる例。古い給排水管は大地震で傷み、トイレや水道が使えなくなるおそれ
+
+  - id: maff-tanshin
+    kind: sonae
+    publisher: 農林水産省
+    title: 要配慮者と単身者の 食品ストックガイド
+    url: https://www.maff.go.jp/j/pr/aff/2603/spe1_02.html
+    checked: 2026-10-27
+    about: 食品はキッチンに置かなくてよく、ひとり暮らしでもクローゼットのすき間やベッドの下を使って置ける。収納を兼ねる家具、カセットコンロはケースに入れて立てて置く
+
+  - id: maff-shuno
+    kind: sonae
+    publisher: 農林水産省
+    title: 災害時に備えた食品ストックガイド（9）
+    url: https://www.maff.go.jp/j/zyukyu/foodstock/chapter09.html
+    checked: 2026-10-27
+    about: 毎日使う食品は台所でローリングストック、たまに使うものは押し入れなど。中身が見える箱に入れて側面に期限を書く。重いものは下。入りきらない分は家のすき間に分けて置く。コンロとボンベは同じ場所
+
   - id: nerima-yohairyo
     kind: sonae
     publisher: 練馬区
     title: いざという時の食に備えて～家庭での備蓄のポイント～
     url: https://www.city.nerima.tokyo.jp/hokenfukushi/hoken/shokuiku/izatoiutoki/index.files/060326iza.pdf
-    checked: 2026-10-26
-    about: 乳幼児・妊産婦・高齢者・慢性疾患・食物アレルギーなどは少なくとも2週間分
+    checked: 2026-10-27
+    about: 乳幼児・妊産婦・高齢者・慢性疾患・食物アレルギーなどは少なくとも2週間分。粉ミルクや液体ミルク・ほ乳びん・調乳の水、瓶詰めやレトルトの離乳食、やわらかい介護食品・とろみ調整食品、入れ歯の手入れ、アレルギー対応食品はローリングストックで、食事療法は主治医に相談
 
   - id: ota-pet
     kind: sonae
@@ -257,6 +314,63 @@ sources:
     url: https://www.city.nagoya.jp/houdou/3003942/3003948/3005709.html
     checked: 2026-10-26
     about: 令和7年国勢調査の確定値（2026年9月29日の報道発表）。人口2,345,186人、世帯数1,187,231。数字は data/shogo.yml
+
+  # ---------- 家の外の備え（/sonae/kuruma-taisetsu/・/sonae/kitaku-konnan/。10/28 #19） ----------
+  - id: mlit-ooyuki
+    kind: sonae
+    publisher: 国土交通省
+    title: 大雪に対する国土交通省発表
+    url: https://www.mlit.go.jp/report/press/content/001971171.pdf
+    checked: 2026-10-28
+    about: 令和7年12月2日。やむを得ず運転するときは冬用タイヤ、チェーンはつけ方を前に確かめて携行・早めに装着。スコップや砂などの冬用装備を携行
+
+  - id: cgr-ooyuki
+    kind: sonae
+    publisher: 国土交通省中国運輸局
+    title: 大雪に関するお知らせ ～外出の時は大雪に対する備えを！～
+    url: https://www.cgr.mlit.go.jp/kisya/pdf/260205-1top.pdf
+    checked: 2026-10-28
+    about: 令和8年2月5日。冬用タイヤとチェーン、雪かき用のスコップや砂。立ち往生に備えて水や食料。燃料を満タンにして外出
+
+  - id: cbr-mie-fuyu
+    kind: sonae
+    publisher: 国土交通省中部地方整備局 三重河川国道事務所
+    title: 積雪・凍結道路を走る前に準備しておきたいもの
+    url: https://www.cbr.mlit.go.jp/mie/snow/sp/prepare.html
+    checked: 2026-10-28
+    about: タイヤチェーン・ジャッキ・けん引ロープ・スコップ・ブースターケーブル・軍手と長靴・懐中電灯・アイスクレーパー・解氷剤・毛布・防寒着
+
+  - id: iida-fuyu
+    kind: sonae
+    publisher: 国土交通省中部地方整備局 飯田国道事務所
+    title: 出発前の心がけ
+    url: https://www.cbr.mlit.go.jp/iikoku/yuki/mind.html
+    checked: 2026-10-28
+    about: スタッドレスタイヤでもチェーンを備える。雪道は燃費が悪くなるので燃料は余裕を持って。ディーゼル車は軽油の凍結に注意
+
+  - id: fukushima-ooyuki
+    kind: sonae
+    publisher: 福島県
+    title: 大雪に備えましょう！
+    url: https://www.pref.fukushima.lg.jp/site/bousai/setugai-chui.html
+    checked: 2026-10-28
+    about: 車が長時間動けなくなるときに備え、スコップなどの除雪器具・毛布などの防寒具・非常用食料や水・携帯トイレ。立ち往生したときのエンジンと換気の注意もある
+
+  - id: bousai-kitaku
+    kind: sonae
+    publisher: 内閣府（防災担当）
+    title: 災害発生時における大規模な帰宅困難者等の発生への対策に関するガイドライン
+    url: https://www.bousai.go.jp/jishin/kitakukonnan/pdf/kitakukonnan_guideline.pdf
+    checked: 2026-10-28
+    about: 令和8年1月。企業の備蓄は3日分がめやす（水は1人1日3L・主食は1人1日3食・毛布は1人1枚）。簡易トイレ・携帯ラジオ・懐中電灯なども。家族との連絡は災害用伝言ダイヤル171・災害用伝言板・SNSなど複数の手段を前に確かめる。個人の備えの例に非常用食品・飲料水・運動靴・常備薬・携帯電話用の電源
+
+  - id: keishicho-kitaku
+    kind: sonae
+    publisher: 警視庁
+    title: 帰宅困難者対策
+    url: https://www.keishicho.metro.tokyo.lg.jp/kurashi/saigai/jishin/kitaku.html
+    checked: 2026-10-28
+    about: 東京都帰宅困難者対策条例（2013年4月施行）。職場に3日分の飲料水や食糧。ロッカーにスニーカー、机の中にチョコやキャラメル、携帯電話と携帯ラジオ、季節に応じて携帯カイロやタオル。家族で連絡手段と集合場所を話し合い、災害用伝言ダイヤル・伝言板
 
   # ---------- 避難場所データ ----------
   - id: gsi-hinanbasho

@@ -40,7 +40,7 @@ export function sonaePages({ cc, items, sources }) {
     body: `<p class="crumb"><a href="/">トップ</a></p>
 <h1 class="city">備えの知識</h1>
 <p class="lead">公的な資料の数字をもとに、家の備えを人数と日数で考える</p>
-<ul class="list"><li><a href="/sonae/bichiku/">備蓄の量のめやす</a></li><li><a href="/sonae/rolling-stock/">ローリングストック</a></li><li><a href="/sonae/keitai-toilet/">携帯トイレの備え</a></li><li><a href="/sonae/fuyu-teiden/">冬の停電と寒さの備え</a></li><li><a href="/dougu/keisan/">備蓄の量を計算する</a></li><li><a href="/dougu/check/">チェックリスト</a></li><li><a href="/hinmoku/">品目ごとのめやす</a></li><li><a href="/quiz/sonae/">備えの数字クイズ</a></li></ul>
+<ul class="list"><li><a href="/sonae/bichiku/">備蓄の量のめやす</a></li><li><a href="/sonae/rolling-stock/">ローリングストック</a></li><li><a href="/sonae/keitai-toilet/">携帯トイレの備え</a></li><li><a href="/sonae/fuyu-teiden/">冬の停電と寒さの備え</a></li><li><a href="/sonae/jishin/">地震の前に足すもの</a></li><li><a href="/sonae/zaitaku-hinan/">在宅避難の備え</a></li><li><a href="/sonae/akachan-koureisha/">赤ちゃん・高齢の家族がいる家の備え</a></li><li><a href="/sonae/hitorigurashi/">ひとり暮らしの備え</a></li><li><a href="/sonae/mansion/">マンション（共同住宅）の備え</a></li><li><a href="/sonae/kuruma-taisetsu/">車の大雪の備え</a></li><li><a href="/sonae/kitaku-konnan/">職場と通勤の備え</a></li><li><a href="/dougu/keisan/">備蓄の量を計算する</a></li><li><a href="/dougu/check/">チェックリスト</a></li><li><a href="/hinmoku/">品目ごとのめやす</a></li><li><a href="/quiz/sonae/">備えの数字クイズ</a></li></ul>
 <p class="note">発生したときの行動や避難の判断は、お住まいの自治体の案内とハザードマップを優先してください。</p>`,
   });
 
@@ -66,6 +66,7 @@ ${h2('人数と日数の早見表')}
 ${h2('高齢の家族や小さな子どもがいる家', 'yohairyo')}
 <p>乳幼児、妊娠中の人、高齢の人、持病や食物アレルギーのある人は、ふだんの食事や薬が手に入りにくくなると困りやすい人です。こうした家族がいる家では、少なくとも${y}日分の備えが勧められています。</p>
 <p>${y}日分は、${w}L×人数×${y}日。2人なら水は${need(w, 2, y)}Lです。</p>
+<p>ミルクや介護食品などは<a href="/sonae/akachan-koureisha/">赤ちゃん・高齢の家族がいる家の備え</a>に。</p>
 <p><a href="/hinmoku/mizu/">備蓄の水</a>・<a href="/hinmoku/shushoku/">備蓄の主食</a>・<a href="/hinmoku/keitai-toilet/">携帯トイレ</a></p>
 </div>
 ${h2('出典')}
@@ -91,6 +92,7 @@ ${h2('どれだけ置いておくか')}
 ${h2('回し方')}
 <p>買ってきたものは奥に入れて、手前の古いものから使う。使ったら、次の買い物で同じものを買い足す。このくり返しで、置いてある量が保たれます。</p>
 <p>停電やガスが止まったときのために、<a href="/hinmoku/gas/">カセットコンロとボンベ</a>もあわせて用意しておくと、温かい食事が作れます。</p>
+<p>ひとり暮らしで置き場所がせまいときは<a href="/sonae/hitorigurashi/">ひとり暮らしの備え</a>に。</p>
 <p><a class="go" href="/dougu/keisan/">わが家の人数で計算する</a></p>
 </div>
 ${h2('出典')}
@@ -113,6 +115,7 @@ ${h2('どれだけ要るか')}
 ${hayami(cc, 'keitai-toilet', '回分')}
 ${h2('マンションなど集合住宅の場合')}
 <p>建物の配管が傷んでいるのに気づかずに流すと、下の階で汚水があふれるおそれがあると、神奈川県は注意をよびかけています。配管の状態がわかるまでは、携帯トイレを使います。</p>
+<p>エレベーターや水のポンプが止まることは<a href="/sonae/mansion/">マンション（共同住宅）の備え</a>に、家で過ごすための水や明かりの備えは<a href="/sonae/zaitaku-hinan/">在宅避難の備え</a>に。</p>
 <p><a href="/hinmoku/keitai-toilet/">携帯トイレの品目と商品</a></p>
 <p><a class="go" href="/dougu/keisan/">わが家の人数で計算する</a></p>
 </div>

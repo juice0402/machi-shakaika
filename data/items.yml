@@ -24,6 +24,33 @@ fuyu:
     sources: [niigata-ooyuki]
   sources: [hepco-saigai, asahikawa-sonae, niigata-ooyuki, maff-sonae, kyuden-ecocute, hokkaido-gas-teiden, bousai-teiden, caa-hakkaden, sapporo-yukigai]
 
+# 読みもの3本（/sonae/jishin/・/sonae/zaitaku-hinan/・/sonae/akachan-koureisha/）。sources はページの出典に並べる id（この順）
+#   ページに出る数字は days・mizu と keitai-toilet の per_day・yohairyo_days と、そこから計算した量だけ。新しい数字は足していない
+#   （東京消防庁の「食料品は1人3日分程度」は days.min、千葉市の「7日分以上・水3L・携帯トイレ5個」は days.better と per_day と同じ）
+jishin:
+  sources: [tfd-jishin, ota-kanshin, chiba-zaitaku, maff-sonae, hiroshima-toilet, kanagawa-toilet]
+zaitaku:
+  sources: [chiba-zaitaku, maff-sonae, miyagi-mizu, hiroshima-toilet, kanagawa-toilet, bousai-teiden]
+akachan:
+  sources: [nerima-yohairyo, maff-guide, maff-stock, nagasaki-mochidashi, maff-sonae]
+# 街とつながる読みもの2本（/sonae/hitorigurashi/・/sonae/mansion/。市区町村ページ「この街の備え」から）
+#   ページに出る数字は days・mizu・shushoku・keitai-toilet の per_day と、そこから計算した1人分・家族の量だけ。新しい数字は足していない
+hitori:
+  sources: [maff-tanshin, maff-shuno, maff-sonae, maff-stock, hiroshima-toilet, kanagawa-toilet]
+mansion:
+  sources: [chiba-pref-mansion, suginami-mansion, kanagawa-toilet, chiba-zaitaku, maff-sonae, hiroshima-toilet, bousai-teiden]
+
+# 家の外の備え2本（/sonae/kuruma-taisetsu/・/sonae/kitaku-konnan/。10/28 #19）。sources はページの出典に並べる id（この順）
+#   車のページは数字を出さない（積んでおく量の目安を公的な資料で確かめていないため）
+#   職場のページの数字は kitaku と mizu・shushoku の per_day（内閣府のガイドラインの水1人1日3L・主食3食と同じ）と、そこから計算した量だけ
+kuruma:
+  sources: [mlit-ooyuki, cgr-ooyuki, cbr-mie-fuyu, iida-fuyu, fukushima-ooyuki]
+kitaku:
+  days: 3          # 職場の備蓄は従業員の3日分（内閣府のガイドライン・東京都帰宅困難者対策条例）
+  moufu: 1         # 毛布は1人1枚（内閣府のガイドライン）
+  dengon: '171'    # 災害用伝言ダイヤルの番号（内閣府のガイドライン）
+  sources: [bousai-kitaku, keishicho-kitaku]
+
 items:
   - id: mizu
     name: 水

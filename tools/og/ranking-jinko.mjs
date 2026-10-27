@@ -1,6 +1,7 @@
 // 人口が増えた市区町村の共有画像（1200×675、X にも貼る。10/27 しょーくんが案A）
 // 数字はページと同じ rankingData() から。作ったら数字のしるしを data/og-ranking-jinko.json に書く
 // （データが変わってしるしが合わなくなると、ページはサイトの共有画像にもどる）
+// 下の出典の行は、1.91:1（Facebook・LINE）で上下が約24pxずつ切れても残る高さに置く
 // 使い方（リポジトリのいちばん上で、Claude の作業場から）：node tools/og/ranking-jinko.mjs
 import { writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
@@ -38,7 +39,7 @@ body{width:${W}px;height:${H}px;overflow:hidden;position:relative;background:var
 .hm{color:var(--h2);flex:none}
 .sub{font:700 29px/1.3 ${MIN};color:var(--h2);margin:0}
 .cond{font-size:18px;color:var(--sub);margin:4px 0 0}
-.ft{position:absolute;left:44px;right:44px;bottom:14px;display:flex;justify-content:space-between;align-items:baseline;gap:24px;padding-top:10px;border-top:1px solid var(--line);font-size:16px;line-height:1.4;color:var(--sub)}
+.ft{position:absolute;left:44px;right:44px;bottom:34px;display:flex;justify-content:space-between;align-items:baseline;gap:24px;padding-top:10px;border-top:1px solid var(--line);font-size:16px;line-height:1.4;color:var(--sub)}
 .site{font:700 20px/1.2 ${MIN};color:var(--ink);letter-spacing:.06em;white-space:nowrap}.site small{font:15px ${GOT};color:var(--sub);letter-spacing:0;margin-left:10px}
 .no{font-size:22px;color:var(--sub);text-align:right;position:relative}
 .no.han{color:var(--accent);font-weight:700}
@@ -49,20 +50,20 @@ body{width:${W}px;height:${H}px;overflow:hidden;position:relative;background:var
 .lead{font:700 27px/1.3 ${MIN};color:var(--h2);margin:0}
 .bign{font-size:112px;font-weight:700;color:var(--num);line-height:1;margin:10px 0 0;letter-spacing:-.01em}
 .mnote{font-size:18px;color:var(--sub);margin:10px 0 0}
-.hero{position:absolute;left:44px;bottom:96px;width:318px;height:auto}
+.hero{position:absolute;left:44px;bottom:104px;width:318px;height:auto}
 .right{position:absolute;left:408px;top:112px;width:748px}
-.plot{position:relative;margin-top:8px;height:${28 + rows.length * 38}px}
+.plot{position:relative;margin-top:8px;height:${28 + rows.length * 36}px}
 .tk{position:absolute;top:0;bottom:0;width:1px;background:var(--line)}.tk b{position:absolute;top:0;left:0;transform:translateX(-50%);font-size:16px;font-weight:400;color:var(--sub);background:#fff;padding:0 3px;white-space:nowrap}
 .tk.z{background:var(--sub)}
-.r{position:absolute;left:0;right:0;height:38px;display:grid;grid-template-columns:30px 238px 1fr;gap:0 14px;align-items:center}
-.bar{position:relative;height:100%}.bar i{position:absolute;left:0;top:10px;height:18px;background:var(--bar)}
+.r{position:absolute;left:0;right:0;height:36px;display:grid;grid-template-columns:30px 238px 1fr;gap:0 14px;align-items:center}
+.bar{position:relative;height:100%}.bar i{position:absolute;left:0;top:9px;height:18px;background:var(--bar)}
 .bar .v{position:absolute;top:50%;transform:translateY(-50%)}
 </style></head><body><div class="trees">${trees}</div><h1 class="ttl">${HM}${title}</h1>
 <div class="left"><p class="lead">人口が増えた市区町村</p><p class="bign">${fmt(up.length)}</p><p class="mnote">全国${fmt(list.length)}市区町村のうち</p></div>
 <img class="hero" src="../../static/hero-860.webp" alt="">
 <div class="right"><p class="sub">増えた割合が大きい${rows.length}の街</p><p class="cond">人口${MIN_POP / 10000}万人以上の市区町村。2020年の人口とくらべた増え方</p>
 <div class="plot">${ticks.map((t) => `<span class="tk${t === 0 ? ' z' : ''}" style="left:${X0 + x(t)}px;top:${t === 0 ? 28 : 0}px"><b style="top:${t === 0 ? -28 : 0}px">${t}%</b></span>`).join('')}
-${rows.map((r, i) => `<div class="r" style="top:${28 + i * 38}px"><span class="no${i === 0 ? ' han' : ''}">${i + 1}</span><span class="nm">${r.name}<small>${prefOf(r.code).name}</small></span><span class="bar"><i style="width:${x(r.rate).toFixed(1)}px"></i><span class="v" style="left:${(x(r.rate) + 10).toFixed(1)}px">${rateText(r).replace('%', '<small>%</small>')}</span></span></div>`).join('')}</div></div>
+${rows.map((r, i) => `<div class="r" style="top:${28 + i * 36}px"><span class="no${i === 0 ? ' han' : ''}">${i + 1}</span><span class="nm">${r.name}<small>${prefOf(r.code).name}</small></span><span class="bar"><i style="width:${x(r.rate).toFixed(1)}px"></i><span class="v" style="left:${(x(r.rate) + 10).toFixed(1)}px">${rateText(r).replace('%', '<small>%</small>')}</span></span></div>`).join('')}</div></div>
 <footer class="ft"><span>出典：総務省「${munis.statName}」を加工して作成（${jpDate(munis.survey)}現在・${jpDate(munis.published)}公表）<br>${NOTE_KUMIKAE}</span><span class="site">${SITE.name}<small>${SITE.url.replace(/^https?:\/\//, '')}</small></span></footer>
 </body></html>`;
 
