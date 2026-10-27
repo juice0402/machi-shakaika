@@ -1,7 +1,8 @@
 // 都道府県と、ページを作る市区町村
 //   段階1a：県庁所在地46・東京23区・県庁所在地でない政令市5
 //   第2弾：中核市（総務省の一覧、62市・令和7年4月1日現在）のうち県庁所在地でないもの。ページを作る条件（設計の決定版）を
-//     みたさない7市（川越・越谷・柏・松本・豊田・岡崎・豊橋。「この街の備え」に世帯の特徴の数字がない）は入れていない
+//     みたさない6市（川越・越谷・柏・豊田・岡崎・豊橋。「この街の備え」に世帯の特徴の数字が全国とも県ともはっきり違わない）は入れていない
+//     松本は10/27 に条件5を「全国か県とはっきり違う」にしたので足した
 // URL は /都道府県/市区町村/（同じ名前の市があるので都道府県の下に置く）。英字は一度公開したら変えない
 
 export const PREFS = [
@@ -49,7 +50,7 @@ export const CITIES = [
   ['hokkaido', '旭川市', 'asahikawa', 'chukaku'], ['hokkaido', '函館市', 'hakodate', 'chukaku'], ['aomori', '八戸市', 'hachinohe', 'chukaku'],
   ['fukushima', 'いわき市', 'iwaki', 'chukaku'], ['fukushima', '郡山市', 'koriyama', 'chukaku'], ['gunma', '高崎市', 'takasaki', 'chukaku'],
   ['saitama', '川口市', 'kawaguchi', 'chukaku'], ['chiba', '船橋市', 'funabashi', 'chukaku'], ['tokyo', '八王子市', 'hachioji', 'chukaku'],
-  ['kanagawa', '横須賀市', 'yokosuka', 'chukaku'], ['aichi', '一宮市', 'ichinomiya', 'chukaku'], ['osaka', '豊中市', 'toyonaka', 'chukaku'],
+  ['kanagawa', '横須賀市', 'yokosuka', 'chukaku'], ['nagano', '松本市', 'matsumoto', 'chukaku'], ['aichi', '一宮市', 'ichinomiya', 'chukaku'], ['osaka', '豊中市', 'toyonaka', 'chukaku'],
   ['osaka', '吹田市', 'suita', 'chukaku'], ['osaka', '高槻市', 'takatsuki', 'chukaku'], ['osaka', '枚方市', 'hirakata', 'chukaku'],
   ['osaka', '八尾市', 'yao', 'chukaku'], ['osaka', '寝屋川市', 'neyagawa', 'chukaku'], ['osaka', '東大阪市', 'higashiosaka', 'chukaku'],
   ['hyogo', '姫路市', 'himeji', 'chukaku'], ['hyogo', '尼崎市', 'amagasaki', 'chukaku'], ['hyogo', '明石市', 'akashi', 'chukaku'],

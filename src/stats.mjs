@@ -64,12 +64,20 @@ export function feature(list, a, z) {
   return rank === 1 ? `${pref.name}の${of}市区町村で、人口がいちばん多い` : `${pref.name}の${of}市区町村で、人口が${rank}番目に多い`;
 }
 
-// 「この街の備え」で見せる知識（世帯の特徴から1〜2本）
-export function sonaeLinks(a, z) {
+// 「この街の備え」で見せる知識（世帯の特徴から1〜2本）。全国とくらべて言えることがなければ県とくらべる
+// （10/27 しょーくん：ページを作る条件5は「全国か県とはっきり違う」。p は県の数字、なければ全国だけ）
+const TOILET = { href: '/sonae/keitai-toilet/', text: '携帯トイレの備え' };
+const ONE = { href: '/dougu/keisan/?n=1', text: '1人分の量を計算' };
+export function sonaeLinks(a, z, p = null) {
   const out = [];
-  if (a.pKyodo >= 50) out.push({ why: `世帯の${wari(a.pKyodo)}割が共同住宅に住んでいます。`, href: '/sonae/keitai-toilet/', text: '携帯トイレの備え' });
-  if (a.pSingle >= z.pSingle + 3) out.push({ why: `ひとり暮らしの世帯が${r1(a.pSingle)}%あります。`, href: '/dougu/keisan/?n=1', text: '1人分の量を計算' });
+  if (a.pKyodo >= 50) out.push({ why: `世帯の${wari(a.pKyodo)}割が共同住宅に住んでいます。`, ...TOILET });
+  if (a.pSingle >= z.pSingle + 3) out.push({ why: `ひとり暮らしの世帯が${r1(a.pSingle)}%あります。`, ...ONE });
   if (a.pWith65 >= z.pWith65) out.push({ why: `65歳以上の人がいる世帯が${r1(a.pWith65)}%あります。`, href: '/sonae/bichiku/#yohairyo', text: '高齢の家族がいる家の備蓄' });
+  if (!out.length && p) {
+    const pn = prefOf(a.code).name;
+    if (a.pKyodo >= p.pKyodo + 10) out.push({ why: `共同住宅に住む世帯が${r1(a.pKyodo)}%あります（${pn}は${r1(p.pKyodo)}%）。`, ...TOILET });
+    if (a.pSingle >= p.pSingle + 3) out.push({ why: `ひとり暮らしの世帯が${r1(a.pSingle)}%あります（${pn}は${r1(p.pSingle)}%）。`, ...ONE });
+  }
   if (!out.length) out.push({ why: '', href: '/sonae/bichiku/', text: '備蓄の量のめやす' });
   return out.slice(0, 2);
 }

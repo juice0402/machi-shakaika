@@ -24,7 +24,7 @@ export function cityPage({ city, munis, list, z, cc, hinan, hinanMeta, urlOf, bi
   const near = similar(list, a);
   const h = hinan.areas[city.code];
   const kinds = hinan.kinds.map(([k, name], i) => [name, h ? h[3 + i] : 0]).filter(([, v]) => v > 0).sort((x, y) => y[1] - x[1]);
-  const links = sonaeLinks(a, z);
+  const links = sonaeLinks(a, z, derive(munis.areas[`${a.code.slice(0, 2)}000`]));
   const diff = a.popChange;
   const path = urlOf(city.code);
 

@@ -46,6 +46,9 @@ for (const f of html) {
     descs.set(desc, f.slice(DIST.length));
   }
   if (!s.includes(`<meta property="og:site_name" content="${SITE.name}">`)) fail(f, 'og:site_name がない');
+  // 共有画像（10/27）：どのページにも1つ、置いてある画像を指す
+  const og = [...s.matchAll(/<meta property="og:image" content="([^"]+)">/g)].map((m) => m[1]);
+  if (og.length !== 1 || !og[0].startsWith(`${SITE.url}/`) || !existsSync(`${DIST}${og[0].slice(SITE.url.length)}`)) fail(f, `共有画像（og:image）がない・置いていない：${og.join(' ')}`);
   if ((s.match(/<h1[\s>]/g) ?? []).length !== 1) fail(f, 'h1 が1つでない');
   if (!f.endsWith('404.html') && !/<link rel="canonical" href="https:\/\/[^"]+">/.test(s)) fail(f, 'canonical がない');
   if (!SITE.launched && !/<meta name="robots" content="noindex">/.test(s)) fail(f, '公開前なのに noindex がない');

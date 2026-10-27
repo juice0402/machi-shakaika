@@ -7,3 +7,4 @@ probe-out/
 # 楽天から取った商品（公開リポジトリには置かない。楽天ウェブサービス規約 第10条9号）
 data/rakuten/
 test.tap
+tools/og/*.out.html
