@@ -4,6 +4,8 @@ import { derive, feature, prefRank, similar, sonaeLinks, prefOf, r1 } from '../s
 import { need } from '../calc.mjs';
 import { machiQuiz } from '../quiz.mjs';
 import { machiQuizHtml, MACHI_JS } from './quiz.mjs';
+import { mtNear, mtNearHtml } from '../machi-core.mjs';
+import { villageHtml, VILLAGE_CSS } from '../machi-tools.mjs';
 
 const pct = (v) => `${r1(v).toFixed(1)}%`;
 const signed = (v) => `${v > 0 ? '+' : ''}${r1(v).toFixed(1)}%`;
@@ -16,7 +18,7 @@ export function bichikuLine(city, b) {
   return `<p class="why">${who}の備蓄は避難所に来た人の分です。<br>家の分は家で備えます。<br><a href="${esc(b.url)}" rel="noopener">${srcName(b)}</a></p>`;
 }
 
-export function cityPage({ city, munis, list, z, cc, hinan, hinanMeta, urlOf, bichiku = null }) {
+export function cityPage({ city, munis, list, z, cc, hinan, hinanMeta, urlOf, kazu, bichiku = null }) {
   const a = derive(munis.areas[city.code]);
   const pref = prefOf(a.code);
   const per = r1(a.per);
@@ -27,6 +29,8 @@ export function cityPage({ city, munis, list, z, cc, hinan, hinanMeta, urlOf, bi
   const links = sonaeLinks(a, z, derive(munis.areas[`${a.code.slice(0, 2)}000`]));
   const diff = a.popChange;
   const path = urlOf(city.code);
+  const meRow = kazu.r.find((r) => r[0] === city.code);
+  const niteru = mtNear(kazu.r, kazu.s, city.code, 3);
 
   const scales = [
     ['人口の増減', '2020年から2025年', { lo: -15, hi: 10, me: a.rate, zk: z.rate, unit: '%', meLabel: `${a.name} ${signed(a.rate)}`, zkLabel: `全国 ${signed(z.rate)}` }],
@@ -49,6 +53,10 @@ ${h2('この街の数字')}
 ${scales.map(([t, sub, s]) => `<div class="g"><p><b>${t}</b>　${sub}</p>${scale(s)}</div>`).join('\n')}
 <p class="note">目盛りのはしは、全国の市区町村のおおよその幅です。</p>
 
+${h2('100人の村にすると')}
+${villageHtml(a.name, a, z)}
+${srcKokusei(munis)}
+
 ${machiQuizHtml(a.name, machiQuiz(a, list, near, list.filter((x) => urlOf(x.code))))}
 
 ${h2('県内と、人口が近い街')}
@@ -57,6 +65,12 @@ ${h2('県内と、人口が近い街')}
 <tr class="me"><td>${esc(a.name)}</td><td>${fmt(a.pop)}</td><td>${signed(a.rate)}</td></tr>
 ${near.map((x) => `<tr><td>${urlOf(x.code) ? `<a href="${urlOf(x.code)}">${esc(x.name)}</a>` : esc(x.name)}<br><span class="note">${esc(prefOf(x.code).name)}</span></td><td>${fmt(x.pop)}</td><td>${signed(x.rate)}</td></tr>`).join('\n')}
 </tbody></table>
+
+${h2('数字が似ている街')}
+${mtNearHtml(meRow, niteru, kazu.p)}
+<p class="note">人口・年齢の割合・5年の増減・ひとり暮らしと共同住宅の割合が近い街です。</p>
+<p><a class="go" href="/kurabe/?a=${a.code}">${esc(a.name)}とほかの街をくらべる</a></p>
+${srcKokusei(munis)}
 
 ${h2('年齢と世帯')}
 <div class="bars">
@@ -104,6 +118,7 @@ const h2=document.createElement('li');h2.textContent='指定避難所';h2.style.
         h ? [`指定緊急避難場所${fmt(h[0])}か所・指定避難所${fmt(h[1])}か所。`, `指定緊急避難場所${fmt(h[0])}か所。`] : '',
       ],
     ),
+    head: `<style>${VILLAGE_CSS}</style>`,
     body,
     script,
     gsi: true,
