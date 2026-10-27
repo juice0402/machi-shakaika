@@ -5,6 +5,7 @@
 import { esc, h2, fit } from '../layout.mjs';
 import { need } from '../calc.mjs';
 import { sourceList } from './sonae.mjs';
+import { SOTO } from './sonae-soto.mjs';
 
 export const YOMIMONO = [
   { key: 'jishin', path: '/sonae/jishin/', name: '地震の前に足すもの' },
@@ -33,7 +34,7 @@ export function checkYomimono(items, src) {
 }
 
 // このページだけの見た目。冬の停電と同じ表（色と字は layout.mjs の変数・明朝）
-const CSS = `.tei{width:100%;border-collapse:collapse;margin:8px 0 6px}
+export const CSS = `.tei{width:100%;border-collapse:collapse;margin:8px 0 6px}
 .tei th{font:700 13px/1.4 "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;color:var(--h2);text-align:left;padding:2px 0 6px;border-bottom:1.5px solid var(--ink)}
 .tei td{padding:9px 0;border-bottom:1px dotted var(--line);vertical-align:top;font-size:14px;line-height:1.45}
 .tei td small{display:block;font-size:11px;line-height:1.5;color:var(--sub);font-weight:400}
@@ -42,7 +43,7 @@ const CSS = `.tei{width:100%;border-collapse:collapse;margin:8px 0 6px}
 
 const RIVER_MARK = '<svg viewBox="0 0 24 10" width="24" height="10" aria-hidden="true"><path d="M1 5C5 1 9 1 12 5S19 9 23 5" fill="none" stroke="#3f8fbf" stroke-width="1.5"/></svg>';
 
-function table(head, rows) {
+export function table(head, rows) {
   const cell = (a, b) => `${esc(a)}${b ? `<small>${esc(b)}</small>` : ''}`;
   return `<table class="tei"><thead><tr><th scope="col">${esc(head[0])}</th><td></td><th scope="col">${esc(head[1])}</th></tr></thead><tbody>${rows
     .map(([a, b, c, d]) => `<tr><td>${cell(a, b)}</td><td class="rv">${RIVER_MARK}</td><td>${cell(c, d)}</td></tr>`)
@@ -52,9 +53,10 @@ function table(head, rows) {
 const CALC = '<p><a class="go" href="/dougu/keisan/">わが家の人数で量を計算する</a></p>';
 
 // 末尾：今ある品目ページ6つ（商品は置かない）とチェックリスト、ほかの読みもの
-function tail(items, self) {
+// 家の外の備え2本（sonae-soto.mjs）も同じ末尾を使う
+export function tail(items, self) {
   const hinmoku = items.items.filter((it) => it.hinmoku);
-  const others = YOMIMONO.filter((y) => y.key !== self);
+  const others = [...YOMIMONO, ...SOTO].filter((y) => y.key !== self);
   return `${h2('品目と道具')}
 <ul class="list">${hinmoku.map((it) => `<li><a href="/hinmoku/${it.id}/">${esc(it.name)}</a></li>`).join('')}<li><a href="/dougu/check/">チェックリスト</a></li></ul>
 <p>${others.map((y) => `<a href="${y.path}">${esc(y.name)}</a>`).join('・')}</p>`;

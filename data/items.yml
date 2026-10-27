@@ -40,6 +40,17 @@ hitori:
 mansion:
   sources: [chiba-pref-mansion, suginami-mansion, kanagawa-toilet, chiba-zaitaku, maff-sonae, hiroshima-toilet, bousai-teiden]
 
+# 家の外の備え2本（/sonae/kuruma-taisetsu/・/sonae/kitaku-konnan/。10/28 #19）。sources はページの出典に並べる id（この順）
+#   車のページは数字を出さない（積んでおく量の目安を公的な資料で確かめていないため）
+#   職場のページの数字は kitaku と mizu・shushoku の per_day（内閣府のガイドラインの水1人1日3L・主食3食と同じ）と、そこから計算した量だけ
+kuruma:
+  sources: [mlit-ooyuki, cgr-ooyuki, cbr-mie-fuyu, iida-fuyu, fukushima-ooyuki]
+kitaku:
+  days: 3          # 職場の備蓄は従業員の3日分（内閣府のガイドライン・東京都帰宅困難者対策条例）
+  moufu: 1         # 毛布は1人1枚（内閣府のガイドライン）
+  dengon: '171'    # 災害用伝言ダイヤルの番号（内閣府のガイドライン）
+  sources: [bousai-kitaku, keishicho-kitaku]
+
 items:
   - id: mizu
     name: 水
