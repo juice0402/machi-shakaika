@@ -178,6 +178,11 @@ export const FOOT_LINKS = [
   ['/privacy/', 'プライバシーポリシー'],
 ];
 
+// 共有画像（10/27 しょーくんが案B：トップの絵と明朝の名前と川の線。作り方は tools/og/）。ページごとの画像は p.og
+export const OG = { file: '/og.jpg', w: 1200, h: 630, alt: 'トップの街と川と家の絵に、まちの社会科の名前' };
+const ogTags = (o) =>
+  `<meta property="og:image" content="${SITE.url}${o.file}"><meta property="og:image:width" content="${o.w}"><meta property="og:image:height" content="${o.h}"><meta property="og:image:alt" content="${esc(o.alt ?? OG.alt)}"><meta name="twitter:card" content="summary_large_image">`;
+
 /**
  * @param {object} p
  * @param {string} p.path      /から始まるURL（null は 404）
@@ -190,13 +195,9 @@ export const FOOT_LINKS = [
  * @param {string} [p.script]  ページの最後に入れるスクリプト
  * @param {string} [p.head]    head に足すもの（構造化データなど）
  * @param {boolean}[p.rakuten] 楽天の商品を出すページ（AdSense を置かない・フッターに楽天のクレジット）
+ * @param {object} [p.og]      このページだけの共有画像（file・w・h・alt）。ないときはサイトの OG
  * @param {boolean}[p.saigai]  災害時モード（ふだんは data/mode.yml のとおり。テスト用に変えられる）：上に案内の帯・AdSense なし
  */
-// 共有画像（10/27 しょーくんが案B：トップの絵と明朝の名前と川の線。作り方は tools/og/）。ページごとの画像は p.og
-export const OG = { file: '/og.jpg', w: 1200, h: 630, alt: 'トップの街と川と家の絵に、まちの社会科の名前' };
-const ogTags = (o) =>
-  `<meta property="og:image" content="${SITE.url}${o.file}"><meta property="og:image:width" content="${o.w}"><meta property="og:image:height" content="${o.h}"><meta property="og:image:alt" content="${esc(o.alt ?? OG.alt)}"><meta name="twitter:card" content="summary_large_image">`;
-
 export function page(p) {
   const full = p.path === '/' ? SITE.name : `${p.title}｜${SITE.name}`;
   const robots = !SITE.launched || p.noindex ? '<meta name="robots" content="noindex">' : '';
