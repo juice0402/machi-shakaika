@@ -1,6 +1,7 @@
-// 備えの読みもの3本：地震の前に足すもの（/sonae/jishin/）・在宅避難（/sonae/zaitaku-hinan/）・赤ちゃんと高齢の家族（/sonae/akachan-koureisha/）
+// 備えの読みもの5本：地震の前に足すもの（/sonae/jishin/）・在宅避難（/sonae/zaitaku-hinan/）・赤ちゃんと高齢の家族（/sonae/akachan-koureisha/）
+// 街とつながる2本（10/27 #18）：ひとり暮らし（/sonae/hitorigurashi/）・マンション（/sonae/mansion/）。市区町村ページ「この街の備え」の行から
 // 作りは冬の停電（sonae-fuyu.mjs）と同じ：起きること → 前に足すものの表。発生中の行動・避難の判断は書かず、1行で気象庁・自治体・ハザードマップへ
-// 数字はすべて data/items.yml（days・mizu・keitai-toilet・yohairyo_days）から。出典は items.yml の jishin・zaitaku・akachan の sources
+// 数字はすべて data/items.yml（days・mizu・shushoku・keitai-toilet・yohairyo_days）から。出典は items.yml の jishin・zaitaku・akachan・hitori・mansion の sources
 import { esc, h2, fit } from '../layout.mjs';
 import { need } from '../calc.mjs';
 import { sourceList } from './sonae.mjs';
@@ -9,6 +10,8 @@ export const YOMIMONO = [
   { key: 'jishin', path: '/sonae/jishin/', name: '地震の前に足すもの' },
   { key: 'zaitaku', path: '/sonae/zaitaku-hinan/', name: '在宅避難の備え' },
   { key: 'akachan', path: '/sonae/akachan-koureisha/', name: '赤ちゃん・高齢の家族がいる家の備え' },
+  { key: 'hitori', path: '/sonae/hitorigurashi/', name: 'ひとり暮らしの備え' },
+  { key: 'mansion', path: '/sonae/mansion/', name: 'マンション（共同住宅）の備え' },
 ];
 
 // items.yml の3本の出典の形を確かめる（問題があれば文のリスト。空なら OK）
@@ -63,6 +66,7 @@ export function yomimonoPages({ cc, items, sources }) {
   const { by, days } = cc;
   const w = by.mizu.per_day;
   const t = by['keitai-toilet'].per_day;
+  const m = by.shushoku.per_day;
   const y = items.yohairyo_days;
   const hazard = sources.sources.find((s) => s.id === 'disaportal');
   const crumb = '<p class="crumb"><a href="/">トップ</a> / <a href="/sonae/">備えの知識</a></p>';
@@ -128,7 +132,7 @@ ${table(['止まるもの', '代わりに足すもの'], [
 <div class="prose">
 ${h2('水とトイレ')}
 <p>飲み水と調理の水は1人1日${w}L。トイレを流したり体をふいたりする生活用水は、これとは別に要ります。</p>
-<p>水洗トイレは、断水や停電、配管の被害で使えなくなることがあります。携帯トイレは1人1日${t}回で数えます。マンションなどでは、配管の状態がわかるまで携帯トイレを使います。くわしくは<a href="/sonae/keitai-toilet/">携帯トイレの備え</a>に。</p>
+<p>水洗トイレは、断水や停電、配管の被害で使えなくなることがあります。携帯トイレは1人1日${t}回で数えます。マンションなどでは、配管の状態がわかるまで携帯トイレを使います。くわしくは<a href="/sonae/keitai-toilet/">携帯トイレの備え</a>と<a href="/sonae/mansion/">マンション（共同住宅）の備え</a>に。</p>
 ${h2('食事')}
 <p>ふだん食べている食品を多めに置き、使ったら買い足す<a href="/sonae/rolling-stock/">ローリングストック</a>で備えます。ガスやIHが使えないときのために、カセットコンロとボンベも用意します。</p>
 ${h2('明かりと電気')}
@@ -178,6 +182,79 @@ ${tail(items, 'akachan')}
 <p class="why">避難するかどうかや、支援の窓口は市区町村の案内で確かめます。</p>
 ${h2('出典')}
 ${sourceList(items.akachan.sources, sources)}`,
+  });
+  // ---------- ひとり暮らし ----------
+  out.push({
+    path: '/sonae/hitorigurashi/',
+    title: 'ひとり暮らしの備え（1人分の水・食事・携帯トイレ）',
+    description: fit(
+      [`ひとり暮らしの備えは1人分の量で考えます。水は1日${w}L、食事は${m}食、携帯トイレは${t}回で、1人の${days.better}日分は水${need(w, 1, days.better)}L・主食${need(m, 1, days.better)}食・携帯トイレ${need(t, 1, days.better)}回分。`],
+      [['せまい部屋での置き方と、期限のメモへのつなぎも。', '置き方も。']],
+    ),
+    head: `<style>${CSS}</style>`,
+    body: `${crumb}
+<h1 class="city">ひとり暮らしの備え</h1>
+<p class="lead">1人分の量と、せまい部屋での置き方</p>
+<p><a class="go" href="/dougu/keisan/?n=1">1人分の量を計算する</a></p>
+${table(['もの', `1人${days.better}日分`], [
+  ['水', '飲み水・調理の水', `${need(w, 1, days.better)}L`, `${days.min}日分なら${need(w, 1, days.min)}L`],
+  ['主食', `1日${m}食`, `${need(m, 1, days.better)}食`, `${days.min}日分なら${need(m, 1, days.min)}食`],
+  ['携帯トイレ', `1日${t}回`, `${need(t, 1, days.better)}回分`, `${days.min}日分なら${need(t, 1, days.min)}回分`],
+  ['ガス・IH', '調理', 'カセットコンロとボンベ', '同じ場所に置く'],
+  ['電気', '明かりと充電', 'ライト', 'モバイルバッテリー'],
+])}
+<div class="prose">
+${h2('1人分の量')}
+<p>水は1人1日${w}L、食事は1日${m}食、携帯トイレは1日${t}回がめやすです。備蓄は最低${days.min}日分、できれば${days.better}日分。1人の${days.better}日分は、水${need(w, 1, days.better)}L・主食${need(m, 1, days.better)}食・携帯トイレ${need(t, 1, days.better)}回分になります。</p>
+${h2('せまい部屋に置く')}
+<p>食品は台所に置かなくてもかまいません。クローゼットのすき間やベッドの下など、入りきらない分は家のすき間に分けて置きます。重いものは下に置きます。</p>
+<p>カセットコンロはケースに入れて立てると場所をとりません。ボンベはコンロと同じ場所に。</p>
+${h2('ふだんの食品で回す')}
+<p>置ける量が少ないときは、ふだん食べている食品を少し多めに買い、食べたら買い足す<a href="/sonae/rolling-stock/">ローリングストック</a>で備えます。中身が見える箱に入れて側面に期限を書いておくと、古いものから使えます。</p>
+${h2('期限と置き場所のメモ')}
+<p>賞味期限は<a href="/dougu/kigen/">期限メモ</a>に。家に置くものと期限の欄は、<a href="/dougu/print/">冷蔵庫に貼る紙</a>に印刷できます。</p>
+</div>
+${tail(items, 'hitori')}
+<p class="why">災害のときの動き方や避難は、市区町村の案内と<a href="${esc(hazard.url)}" rel="noopener">ハザードマップ</a>で確かめます。</p>
+${h2('出典')}
+${sourceList(items.hitori.sources, sources)}`,
+  });
+
+  // ---------- マンション（共同住宅） ----------
+  out.push({
+    path: '/sonae/mansion/',
+    title: 'マンション（共同住宅）の備え（エレベーター・水・トイレ）',
+    description: fit(
+      [`マンションでは停電でエレベーターや水のポンプが止まり、排水管の無事がわかるまでトイレを流せないことがあります。水は1人1日${w}L・携帯トイレは${t}回で、4人家族の${days.better}日分は水${need(w, 4, days.better)}L・${need(t, 4, days.better)}回分。`],
+      [],
+    ),
+    head: `<style>${CSS}</style>`,
+    body: `${crumb}
+<h1 class="city">マンションの備え</h1>
+<p class="lead">共同住宅で、停電で止まるものと前に足すもの</p>
+${CALC}
+${table(['止まるもの', '前に足すもの'], [
+  ['エレベーター', '点検まで使えない', '水と食事を家に', `最低${days.min}日分、できれば${days.better}日分`],
+  ['水道', 'ポンプの給水が止まる', '水', `1人1日${w}L`],
+  ['トイレ', '配管を確かめるまで', '携帯トイレ', `1人1日${t}回`],
+  ['揺れ', '長周期地震動', '家具の固定', '感震ブレーカー・消火器'],
+  ['電気', '明かりと充電', 'ライト', 'モバイルバッテリー'],
+])}
+<div class="prose">
+${h2('エレベーターと水')}
+<p>地震や停電でエレベーターが止まると、点検が終わるまで使えません。高い階では、水や食料を運び上げるのがむずかしくなります。ポンプで水を上げている建物は、停電でポンプが止まると断水します。</p>
+<p>建物が無事でも、停電で水道やトイレが使えず、家で過ごすのがむずかしくなった例があります。水と食事は家に置いておきます。水は1人1日${w}L、備蓄は最低${days.min}日分・できれば${days.better}日分で、4人家族の${days.better}日分は${need(w, 4, days.better)}Lです。</p>
+${h2('トイレは流す前に')}
+<p>排水管が傷んでいるのに気づかずに流すと、下の階で汚水があふれるおそれがあります。排水管の無事がわかるまでは流さず、携帯トイレを使います。1人1日${t}回で、4人家族の${days.better}日分は${need(t, 4, days.better)}回分です。くわしくは<a href="/sonae/keitai-toilet/">携帯トイレの備え</a>に。</p>
+${h2('揺れと火事')}
+<p>長周期地震動の揺れに備えて、家具を固定します。消火器の場所を確かめ、感震ブレーカーをつけます。くわしくは<a href="/sonae/jishin/">地震の前に足すもの</a>に。</p>
+${h2('建物の備え')}
+<p>防災倉庫や発電機など、建物全体の備えは、管理組合や管理会社に確かめます。家で過ごすための明かりや電気の備えは<a href="/sonae/zaitaku-hinan/">在宅避難の備え</a>に。</p>
+</div>
+${tail(items, 'mansion')}
+<p class="why">揺れたあとに家にいてよいかは、市区町村の案内と<a href="${esc(hazard.url)}" rel="noopener">ハザードマップ</a>で確かめます。</p>
+${h2('出典')}
+${sourceList(items.mansion.sources, sources)}`,
   });
   return out;
 }

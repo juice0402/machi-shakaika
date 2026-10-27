@@ -177,6 +177,38 @@ sources:
     checked: 2026-10-26
     about: 断水・停電・配管の被害でトイレが使えなくなる。集合住宅で気づかず流すと下の階であふれるおそれ。最低3日、できれば7日
 
+  - id: chiba-pref-mansion
+    kind: sonae
+    publisher: 千葉県
+    title: マンション特有の課題と対策(マンション防災)
+    url: https://www.pref.chiba.lg.jp/bousaik/jibun/sonae/manshonbousai.html
+    checked: 2026-10-27
+    about: マンションではエレベーターが止まる・高層階の上り下りがむずかしい・ポンプの給水が止まって断水・排水管の損傷でトイレが使えない・長周期地震動。家ごとに水と食料・携帯トイレや簡易トイレ・家具の固定・消火器の場所・感震ブレーカー。排水管の無事がわかるまでトイレは流さず、点検が終わるまでエレベーターは使わない
+
+  - id: suginami-mansion
+    kind: sonae
+    publisher: 杉並区
+    title: マンション防災
+    url: https://www.city.suginami.tokyo.jp/guide/kyukyu/1095325.html
+    checked: 2026-10-27
+    about: 建物が無事でも停電で上下水道が使えず家で過ごすのがむずかしくなった例、エレベーターが止まる例。古い給排水管は大地震で傷み、トイレや水道が使えなくなるおそれ
+
+  - id: maff-tanshin
+    kind: sonae
+    publisher: 農林水産省
+    title: 要配慮者と単身者の 食品ストックガイド
+    url: https://www.maff.go.jp/j/pr/aff/2603/spe1_02.html
+    checked: 2026-10-27
+    about: 食品はキッチンに置かなくてよく、ひとり暮らしでもクローゼットのすき間やベッドの下を使って置ける。収納を兼ねる家具、カセットコンロはケースに入れて立てて置く
+
+  - id: maff-shuno
+    kind: sonae
+    publisher: 農林水産省
+    title: 災害時に備えた食品ストックガイド（9）
+    url: https://www.maff.go.jp/j/zyukyu/foodstock/chapter09.html
+    checked: 2026-10-27
+    about: 毎日使う食品は台所でローリングストック、たまに使うものは押し入れなど。中身が見える箱に入れて側面に期限を書く。重いものは下。入りきらない分は家のすき間に分けて置く。コンロとボンベは同じ場所
+
   - id: nerima-yohairyo
     kind: sonae
     publisher: 練馬区

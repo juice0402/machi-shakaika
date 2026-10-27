@@ -20,7 +20,8 @@ test('全国とくらべて言えないときだけ県とくらべ、県の名�
   const a = { code: '03201', pKyodo: 45.2, pSingle: 42.3, pWith65: 40.5 };
   const [k, s] = sonaeLinks(a, z, p);
   assert.equal(k.why, '共同住宅に住む世帯が45.2%あります（岩手県は25.6%）。');
-  assert.equal(k.href, '/sonae/keitai-toilet/');
+  assert.equal(k.href, '/sonae/mansion/');
+  assert.equal(s.href, '/sonae/hitorigurashi/');
   assert.equal(s.why, 'ひとり暮らしの世帯が42.3%あります（岩手県は36.4%）。');
   // 全国とくらべて言えるときは県を見ない
   const b = { ...a, pKyodo: 55 };

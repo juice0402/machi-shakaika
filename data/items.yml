@@ -33,6 +33,12 @@ zaitaku:
   sources: [chiba-zaitaku, maff-sonae, miyagi-mizu, hiroshima-toilet, kanagawa-toilet, bousai-teiden]
 akachan:
   sources: [nerima-yohairyo, maff-guide, maff-stock, nagasaki-mochidashi, maff-sonae]
+# 街とつながる読みもの2本（/sonae/hitorigurashi/・/sonae/mansion/。市区町村ページ「この街の備え」から）
+#   ページに出る数字は days・mizu・shushoku・keitai-toilet の per_day と、そこから計算した1人分・家族の量だけ。新しい数字は足していない
+hitori:
+  sources: [maff-tanshin, maff-shuno, maff-sonae, maff-stock, hiroshima-toilet, kanagawa-toilet]
+mansion:
+  sources: [chiba-pref-mansion, suginami-mansion, kanagawa-toilet, chiba-zaitaku, maff-sonae, hiroshima-toilet, bousai-teiden]
 
 items:
   - id: mizu
