@@ -192,6 +192,11 @@ export const FOOT_LINKS = [
  * @param {boolean}[p.rakuten] 楽天の商品を出すページ（AdSense を置かない・フッターに楽天のクレジット）
  * @param {boolean}[p.saigai]  災害時モード（ふだんは data/mode.yml のとおり。テスト用に変えられる）：上に案内の帯・AdSense なし
  */
+// 共有画像（10/27 しょーくんが案B：トップの絵と明朝の名前と川の線。作り方は tools/og/）。ページごとの画像は p.og
+export const OG = { file: '/og.jpg', w: 1200, h: 630, alt: 'トップの街と川と家の絵に、まちの社会科の名前' };
+const ogTags = (o) =>
+  `<meta property="og:image" content="${SITE.url}${o.file}"><meta property="og:image:width" content="${o.w}"><meta property="og:image:height" content="${o.h}"><meta property="og:image:alt" content="${esc(o.alt ?? OG.alt)}"><meta name="twitter:card" content="summary_large_image">`;
+
 export function page(p) {
   const full = p.path === '/' ? SITE.name : `${p.title}｜${SITE.name}`;
   const robots = !SITE.launched || p.noindex ? '<meta name="robots" content="noindex">' : '';
@@ -211,6 +216,7 @@ export function page(p) {
 <meta name="description" content="${esc(p.description)}">
 ${robots}${canonical}
 <meta property="og:site_name" content="${esc(SITE.name)}"><meta property="og:title" content="${esc(full)}"><meta property="og:description" content="${esc(p.description)}"><meta property="og:type" content="${isTop ? 'website' : 'article'}">${p.path ? `<meta property="og:url" content="${SITE.url}${p.path}">` : ''}
+${ogTags(p.og ?? OG)}
 ${ads && !p.adsLate ? `<script async src="${adsSrc}" crossorigin="anonymous"></script>\n` : ''}<style>${CSS}${ART_CSS}</style>${p.head ?? ''}
 </head>
 <body${ads ? (p.adsLate ? ` data-ads-late="${adsSrc}"` : '') : ' data-ads="off"'}>
