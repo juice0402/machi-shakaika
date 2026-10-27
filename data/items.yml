@@ -24,6 +24,16 @@ fuyu:
     sources: [niigata-ooyuki]
   sources: [hepco-saigai, asahikawa-sonae, niigata-ooyuki, maff-sonae, kyuden-ecocute, hokkaido-gas-teiden, bousai-teiden, caa-hakkaden, sapporo-yukigai]
 
+# 読みもの3本（/sonae/jishin/・/sonae/zaitaku-hinan/・/sonae/akachan-koureisha/）。sources はページの出典に並べる id（この順）
+#   ページに出る数字は days・mizu と keitai-toilet の per_day・yohairyo_days と、そこから計算した量だけ。新しい数字は足していない
+#   （東京消防庁の「食料品は1人3日分程度」は days.min、千葉市の「7日分以上・水3L・携帯トイレ5個」は days.better と per_day と同じ）
+jishin:
+  sources: [tfd-jishin, ota-kanshin, chiba-zaitaku, maff-sonae, hiroshima-toilet, kanagawa-toilet]
+zaitaku:
+  sources: [chiba-zaitaku, maff-sonae, miyagi-mizu, hiroshima-toilet, kanagawa-toilet, bousai-teiden]
+akachan:
+  sources: [nerima-yohairyo, maff-guide, maff-stock, nagasaki-mochidashi, maff-sonae]
+
 items:
   - id: mizu
     name: 水

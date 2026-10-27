@@ -26,10 +26,10 @@ sources:
   - id: maff-guide
     kind: sonae
     publisher: 農林水産省
-    title: 食品ストックガイド
+    title: 災害時に備えた食品ストックガイド
     url: https://www.maff.go.jp/j/zyukyu/foodstock/guidebook.html
-    checked: 2026-10-21
-    about: 選び方、ローリングストック。要配慮者版あり
+    checked: 2026-10-27
+    about: 選び方、ローリングストック。要配慮者版あり（乳幼児のミルクと離乳食・高齢者・かむ力や飲みこむ力が弱い人の介護食品ととろみ調整食品・食物アレルギー・慢性疾患）
 
   - id: miyagi-mizu
     kind: sonae
@@ -136,6 +136,31 @@ sources:
     checked: 2026-10-26
     about: 電力10社の停電情報ページのリンク集（ガス・水道、通信もある）。停電の情報はここへのリンクだけにする。出典の一覧には出さない
 
+  # 読みもの3本（地震の前に足すもの・在宅避難・赤ちゃんと高齢の家族）
+  - id: tfd-jishin
+    kind: sonae
+    publisher: 東京消防庁
+    title: 地震に対する10の備え
+    url: https://www.tfd.metro.tokyo.lg.jp/lfe/bou_topic/jisin/sonae10.html
+    checked: 2026-10-27
+    about: 家具類を金具で固定・ガラスに飛散防止フィルム・懐中電灯とスリッパやスニーカー・家の耐震診断とブロック塀・消火器と風呂の水のくみ置き・住宅用火災警報器・感震ブレーカー（分電盤型）・食料品は1人3日分程度・飲料水は1人1日3L。2025年12月12日更新
+
+  - id: ota-kanshin
+    kind: sonae
+    publisher: 大田区
+    title: 感震ブレーカーについて
+    url: https://www.city.ota.tokyo.jp/seikatsu/chiiki/bousai/topics/kashin-breaker.html
+    checked: 2026-10-27
+    about: 大きな揺れを感じると屋内の電気を自動で止める器具。電気が戻ったときの通電火災を防ぐ。分電盤・コンセント・簡易の3つのタイプ（値段はページに出さない）。2026年6月24日更新
+
+  - id: chiba-zaitaku
+    kind: sonae
+    publisher: 千葉市
+    title: 在宅避難
+    url: https://www.city.chiba.jp/sogoseisaku/kikikanri/bosai/zaitakuhinan.html
+    checked: 2026-10-27
+    about: 周りの災害の危険が少なく、家が壊れておらず室内が使えるときは家で過ごす在宅避難。携帯トイレ1人1日5個・飲料水1人1日3L・食料・カセットコンロとボンベ・照明・ポータブル電源やモバイルバッテリー。7日分以上が目安。感震ブレーカー。2026年9月3日更新
+
   - id: hiroshima-toilet
     kind: sonae
     publisher: 広島市
@@ -157,8 +182,8 @@ sources:
     publisher: 練馬区
     title: いざという時の食に備えて～家庭での備蓄のポイント～
     url: https://www.city.nerima.tokyo.jp/hokenfukushi/hoken/shokuiku/izatoiutoki/index.files/060326iza.pdf
-    checked: 2026-10-26
-    about: 乳幼児・妊産婦・高齢者・慢性疾患・食物アレルギーなどは少なくとも2週間分
+    checked: 2026-10-27
+    about: 乳幼児・妊産婦・高齢者・慢性疾患・食物アレルギーなどは少なくとも2週間分。粉ミルクや液体ミルク・ほ乳びん・調乳の水、瓶詰めやレトルトの離乳食、やわらかい介護食品・とろみ調整食品、入れ歯の手入れ、アレルギー対応食品はローリングストックで、食事療法は主治医に相談
 
   - id: ota-pet
     kind: sonae

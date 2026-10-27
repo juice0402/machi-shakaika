@@ -72,7 +72,7 @@ export function sonaeLinks(a, z, p = null) {
   const out = [];
   if (a.pKyodo >= 50) out.push({ why: `世帯の${wari(a.pKyodo)}割が共同住宅に住んでいます。`, ...TOILET });
   if (a.pSingle >= z.pSingle + 3) out.push({ why: `ひとり暮らしの世帯が${r1(a.pSingle)}%あります。`, ...ONE });
-  if (a.pWith65 >= z.pWith65) out.push({ why: `65歳以上の人がいる世帯が${r1(a.pWith65)}%あります。`, href: '/sonae/bichiku/#yohairyo', text: '高齢の家族がいる家の備蓄' });
+  if (a.pWith65 >= z.pWith65) out.push({ why: `65歳以上の人がいる世帯が${r1(a.pWith65)}%あります。`, href: '/sonae/akachan-koureisha/', text: '高齢の家族がいる家の備え' });
   if (!out.length && p) {
     const pn = prefOf(a.code).name;
     if (a.pKyodo >= p.pKyodo + 10) out.push({ why: `共同住宅に住む世帯が${r1(a.pKyodo)}%あります（${pn}は${r1(p.pKyodo)}%）。`, ...TOILET });
