@@ -16,7 +16,7 @@ test('都道府県47・ページを作る街（種類ごとの数）・英字が
   // 県庁所在地46（東京都は23区）・東京23区・県庁所在地でない政令市5・中核市（県庁所在地でないもの。条件をみたす街だけ）
   const kinds = {};
   for (const c of CITIES) kinds[c.kind] = (kinds[c.kind] ?? 0) + 1;
-  assert.deepEqual(kinds, { kencho: 46, ku: 23, seirei: 5, chukaku: 28 });
+  assert.deepEqual(kinds, { kencho: 46, ku: 23, seirei: 5, chukaku: 29 });
   const names = CITIES.map((c) => `${c.pref}/${c.name}`);
   assert.equal(new Set(names).size, names.length, '同じ街を2回入れていない');
   const keys = CITIES.map((c) => `${c.pref}/${c.slug}`);
