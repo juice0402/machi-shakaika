@@ -128,7 +128,58 @@ def opt2():
     return f'<svg viewBox="0 0 {W} {H}" width="{W}" style="display:block">{"".join(out)}<g font-size="8" fill="{INK}" {FONT}>{"".join(tiles)}</g></svg>'
 
 
+def rel(ring, j=0.3):
+    # えんぴつのゆれ（決まった種）をつけて、相対の座標・小数1けたの path にする
+    pts = [(round(x + R.uniform(-j, j), 1), round(y + R.uniform(-j, j), 1)) for x, y in ring]
+    num = lambda v: (f'{v:.1f}'.rstrip('0').rstrip('.') or '0').replace('0.', '.', 1) if abs(v) < 1 else f'{v:.1f}'.rstrip('0').rstrip('.')
+    def pair(a, b):
+        sa, sb = num(a), num(b)
+        return sa + ('' if sb.startswith('-') else ' ') + sb
+    out = 'M' + pair(*pts[0]) + 'l'
+    px, py = pts[0]
+    parts = []
+    for x, y in pts[1:]:
+        dx, dy = round(x - px, 1), round(y - py, 1)
+        px, py = round(px + dx, 1), round(py + dy, 1)
+        if dx == 0 and dy == 0:
+            continue
+        parts.append(pair(dx, dy))
+    s = ''
+    for t in parts:
+        s += (t if (not s or t.startswith('-')) else ' ' + t)
+    return out + s + 'z'
+
+
+ISO2CODE = lambda iso: iso.split('-')[1]
+
+
+def emit(path_out):
+    # src/japan-map-data.mjs を作る（形・ぬりの色・県名の置き場。置き場はここで決めておく）
+    col = colors()
+    bw, bh = 21, 12
+    anchors, pos = place(bw, bh, [S['obox']])
+    prefs = {}
+    for iso, rs in S['main'].items():
+        prefs[ISO2CODE(iso)] = {'d': ''.join(rel(r) for r in rs), 'f': PAL.index(col[iso])}
+    prefs['47'] = {'d': ''.join(rel(r) for r in S['oki']), 'f': PAL.index(col['JP-47'])}
+    for iso, (x, y) in pos.items():
+        ax, ay = anchors[iso]
+        e = prefs[ISO2CODE(iso)]
+        e['x'], e['y'] = round(x, 1), round(y, 1)
+        if math.hypot(x - ax, y - ay) > 5.5:
+            e['a'] = [round(ax, 1), round(ay, 1)]
+    ox, oy, ow, oh = S['obox']
+    data = {'w': W, 'h': H, 'pal': PAL, 'frame': wob_rect(ox, oy, ow, oh), 'prefs': dict(sorted(prefs.items()))}
+    js = ('// tools/map/render.py --emit で作ったファイル（手で直さない）。形は Natural Earth 10m（パブリックドメイン）をもとに作成\n'
+          'export const JMAP = ' + json.dumps(data, ensure_ascii=False, separators=(',', ':')) + ';\n')
+    open(path_out, 'w').write(js)
+    print('bytes', len(js.encode()))
+
+
 if __name__ == '__main__':
+    if '--emit' in sys.argv:
+        emit(sys.argv[sys.argv.index('--emit') + 1])
+        sys.exit()
     for name, fn in [('o1', opt1)]:
         html = f'<!doctype html><meta charset="utf-8"><body style="margin:0;background:#fff;width:390px">{fn()}</body>'
         open(D + name + '.html', 'w').write(html)

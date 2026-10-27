@@ -62,9 +62,6 @@ h2{font:700 17px/1.4 ${MINCHO};margin:28px 0 10px;display:flex;align-items:cente
 .hm{width:18px;height:14px;color:var(--h2);flex:none}
 h3{font:700 15px/1.5 ${MINCHO};margin:18px 0 6px}
 p{margin:0 0 10px}
-.tiles{display:grid;grid-template-columns:repeat(13,1fr);gap:2px}
-.tile{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:9px;text-decoration:none;color:var(--ink);background:#eef5e8;border:1px solid #c9dcc0}
-.tile.here{background:#2f6b45;border-color:#2f6b45;color:#fff;font-weight:700}
 .list{margin:0;padding:0;list-style:none}.list li{border-bottom:1px dotted var(--line)}.list a{display:block;padding:8px 0;font-size:15px}
 .cols{columns:2;column-gap:16px}.cols li{break-inside:avoid}
 .crumb{font-size:12px;color:var(--sub);margin:10px 0 0}.crumb a{color:var(--sub)}
@@ -141,10 +138,6 @@ summary{padding:10px 0;cursor:pointer}.hl{margin:0 0 10px;padding:0;list-style:n
 .qz .ex{font-size:14px;margin:6px 0 4px}.qz .ex p{margin:0 0 4px}
 .qz .score{margin:14px 0 6px;font:700 20px/1 ${MINCHO};color:var(--accent)}.qz .score b{font-size:56px;margin-right:4px}
 button.go{font:inherit;font-size:15px;font-weight:700;background:none;border:0;padding:6px 0;color:var(--ink);text-decoration:underline;cursor:pointer}button.go:disabled{color:var(--sub);text-decoration:none;cursor:default}
-.t5 .tile{font:inherit;font-size:9px;padding:0;cursor:pointer;position:relative}
-.t5 .tile.pick::after,.t5 .tile.hit::after,.t5 .tile.ans5::after{content:"";position:absolute;inset:-3px;border:2px solid var(--accent);border-radius:50%;pointer-events:none}
-.t5 .tile.hit{color:var(--accent);font-weight:700}.t5 .tile.ans5::after{border-style:dashed}
-.t5 .tile.miss::before,.t5 .tile.miss::after{content:"";position:absolute;left:50%;top:50%;width:80%;height:2px;margin:-1px 0 0 -40%;background:var(--accent);transform:rotate(40deg)}.t5 .tile.miss::after{transform:rotate(-40deg)}
 .sc{margin:6px 0 4px;font-size:13px;color:var(--sub)}.sc select{font:inherit;font-size:15px;color:var(--ink);background:none;border:0;border-bottom:1.5px solid var(--ink);padding:4px 2px;border-radius:0;max-width:70%}
 .gogun{border:1px solid var(--line);padding:8px 6px;margin:6px 0;line-height:1.2}
 .gogun .w{position:relative;display:inline-block;margin:3px 2px;padding:8px 9px;min-height:40px;background:none;border:0;font:inherit;font-size:15px;color:var(--ink);cursor:pointer;text-decoration:underline dotted var(--sub);text-underline-offset:4px}

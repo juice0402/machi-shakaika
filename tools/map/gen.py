@@ -1,7 +1,7 @@
-# 日本地図の見本（案1、10/27 しょーくん決定）の形づくり。夜のメモ #21 の下書き（そのまま使っても、作り直してもよい）
+# 都道府県の地図（案1、10/27 しょーくん決定）の形づくり。src/japan-map-data.mjs のもと
 # 使い方：MAPWORK に Natural Earth の geojson を置いて（ne_10m_admin_1_states_provinces.geojson・ne_10m_admin_0_disputed_areas.geojson、
 #   https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ から。パブリックドメイン）
-#   python3 -I tools/map/gen.py → MAPWORK/shapes.json、python3 -I tools/map/render.py → MAPWORK/o1.html（見本の案1）
+#   python3 -I tools/map/gen.py → MAPWORK/shapes.json、python3 -I tools/map/render.py --emit src/japan-map-data.mjs（見本の o1.html は --emit なし）
 import os
 WORK = os.environ.get('MAPWORK', 'tools/map/.work') + '/'
 import json, math, random, sys

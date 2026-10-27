@@ -95,10 +95,11 @@ function townShapes() {
   return s;
 }
 
-// ---- 都道府県の地図の飾り（358×330、地図のマスに合わせる） ----
-function mapShapes() {
-  const s = [{ r: 'axis', o: true, p: [[34, 92], [34, 44]] }, { r: 'needle', p: [[34, 34], [28, 56], [34, 51]] }, { r: 'needle2', o: true, p: [[34, 34], [40, 56], [34, 51]] }];
-  for (const [x, y, w] of [[150, 274, 30], [214, 302, 26], [282, 284, 30], [120, 312, 22]]) s.push({ r: 'sea', o: true, p: [[x, y], [x + w * 0.25, y - 3], [x + w * 0.5, y], [x + w * 0.75, y + 3], [x + w, y]] });
+// ---- 日本地図の飾り（右下の海に「北」の矢印と波。w×h は地図の大きさ） ----
+function mapShapes(w, h) {
+  const x = w - 28, y = h - 92;
+  const s = [{ r: 'axis', o: true, p: [[x, y + 58], [x, y + 10]] }, { r: 'needle', p: [[x, y], [x - 6, y + 22], [x, y + 17]] }, { r: 'needle2', o: true, p: [[x, y], [x + 6, y + 22], [x, y + 17]] }];
+  for (const [sx, sy, sw] of [[w - 150, h - 40, 30], [w - 96, h - 18, 26], [w - 200, h - 14, 22]]) s.push({ r: 'sea', o: true, p: [[sx, sy], [sx + sw * 0.25, sy - 3], [sx + sw * 0.5, sy], [sx + sw * 0.75, sy + 3], [sx + sw, sy]] });
   return s;
 }
 
@@ -135,10 +136,9 @@ export const heroHtml = () =>
 export const TOWN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 60" stroke-linecap="round" stroke-linejoin="round">${draw(townShapes(), 1026)}</svg>\n`;
 export const townHtml = () => `<div class="town"><img src="/town.svg" width="390" height="60" alt="" loading="lazy" decoding="async"></div>`;
 
-export const mapArt = () =>
-  `<svg class="mapart" viewBox="0 0 358 330" aria-hidden="true" stroke-linecap="round">${draw(mapShapes(), 47)}<text x="34" y="29" font-size="12" text-anchor="middle" fill="${INK}" font-family="'Hiragino Mincho ProN','Yu Mincho','Noto Serif JP',serif" font-weight="700">北</text></svg>`;
+export const mapDeco = (w, h) =>
+  `<g stroke-linecap="round" aria-hidden="true">${draw(mapShapes(w, h), 47)}<text x="${w - 28}" y="${h - 97}" font-size="12" text-anchor="middle" fill="${INK}" stroke="none" font-family="'Hiragino Mincho ProN','Yu Mincho','Noto Serif JP',serif" font-weight="700">北</text></g>`;
 
 export const ART_CSS = `.hero{margin:6px -16px 0;line-height:0}.hero img{display:block;width:100%;height:auto}
 .cap{display:flex;justify-content:space-between;margin:2px 0 12px;font:13.5px/1.5 "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;color:var(--sub)}
-.mapw{position:relative}.mapart{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .town{max-width:430px;margin:24px auto 0;line-height:0}.town img{display:block;width:100%;height:auto}.town+.ft{border-top:0}`.replace(/\n/g, '');

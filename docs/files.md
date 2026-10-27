@@ -5,6 +5,7 @@
 | `src/site.mjs` | サイト名・URL・公開前フラグ・e-Stat のクレジット文 |
 | `static/` | ファビコン（A 森と川：杉と丸い木と川の線。10/23 決定）。favicon.svg はダークモードで明るい色になる。ico（16・32・48）・apple-touch-icon（180、白地）は svg から作った画像。ビルドでそのまま dist/ に置く |
 | `src/art.mjs`・`static/hero-860.webp` | 専用の絵（10/26、見本の5）：トップの1枚は Canva のペンと水彩（文字は HTML、遅れ読み込みにしない）、いちばん下の街並み（dist/town.svg、遅れ読み込み）と地図の方位記号は SVG の「えんぴつの挿絵」（ゆれは決まった種から、フィルターなし） |
+| `src/japan-map.mjs`・`japan-map-data.mjs`・`tools/map/` | 都道府県の地図（10/27 案1「地図そのもの」、#21）：トップとドボンクイズで共通。形は Natural Earth 10m（パブリックドメイン。北方領土は disputed_areas の Kuril Is. を北海道に、東京と鹿児島の南の島は入れない）。作業場で geojson を MAPWORK に置き `python3 -I tools/map/gen.py` → `python3 -I tools/map/render.py --emit src/japan-map-data.mjs`（CI では作らない）。県名の置き場・4色のぬり分けもこのとき決める。クイズは県名の位置に赤ペンの丸・バツ |
 | `static/og.jpg`・`og-ranking-jinko.jpg`・`tools/og/` | 共有画像（10/27 しょーくん：サイトは案B、人口が増えた市区町村は案A。X にも貼る）。作業場で `python3 tools/og/render.py tools/og/site.html static/og.jpg 1200 630`・`node tools/og/ranking-jinko.mjs` で作る（CI では作らない）。ランキングの画像は数字のしるし `data/og-ranking-jinko.json` が今のデータと合うときだけ使い、合わなければビルドの注記を出してサイトの画像にもどる |
 | `src/layout.mjs` | ページの外側（head・ヘッダー・ナビ・フッター）と共通の部品。見た目は「G 森と川」（10/22 決定）：木の帯のふち・明朝の見出しに小さな木の印・森の緑と川の青・えらんだものに朱の印・「この街の備え」は川の線で区切る |
 | `src/stats.mjs` | 割合・全国の中の位置・県内順位・人口が近い街・特徴の1行（データの条件ごとの言い回し）・備えの知識へのつなぎ |

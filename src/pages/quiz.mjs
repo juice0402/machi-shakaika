@@ -5,7 +5,7 @@
 // どっちが多い・ドボンクイズは、開いたときに /quiz/machi.json（都道府県47と全国の市区町村の数字）を読み、問題を毎回ブラウザで作る
 import { esc, h2, srcKokusei } from '../layout.mjs';
 import { PREFS } from '../areas.mjs';
-import { TILES, short } from './top.mjs';
+import { japanMap, JMAP_CSS } from '../japan-map.mjs';
 import { sonaeData } from '../quiz.mjs';
 import { CORE_JS, qFair, qDobonTopics } from '../quiz-core.mjs';
 import { fit } from '../layout.mjs';
@@ -54,7 +54,7 @@ qq.textContent='読み込み中';load().then(d=>{D=d;D.prefs.forEach(p=>PN[p[0]]
 
 const DOBON_JS = `(()=>{${COMMON}
 ${CORE_JS}
-const box=$('#db'),map=$('.t5',box),words=$('.gogun',box),tiles=[...map.querySelectorAll('.tile')],ol=$('.t5l',box),res=$('.dbr',box),nav=$('.dbn',box),sel=$('#sc');const save=scope(sel,'machi-dobon');
+const box=$('#db'),map=$('.t5',box),words=$('.gogun',box),tiles=[...map.querySelectorAll('.pf')],ol=$('.t5l',box),res=$('.dbr',box),nav=$('.dbn',box),sel=$('#sc');const save=scope(sel,'machi-dobon');
 let D,PN={},TP,t,order,found,over,last='',btns=[];
 const url=r=>t.scope==='p'?'/'+r[2]+'/':(r[2]||'/'+PN[r[0].slice(0,2)][2]+'/#m'+r[0]);
 const fm=v=>{const m=D.m[t.mi];return qFmt([m[0],m[1],m[2],t.digits],v)+m[2]};
@@ -62,17 +62,17 @@ function pick(){const s=sel.value;let list=TP.filter(x=>s===''||x.scope===s);if(
 function slot(i,r,cls){const li=ol.children[i];li.textContent='';const a=document.createElement('a');a.href=url(r);a.textContent=r[1];li.append(a,'　'+fm(r[3+t.mi]));li.className=cls}
 function topic(){t=pick();if(!t)return;const b=qDobonBoard(D,t,Math.random);order=b.order;found=new Set();over=false;const m=D.m[t.mi],N=t.N;
 $('.qq',box).textContent=t.scope==='p'?m[1]+'都道府県トップ'+N:(t.scope==='all'?'全国で':PN[t.scope][1]+'で')+m[1]+'市区町村トップ'+N;
-map.hidden=t.board!=='map';words.hidden=t.board!=='words';tiles.forEach(x=>{x.className='tile';x.disabled=false});words.textContent='';btns=[];
+map.hidden=t.board!=='map';words.hidden=t.board!=='words';tiles.forEach(x=>{x.setAttribute('class','pf');x.removeAttribute('aria-disabled')});words.textContent='';btns=[];
 if(t.board==='words')b.board.forEach(r=>{const w=document.createElement('button');w.type='button';w.className='w';w.dataset.c=r[0];w.textContent=r[1];if(t.scope==='all'){const s=document.createElement('small');s.textContent=PN[r[0].slice(0,2)][1];w.append(s)}w.addEventListener('click',()=>tap(w));words.append(w);btns.push(w)});
 ol.textContent='';for(let i=0;i<N;i++){const li=document.createElement('li');li.className='blank';li.textContent='　';ol.append(li)}res.hidden=true;nav.hidden=true;$('#sent').textContent='';info()}
 const all=()=>t.board==='map'?tiles:btns;
 function info(){$('.meta',box).textContent=over?'':found.size?'見つけた '+found.size+'／'+t.N:'トップ'+t.N+'に入る'+(t.scope==='p'?'都道府県':'市区町村')+'を1つずつ。'+(t.N+1)+'位より下はドボン'}
-function end(win,r,rank){over=true;order.slice(0,t.N).forEach((x,i)=>{if(!found.has(x[0])){slot(i,x,'rest');const el=all().find(e=>e.dataset.c===x[0]);if(el)el.classList.add('ans5')}});all().forEach(e=>e.disabled=true);
+function end(win,r,rank){over=true;order.slice(0,t.N).forEach((x,i)=>{if(!found.has(x[0])){slot(i,x,'rest');const el=all().find(e=>e.dataset.c===x[0]);if(el)el.classList.add('ans5')}});all().forEach(e=>e.tagName==='BUTTON'?e.disabled=true:e.setAttribute('aria-disabled','true'));
 $('.score b',res).textContent=found.size;$('.score span',res).textContent='／'+t.N;$('.dbm',res).textContent=win?'パーフェクト':'ドボン　'+r[1]+'は'+(rank+1)+'位';res.hidden=false;nav.hidden=false;
 last='まちの社会科「ドボンクイズ」'+$('.qq',box).textContent+' '+t.N+'個中'+found.size+'個'+(win?'（パーフェクト）':'');info()}
 function tap(el){if(over||el.classList.contains('hit'))return;const c=el.dataset.c,rank=order.findIndex(r=>r[0]===c),r=order[rank];
 if(rank>=0&&rank<t.N){el.classList.add('hit');found.add(c);slot(rank,r,'got');info();if(found.size===t.N)end(true)}else{el.classList.add('miss');end(false,r,rank)}}
-tiles.forEach(x=>x.addEventListener('click',()=>tap(x)));
+const pc={};tiles.forEach(x=>{pc[x.dataset.c]=x;x.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tap(x)}})});map.addEventListener('click',e=>{const g=e.target.closest('[data-c]');if(g)tap(pc[g.dataset.c])});
 $('.next',nav).addEventListener('click',()=>{topic();box.scrollIntoView()});sel.addEventListener('change',()=>{save();if(D)topic()});share($('.send',nav),()=>last);
 $('.qq',box).textContent='読み込み中';load().then(d=>{D=d;D.prefs.forEach(p=>PN[p[0]]=p);TP=qDobonTopics(D);topic()}).catch(()=>{$('.qq',box).textContent='読み込めませんでした'})})();`;
 
@@ -140,10 +140,6 @@ ${src}`,
     script: DOCCHI_JS,
   });
 
-  const tiles = PREFS.map((p) => {
-    const [x, y] = TILES[p.slug];
-    return `<button type="button" class="tile" data-c="${p.code}" style="grid-column:${x + 1};grid-row:${y + 1}" aria-label="${esc(p.name)}">${short(p.name)}</button>`;
-  }).join('');
   out.push({
     path: '/quiz/dobon/',
     title: 'ドボンクイズ（都道府県・市区町村のトップ10を当てる）',
@@ -152,11 +148,12 @@ ${src}`,
       [`${munis.survey.slice(0, 4)}年国勢調査の数字です。`],
     ),
     noAds: true,
+    head: `<style>${JMAP_CSS}</style>`,
     body: `<p class="crumb"><a href="/">トップ</a> / <a href="/quiz/">クイズ</a></p>
 <h1 class="city">ドボンクイズ</h1>
 ${scopeSelect('sc', false)}
 <section id="db" class="qz"><p class="qq"></p><p class="meta"></p>
-<div class="tiles t5">${tiles}</div><div class="gogun" hidden></div>
+<div class="t5">${japanMap({ quiz: true })}</div><div class="gogun" hidden></div>
 <div class="dbr" hidden aria-live="polite"><p class="score"><b>0</b><span>／10</span></p><p class="dbm"></p></div>
 <ol class="t5l"></ol>
 <p class="dbn" hidden><button class="go next" type="button">次のお題</button>　<button class="go send" type="button">結果を送る</button></p><p class="note" id="sent"></p></section>
