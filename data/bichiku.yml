@@ -227,12 +227,6 @@ cities:
     url: https://www.city.wakayama.wakayama.jp/kurashi/bousai_bouhan_koutsu/1000032/1036580/1035575.html
     checked: 2026-10-26
 
-  - city: tottori/tottori
-    publisher: 鳥取市
-    title: "防災備蓄について"
-    url: https://www.city.tottori.lg.jp/www/contents/1639773571114/index.html
-    checked: 2026-10-28
-
   - city: okayama/okayama
     publisher: 岡山市
     title: "岡山市備蓄計画について"
