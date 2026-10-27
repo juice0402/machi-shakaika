@@ -1,78 +1,47 @@
 # まちの社会科 — Claude 向けの決まり
 
-市区町村の数字（e-Stat の国勢調査など）と、家の備え（備蓄量の計算・チェックリスト・品目）をつなぐ静的サイト（https://machi-shakaika.com、2026-10-22 公開）。
+市区町村の数字（e-Stat の国勢調査など）と、家の備え（備蓄量の計算・チェックリスト・品目）をつなぐ静的サイト（https://machi-shakaika.com）。
 運営はしょーくん。しょーくんはコードを書かず、ターミナルも使わず、スマホで確認する。開発・運用は Claude が担当する。
 設計の決定版はプロジェクト資料 `claude/bousai-estat-tougou-plan.md`（ここと食いちがったら、そちらが正）。共通ルールは `claude/site-principles.md`、台帳は `claude/site-registry.md`。
+くわしいことは `docs/shikumi.md`（しくみ・経緯）と `docs/files.md`（ファイルごとの中身）。全部は読まず、さわる所の節・行だけ読む。
 
 ## サイト作りの方針（迷ったら上から順に）
 - 前提：数字が正しい（出典と時点を必ず出す）・軽くて速い・利用者のデータを集めない・むだな通信をしない・SEO。公開の前に高速化・デバッグ・SEO の点検
 1. 直感で使いやすく、文字を少なく。大事な部分はスマホの1画面（幅390px・高さ660px）、説明は1行まで
 2. AIっぽさゼロ。作る前と見せる前に、`claude/site-principles.md` の「使わないもの」とスクショを照らし合わせる
-   - 使わない：絵文字、クリーム色×オレンジ、同じ丸いカードと影、色つきの四角に入れた線のアイコン、右はしの「›」「→」、グラデーションの飾り、英語の大文字の小見出し、ふわっと出る動き、キャッチコピー
-   - 10/22 追加：枠やカードの左はしの色の太い帯、同じ大きさの四角いボタンを並べた切りかえ（えらんだものだけ色をぬる形も）、行の右はしの小さな「見る」「詳しく」ボタン、「準備中」「NEW」のような小さなバッジ
-   - 切りかえやボタンも、見た目の芯にする「もの」の形で作る（例：小テストの選択肢に赤ペンの丸、冷蔵庫のマグネット）
+   - 使わない：絵文字、クリーム色×オレンジ、同じ丸いカードと影、色つきの四角に入れた線のアイコン、右はしの「›」「→」、グラデーションの飾り、英語の大文字の小見出し、ふわっと出る動き、キャッチコピー、左はしの色の帯、同じ四角いボタンを並べた切りかえ、行の右はしの小さな「見る」、「準備中」「NEW」のバッジ
 3. GUIでビジュアル的に（数字は目盛り・地図・棒・人の形のマスで）
 - 防災はあおらない（「今すぐ」「手遅れ」・赤と黄の警告色を使わない）。「数字で自分ごと」→ わが家の数を計算へ
-- 国の刊行物・役所に見える名前と見た目にしない（e-Stat と国土地理院の規約で、加工した情報を国が作ったように見せることは禁止）
+- 国の刊行物・役所に見える名前と見た目にしない（e-Stat と国土地理院の規約）
 - 「ワースト」「住みにくい」と書かない。住む人を傷つける順位は作らない。避難場所の数は人口あたり・順位・街どうしのくらべに使わない
 - 文章はデータの条件ごとの言い回しから作る。AIに毎回書かせない
-- 検索結果での見え方（10/26 連絡 C-003）：トップの title はサイト名だけ・WebSite の構造化データ（name・url・alternateName）・全ページに og:site_name。説明文はページのデータから `fit()`（src/layout.mjs）で作り、全角80〜120文字・そのページだけの数字・値段は `priceBand()` の幅・同じ説明文を作らない（verify-dist.mjs が見張る）
+- 説明文（meta description）はページのデータから `fit()` で作る。全角80〜120文字・そのページだけの数字・同じ説明文を作らない（verify-dist.mjs が見張る）
 
 ## しくみ
 - 依存パッケージなしの Node 22 だけ（`scripts/build.mjs`）。npm の部品を足さない
 - コマンド：`npm run check`（テスト → ビルド → 全ページ点検）。PR前に必ず緑にする
-- 公開：`.github/workflows/deploy.yml` が Cloudflare Pages（プロジェクト `machi-shakaika`）へ Direct Upload。Cloudflare 側のビルドは使わない（アカウント共有の月500回の枠を使わないため）
-  - PR → プレビュー（PRにURLのコメント）／ main → 本番。毎朝6:17にも動く（楽天の商品をとりなおす）。本番は `dist/fingerprint.json` を本番の `/fingerprint.json` とくらべ、同じなら公開しない。毎朝の分が止まったら Issue
-  - Secrets：`ESTAT_APP_ID`・`CLOUDFLARE_API_TOKEN`（Pages の編集だけ、`machi-shakaika-deploy`）・`CLOUDFLARE_ACCOUNT_ID`。値はチャット・ログ・コメント・ファイルに出さない
-  - `SITE.launched`（`src/site.mjs`）が false のあいだは全ページ noindex・robots.txt は全部おことわり（AdSense の審査もこの間はできない）。pages.dev はいつも noindex
-- AdSense：`SITE.adsense` に運営者ID（ca-pub-）を入れると、公開後の全ページの head にスクリプト、/ads.txt を置く。審査に向けて、空のリンク・「準備中」のページ・中身のない棚の入口を作らない。運営者情報・プライバシーポリシー（広告の Cookie の説明）・ナビを全ページに
+- 公開：`deploy.yml` が Cloudflare Pages（`machi-shakaika`）へ Direct Upload。Cloudflare 側のビルドは使わない。PR → プレビュー／main → 本番。毎朝6:17にも動く
+- Secrets：`ESTAT_APP_ID`・`CLOUDFLARE_API_TOKEN`・`CLOUDFLARE_ACCOUNT_ID`・`RAKUTEN_APPLICATION_ID`・`RAKUTEN_ACCESS_KEY`・`RAKUTEN_AFFILIATE_ID`。値はチャット・ログ・コメント・ファイルに出さない
+- `SITE.launched` が false のあいだは全ページ noindex。pages.dev はいつも noindex
+- AdSense（`SITE.adsense`）：空のリンク・「準備中」のページ・中身のない棚の入口を作らない。運営者情報・プライバシーポリシー・ナビを全ページに
 - 流れ：ブランチ `claude/...` → PR → CI が緑・プレビューで確認 → しょーくんに知らせてから Merge。修正はまとめて少ない push で
-- Claude の予約タスクは使わない。毎週の更新は GitHub Actions の `update.yml`（月曜0:07）
-- 災害時モード（10/26）：しょーくんが Actions の「災害時モードの切りかえ」（`saigai.yml`）でオン／オフ → `data/mode.yml` をコミットして公開。オンのあいだは全ページの上に灰色の帯で気象庁と市区町村への案内1行（`src/mode.mjs`）、楽天の商品（取りもしない）と AdSense を外す。避難場所の数・注記はそのまま。災害を見て自動で切りかえることはしない
-- リンクの点検（10/26 連絡 C-005）：`check-links.yml` が毎週水曜10:41と、データ・ページのコードを変えた PR で、sources.yml・bichiku.yml・ページの外部リンクを GitHub から開く。消えた（404・410・名前が引けない・トップに飛ばされた）は PR の注記と Issue「リンクの点検」→ 同じ発行元の新しいページに差しかえる。403・429 などは消えたとは限らない。PR は止めない。対象は `node scripts/check-links.mjs --list`
+- Claude の予約タスクは使わない。毎週の更新は Actions の `update.yml`（月曜0:07）
+- 災害時モード（`saigai.yml` → `data/mode.yml`）はしょーくんが切りかえる。災害を見て自動で切りかえない
+- リンクの点検：`check-links.yml`（毎週水曜と PR）。対象は `node scripts/check-links.mjs --list`。消えたリンクは同じ発行元の新しいページに差しかえる。403・429 は消えたとは限らない
 - このクラウドの作業場からは e-Stat と国土地理院につながらない。データは Actions が取って data/ にコミットしたものを使う
 
 ## データの決まり
-- 出典はすべて `data/sources.yml`（出典台帳）。ページでは `srcName()`（layout.mjs）で 発行元<cite>「題」</cite> と出す（題は相手の言葉なので、使わない言葉の点検から外す）。ページ・計算は出典の id を指す。title はページの題そのもの（まだ確かめていないものは null。ページに出す前に確かめる）。checked は開いて確かめた日。計算に使う出典は90日を過ぎるとテストが止まる
-- 備えの数字は `data/items.yml` の1か所だけ。本文・計算・チェックリスト・クイズはここから読む（数字を本文に直接書かない）。チェックリストの並びも items.yml の checklists
+- 出典はすべて `data/sources.yml`。ページでは `srcName()` で 発行元<cite>「題」</cite>。title はページの題そのもの（確かめていないものは null）。checked は開いて確かめた日。計算に使う出典は90日を過ぎるとテストが止まる
+- 備えの数字は `data/items.yml` の1か所だけ。本文・計算・チェックリスト・クイズはここから読む（数字を本文に直接書かない）
+- 自治体の備蓄のページは `data/bichiku.yml`。公式ページだけ・題は開いて確かめたまま・避難所の分を含むものだけ。見つからない街は書かない
 - ランキングは増えた街だけ（減った順・「ワースト」を作らない）
-- 照らし合わせ：`data/shogo.yml` の公式の数字（堺市 802,648人など）と e-Stat の値が合わなければ公開しない
-- e-Stat：クレジット表示（`ESTAT_CREDIT`、指定の文言のまま）を全ページのフッターに。数字のかたまりごとに「出典：総務省「令和7年国勢調査」を加工して作成」と調査の日・公表日。呼び出しは1秒あける（`src/lib/estat.mjs`）。使っている表の更新日だけ週1回見て、更新された表だけ取る
-- 国土地理院の避難場所データ：公共データ利用規約（PDL1.0）。出典と加工の記載、取得日、ご利用上の注意（ふたつのちがい・載っていない＝無い、ではない・最新は自治体で確かめる）を出す。一覧は「開く」を押したときだけ読み込む
-- 楽天（10/23 しょーくんの判断で手作りリンクから API に変更。販売終了の商品が残らないように）：商品は品目ページ（/hinmoku/<id>/ の6つ）だけ。楽天のアプリ「まちの社会科」（許可されたWebサイト machi-shakaika.com・machi-shakaika.pages.dev、楽天市場API、有効期限 2027-10-23。切れる前にアプリ一覧で延長）
-  - `scripts/fetch-rakuten.mjs` がビルドの前に毎回、items.yml の shop の言葉で商品検索（レビューが多い順・買えるものだけ）→ 結果に多いジャンルのデイリーランキング → 順位・レビューでえらぶ（`src/rakuten.mjs`）。品目ごとに6件持ち、開くたびに3件を入れかえて見せる
-  - 公開リポジトリなので、取ったものはコミットしない（data/rakuten/ は .gitignore）・ログに商品名を出さない・artifacts に上げない（規約 第10条9号）。本番に公開したら3日より古いデプロイを消す（`scripts/cleanup-deployments.mjs`）
-  - 品目ページは AdSense なし・楽天以外へのリンクなし（出典は名前と確認日だけ。第8条4項）・フッターに楽天のクレジット（1文字も変えない）・商品の上に「PR」・リンクは rel="nofollow sponsored noopener"・画像はAPIのURLのまま。「おすすめ」「最安値」「定価」は使わない。順位は楽天のランキングの事実だけ
-  - Secrets：`RAKUTEN_APPLICATION_ID`・`RAKUTEN_ACCESS_KEY`・`RAKUTEN_AFFILIATE_ID`
+- 照らし合わせ：`data/shogo.yml` の公式の数字と e-Stat の値が合わなければ公開しない
+- e-Stat：クレジット表示（`ESTAT_CREDIT`、指定の文言のまま）を全ページのフッターに。数字のかたまりごとに出典・調査の日・公表日。呼び出しは1秒あける
+- 国土地理院の避難場所データ（PDL1.0）：出典と加工の記載・取得日・ご利用上の注意を出す
+- 楽天：商品は品目ページ（/hinmoku/<id>/）だけ。取ったものはコミットしない・ログに商品名を出さない・artifacts に上げない。品目ページは AdSense なし・楽天以外へのリンクなし・楽天のクレジットは1文字も変えない・「PR」・rel="nofollow sponsored noopener"・画像はAPIのURLのまま。「おすすめ」「最安値」「定価」は使わない。アプリの有効期限 2027-10-23（切れる前に延長）
 
-## ファイル
-| 場所 | 中身 |
-|---|---|
-| `src/site.mjs` | サイト名・URL・公開前フラグ・e-Stat のクレジット文 |
-| `static/` | ファビコン（A 森と川：杉と丸い木と川の線。10/23 決定）。favicon.svg はダークモードで明るい色になる。ico（16・32・48）・apple-touch-icon（180、白地）は svg から作った画像。ビルドでそのまま dist/ に置く |
-| `src/art.mjs`・`static/hero-860.webp` | 専用の絵（10/26、見本の5）：トップの1枚は Canva のペンと水彩（文字は HTML、遅れ読み込みにしない）、いちばん下の街並み（dist/town.svg、遅れ読み込み）と地図の方位記号は SVG の「えんぴつの挿絵」（ゆれは決まった種から、フィルターなし） |
-| `static/og.jpg`・`og-ranking-jinko.jpg`・`tools/og/` | 共有画像（10/27 しょーくん：サイトは案B、人口が増えた市区町村は案A。X にも貼る）。作業場で `python3 tools/og/render.py tools/og/site.html static/og.jpg 1200 630`・`node tools/og/ranking-jinko.mjs` で作る（CI では作らない）。ランキングの画像は数字のしるし `data/og-ranking-jinko.json` が今のデータと合うときだけ使い、合わなければビルドの注記を出してサイトの画像にもどる |
-| `src/layout.mjs` | ページの外側（head・ヘッダー・ナビ・フッター）と共通の部品。見た目は「G 森と川」（10/22 決定）：木の帯のふち・明朝の見出しに小さな木の印・森の緑と川の青・えらんだものに朱の印・「この街の備え」は川の線で区切る |
-| `src/stats.mjs` | 割合・全国の中の位置・県内順位・人口が近い街・特徴の1行（データの条件ごとの言い回し）・備えの知識へのつなぎ |
-| `src/calc.mjs` | 備蓄量の計算の部品（items.yml から。?n=1&d=7 で人数と日数を入れて開ける） |
-| `src/rakuten.mjs`・`scripts/fetch-rakuten.mjs` | 楽天市場の商品検索・ランキングの呼び方とえらび方、ビルドの前の取得（data/rakuten/products.json、コミットしない） |
-| `src/quiz.mjs`・`src/quiz-core.mjs`・`src/pages/quiz.mjs` | クイズ（10/23）：/quiz/ の棚・どっちが多い（2択10問）・ドボンクイズ（トップ10を1つずつ、外れたらドボン。都道府県は地図、市区町村は語群30）・備えの数字クイズ（items.yml の数字、19のひな形から5問）・わたしの街クイズ（市区町村ページに作れる問題を全部、3問ずつ見せて入れかえ。街のコードから毎回同じに作る）。どっちが多い・ドボンは /quiz/machi.json（都道府県47＋全国の市区町村×くらべる数字10）を開いたときだけ読み、問題は quiz-core.mjs の関数（toString でページに入れる。外の変数を使わない）で毎回作る。出題の範囲（おまかせ・都道府県・全国・県ごと）は select、この端末におぼえる。回答は送らない・正解は赤ペンの丸・まちがいはバツ・AdSense なし（body data-ads="off"）・減り方や高齢化の題は出さない・同点や表示が同じになる問題は出さない |
-| `src/pages/*.mjs` | hinmoku（品目6と一覧。楽天の商品）・top（トップ）・pref（都道府県47）・city（市区町村103）・sonae（備えの知識3本と計算のページ）・sonae-fuyu（冬の停電と寒さの備え /sonae/fuyu-teiden/。止まるもの→足すものの表、数字は items.yml の fuyu・days・gas・mizu、CSS はこのページの head だけ）・sonae-yomimono（読みもの5本 /sonae/jishin/・zaitaku-hinan/・akachan-koureisha/・hitorigurashi/・mansion/。作りは冬の停電と同じ表、出典は items.yml の jishin・zaitaku・akachan・hitori・mansion。市区町村ページの共同住宅の行は mansion、ひとり暮らしの行は hitorigurashi へ。発生中の行動・家にいてよいかの判断は書かない。ペットは環境省の正式版待ち）・sonae-soto（家の外の備え2本 /sonae/kuruma-taisetsu/・kitaku-konnan/。同じ表と末尾、前に積むもの・置くものだけ。車は数字を出さない、職場は items.yml の kitaku。立ち往生の動き・帰るかとどまるかは公式へ1行）・dougu（チェックリスト。品目は items.yml の checklists、チェックはブラウザの中だけ）・ranking（人口が増えた市区町村。増えた街だけ、割合は人口1万人以上）・info（このサイトについて・プライバシーポリシー） |
-| `src/data.mjs` | data/*.yml を読んで形を確かめる、必要量の計算 |
-| `src/lib/yaml.mjs` | このリポジトリで使う形だけの小さなYAMLの読み取り |
-| `src/lib/estat.mjs` | e-Stat API の呼び出しと返ってきた形の読み取り |
-| `src/lib/csv.mjs` | CSV の読み取りと文字コードの見分け |
-| `src/lib/hinan.mjs` | 国土地理院の避難場所の全国CSV（hinanmap.gsi.go.jp）のURLと、市区町村ごと・災害の種類ごとの数え方 |
-| `data/sources.yml`・`items.yml`・`shogo.yml` | 出典台帳・備えの数字・照らし合わせ用の公式の数字 |
-| `data/bichiku.yml` | 自治体の備蓄の公表ページ（10/26、57の街）。市区町村ページの「この街の備え」に1行とリンク。ない街は行ごと出さない。年1回の公表なので題が変わることがある |
-| `scripts/check-links.mjs`・`src/lib/links.mjs`・`linkcheck.mjs` | リンクの点検の本体・集め方・開き方（同じホストは2秒あけ、HEAD→GET、1回だけやり直し） |
-| `scripts/build.mjs`・`verify-dist.mjs`・`changed.mjs` | ビルド・全ページ点検・本番とのちがい |
-| `data/estat.yml` | e-Stat から取る表と項目（名前で指定）。年齢・世帯・住宅は不詳補完値の表 |
-| `scripts/fetch-estat.mjs` → `data/estat/munis.json`・`meta.json` | 表の更新日を見て、変わったときだけ全市区町村の数字を取る。照らし合わせに通らなければ書きかえない |
-| `scripts/fetch-hinan.mjs` → `data/hinan/counts.json`・`list/<コード>.json`・`meta.json` | 避難場所の全国CSV（ETagが変わったときか、ページを作る街の一覧が足りないときだけ作り直す）。数は全市区町村、一覧はページを作る街だけ。件数の見張り。点検は一覧がないと止まる（ローカルだけ `ALLOW_MISSING_HINAN_LIST=1` で注記に。Actions では効かない） |
-| `scripts/fetch-yomi.mjs` → `data/yomi.json`・`src/yomi.mjs`・`src/lib/zip.mjs` | 市区町村さがしの読みがな（日本郵便の郵便番号データ ken_all.zip。ETag が変わったときだけ。郡を外し、政令市は区の読みの頭から）。取れなくても止めない。トップのさがすスクリプトは漢字・ひらがな・カタカナで、頭が合うものが先 |
-| `src/munis.mjs`・`src/areas.mjs` | munis.json の読み書きと点検・都道府県とページを作る103の街（県庁所在地46・東京23区・政令市5・中核市29 `chukaku`。英字のURL）。ページを作る条件5（10/27）：「この街の備え」に世帯の特徴が1つ以上（全国か県とはっきり違う。`sonaeLinks()`、tests/sonae-links.test.mjs が見張る）。中核市のうち川越・越谷・柏・豊田・岡崎・豊橋は満たさないので作らない |
-| `src/kigen-core.mjs`・`src/pages/kigen.mjs` | 期限メモ（10/26、/dougu/kigen/）：近い順・あと何か月を目盛りで・30日以内は朱のはんこ。品目は items.yml の checklists の kigen（記号はURLに入るので変えない）。メモは localStorage だけ。URL（# のあと、k1_ 版つき）は「URLを送る」で作り、開いたらアドレス欄から消してから読む（ちがえばたずねる）。.ics（30日前の朝9時）・文字の書き出し。AdSense は # を消したあとに読む（`adsLate`、body の data-ads-late。しょーくん 10/26「下の方にさりげなく」） |
-| `src/machi-core.mjs`・`src/machi-tools.mjs`・`src/pages/kurabe.mjs` | 街の道具（10/27 #17）：似てる街さがし /niteru/（人口（対数）・15歳未満・65歳以上・5年の増減・ひとり暮らし・共同住宅を全国の散らばりでならし、同じ重みで近い3つ。人口1万人以上、政令市の区はのぞく）・2つの街をくらべる /kurabe/（差だけ。割合は5%以上か1.3倍以上、増減は2%以上、人口は1.3倍以上。「ポイント」は使わない言葉なので「%高い」）・100人の村（市区町村ページ。5つに分けて最大剰余法で100、方眼紙のマスにえんぴつの塗り、人の形は使わない）。数字は /kurabe/kazu.json（100KBまで、えらぶ欄にさわったときだけ読む。読みがなは /search.json から）。市区町村ページの似ている街もこの JSON から作る（ブラウザと同じ答え） |
-| `src/pages/print.mjs` | 冷蔵庫に貼る紙（10/27、/dougu/print/、案1）：A4縦1枚。家に置く備え＝丸と期限の欄（kigen のある品目）・持ち出す袋＝丸（かっこの中は小さい2行目）。挿絵なし、2つの表の行は同じ高さ。画面は紙を縮めて見せ、印刷は紙だけ（@media print）。AdSense なし |
-| `.github/workflows/update.yml` | 毎週月曜0:07に上の3つ → 変わったら data/ をコミットして deploy.yml を呼ぶ。止まったら Issue。データの取り方を変えたPRでも動き、PRのブランチにコミットする |
+## おもなファイル（中身は docs/files.md）
+- `src/site.mjs`（サイト名・公開前フラグ）・`src/layout.mjs`（ページの外側と共通部品）・`src/pages/*.mjs`（ページ）・`src/stats.mjs`（数字と言い回し）
+- `src/data.mjs`（data/*.yml の読み取りと点検）・`src/areas.mjs`（ページを作る103の街）・`src/munis.mjs`
+- `scripts/build.mjs`・`verify-dist.mjs`（全ページ点検）・`fetch-*.mjs`（Actions が使う取得）・`check-links.mjs`
+- `tools/og/`（共有画像。作業場で作る）・`static/`（アイコン・絵）
