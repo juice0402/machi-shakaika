@@ -132,7 +132,7 @@ ${S}{transform:none!important;height:296mm}
 <p class="src">A4で1枚。期限はペンで書きこみます</p>
 <p><button class="go" type="button" data-print>印刷する・PDFにする</button></p>
 <div class="sheetwrap">${sheet}</div>
-<p><a class="go" href="/dougu/check/">画面でチェックする</a><br><a class="go" href="/dougu/kigen/">賞味期限をメモする</a></p>
+<p><a class="go" href="/dougu/check/">画面でチェックする</a><br><a class="go" href="/dougu/karte/">わが家の防災カルテ（量を絵で）</a><br><a class="go" href="/dougu/kigen/">賞味期限をメモする</a></p>
 ${h2('出典')}
 ${sourceList(ids, sources)}`,
       script: js,
