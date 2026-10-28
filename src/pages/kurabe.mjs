@@ -13,7 +13,7 @@ const CORE = [mtVec, mtCand, mtNear, mtDiff, mtEsc, mtDiffHtml, mtNearHtml].map(
 export const TOOLS_CSS = `.hits button{display:block;width:100%;padding:7px 0;border:0;border-bottom:1px dotted var(--line);background:none;font:inherit;color:var(--ink);text-align:left;text-decoration:underline;cursor:pointer}.hits button small{color:var(--sub);margin-left:6px}
 .kh{margin:14px 0 2px;font:700 17px/1.5 "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif}.kh small{font:400 12px/1 sans-serif;color:var(--sub)}
 .kd{margin:12px 0 0;padding:0 0 10px;border-bottom:1px dotted var(--line)}.kt{margin:0 0 4px;font-size:14px}.kt b{margin-left:8px;font-size:20px;color:var(--accent);font-variant-numeric:tabular-nums}
-.mcs{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:14px 0 4px}.mcs .mc{display:block;width:100%;max-width:340px;height:auto}.mcs+p{text-align:center;margin:4px 0 8px}@media(min-width:720px){.mcs{flex-wrap:nowrap}.mcs .mc{width:calc(50% - 6px)}}
+.mcs{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:14px 0 4px}.mcs .mc{display:block;width:100%;max-width:340px;height:auto}.mcs+p{text-align:center;margin:4px 0 8px}@media(min-width:760px){.mcs{flex-wrap:nowrap;width:700px;margin-left:calc(50% - 350px)}.mcs .mc{width:calc(50% - 6px);max-width:none}}
 .kb{grid-template-columns:7em 1fr 6.4em}.kb .kn{overflow:hidden;text-overflow:ellipsis}.kb .ka i{background:var(--bar2)}.kd0{margin:12px 0}`.replace(/\n/g, '');
 
 // 街をえらぶ欄（トップの市区町村さがしと同じ見た目）
@@ -89,7 +89,7 @@ ${h2('ほかの道具')}<ul class="list"><li><a href="/kurabe/">2つの街の数
 
   const kurabe = `<p class="crumb"><a href="/">トップ</a></p>
 <h1 class="city">2つの街をくらべる</h1>
-<p class="lead">今の街と引っ越し先の、ちがいだけを出します。</p>
+<p class="lead">2つの街をカードにして、ちがいも出します。</p>
 ${findForm('qa', '今の街', '例 堺市・さかい')}
 ${findForm('qb', '引っ越し先', '例 岡山市・おかやま')}
 <div id="kr" aria-live="polite" data-card="/kurabe/card.js?v=${card.v}"></div>
