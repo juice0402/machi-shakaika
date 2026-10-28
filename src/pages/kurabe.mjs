@@ -27,6 +27,8 @@ hit.forEach(r=>{const li=document.createElement('li'),b=document.createElement('
 i.addEventListener('focus',()=>{MT.load();MT.yomi()},{once:true});i.addEventListener('input',show);
 f.addEventListener('submit',e=>{e.preventDefault();show().then(()=>{const b=ul.querySelectorAll('button');if(b.length===1)b[0].click()})});return set}
 const mtQ=new URLSearchParams(location.search);`;
+// わが家の防災カルテ（/dougu/karte/）も、街のえらび方はこの部品
+export { findForm, PICK_JS };
 
 const NITERU_JS = String.raw`(()=>{const f=document.querySelector('[data-pick]'),out=document.getElementById('nr');if(!f)return;
 const set=mtPick(f,r=>MT.load().then(K=>{out.innerHTML=mtNearHtml(r,mtNear(K.r,K.s,r[0],3),K.p)+'<p><a class="go" href="/kurabe/?a='+r[0]+'">'+mtEsc(r[1])+'とほかの街をくらべる</a></p>';history.replaceState(null,'','?a='+r[0])}));
