@@ -138,17 +138,3 @@ export function mcShareSvg(a, b, pa, pb, M, part) {
       : `<text x="1160" y="886" text-anchor="end" fill="#23312a"><tspan class="mn" font-size="18" font-weight="700">まちの社会科</tspan><tspan class="gs" font-size="15" dx="10">machi-shakaika.com</tspan></text>`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">${mcStyle()}${part === 'over' ? '' : '<rect width="1200" height="900" fill="#fff"/>'}<g transform="translate(40 40)">${mcCard(a, 0, pa, M, null, part)}</g><g transform="translate(620 40)">${mcCard(b, 1, pb, M, null, part)}</g>${foot}</svg>`;
 }
-
-// 全国の値（ビルドのときにデータの合計から作る。年齢は人数、世帯の割合は世帯数で重みづけ）
-//   list は stats.mjs の muniList の形（pop・pop2020・age014・age65・single・ippan・kyodo・housed）
-export function nationalCard(list) {
-  const sum = (k) => list.reduce((s, a) => s + (a[k] || 0), 0);
-  const r1 = (x) => Math.round(x * 10) / 10;
-  return {
-    g: r1(((sum('pop') - sum('pop2020')) / sum('pop2020')) * 100),
-    p014: r1((sum('age014') / sum('pop')) * 100),
-    p65: r1((sum('age65') / sum('pop')) * 100),
-    single: r1((sum('single') / sum('ippan')) * 100),
-    kyodo: r1((sum('kyodo') / sum('housed')) * 100),
-  };
-}

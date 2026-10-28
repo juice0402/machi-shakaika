@@ -12,18 +12,6 @@ import { findForm, PICK_JS } from './kurabe.mjs';
 export const KARTE_PATH = '/dougu/karte/';
 const CORE = [kaEsc, kaState, kaAmounts, kaUnit, kaWaterSvg, kaGridSvg, kaGauge, kaLines, kaSheet].map((f) => f.toString()).join('\n');
 
-// 全国の値（街くらべカード #28 の nationalCard と同じ作り方：データの合計から。年齢は人数、世帯の割合は世帯数で重みづけ）
-//   list は stats.mjs の muniList の形
-export function karteNational(list) {
-  const sum = (k) => list.reduce((s, a) => s + (a[k] || 0), 0);
-  const r1 = (x) => Math.round(x * 10) / 10;
-  return {
-    p65: r1((sum('age65') / sum('pop')) * 100),
-    single: r1((sum('single') / sum('ippan')) * 100),
-    kyodo: r1((sum('kyodo') / sum('housed')) * 100),
-  };
-}
-
 const W = 635; // 木の帯：/dougu/print/ と同じ（A4 の幅へ）
 const band = () => TREES('kt').replace('viewBox="0 0 390 24"', `viewBox="0 0 ${W} 24"`).replace('<rect width="390"', `<rect width="${W}"`);
 const HM = h2('x').match(/<svg[^]*?<\/svg>/)[0];
