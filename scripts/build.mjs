@@ -30,7 +30,7 @@ import { TOWN_SVG } from '../src/art.mjs';
 import { SAIGAI } from '../src/mode.mjs';
 import { readYomi } from '../src/yomi.mjs';
 import { kazuData } from '../src/machi-tools.mjs';
-import { toolPages } from '../src/pages/kurabe.mjs';
+import { toolPages, cardScript } from '../src/pages/kurabe.mjs';
 
 const DIST = 'dist';
 const stop = (msg) => {
@@ -102,9 +102,13 @@ add({ path: null, title: 'ページが見つかりません', description: 'ペ�
 writeFileSync(`${DIST}/quiz/machi.json`, JSON.stringify(machi));
 // 似てる街さがし・くらべるの数字（街をえらぶ欄にさわったときだけ読む）
 writeFileSync(`${DIST}/kurabe/kazu.json`, JSON.stringify(kazu));
+// 街くらべカードの部品と地方の絵（2つの街をえらんだときだけ読む。夜のメモ #28）
+writeFileSync(`${DIST}/kurabe/card.js`, cardScript({ munis }).js);
+mkdirSync(`${DIST}/kurabe/e`, { recursive: true });
+for (const f of readdirSync('static/card')) copyFileSync(`static/card/${f}`, `${DIST}/kurabe/e/${f}`);
 
 // ファビコン（A 森と川。10/23 しょーくんが3案から選んだ）。static/ の中をそのまま置く
-for (const f of readdirSync('static')) copyFileSync(`static/${f}`, `${DIST}/${f}`);
+for (const f of readdirSync('static')) if (statSync(`static/${f}`).isFile()) copyFileSync(`static/${f}`, `${DIST}/${f}`);
 // いちばん下の街並み（全ページで同じ絵を遅れて読み込む。src/art.mjs で描く）
 writeFileSync(`${DIST}/town.svg`, TOWN_SVG);
 
@@ -153,6 +157,10 @@ out(
     '/quiz/machi.json',
     '  Cache-Control: public, max-age=86400',
     '/kurabe/kazu.json',
+    '  Cache-Control: public, max-age=86400',
+    '/kurabe/card.js',
+    '  Cache-Control: public, max-age=604800',
+    '/kurabe/e/*',
     '  Cache-Control: public, max-age=86400',
     '/favicon.*',
     '  Cache-Control: public, max-age=604800',
