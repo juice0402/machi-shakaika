@@ -69,7 +69,7 @@ ${near.map((x) => `<tr><td>${urlOf(x.code) ? `<a href="${urlOf(x.code)}">${esc(x
 ${h2('数字が似ている街')}
 ${mtNearHtml(meRow, niteru, kazu.p)}
 <p class="note">人口・年齢の割合・5年の増減・ひとり暮らしと共同住宅の割合が近い街です。</p>
-<p><a class="go" href="/kurabe/?a=${a.code}">${esc(a.name)}とほかの街をくらべる</a></p>
+<p><a class="go" href="/kurabe/?a=${a.code}">この街をほかの街とカードでくらべる</a></p>
 ${srcKokusei(munis)}
 
 ${h2('年齢と世帯')}

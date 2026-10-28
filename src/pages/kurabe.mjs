@@ -2,13 +2,18 @@
 //   数字は /kurabe/kazu.json を、街をえらぶ欄にさわったときだけ読む。えらんだ街は送らない（URL の ?a= だけ）
 //   街のえらび方はトップの市区町村さがしと同じ部品（.find）
 import { h2, srcKokusei, fmt, fit } from '../layout.mjs';
+import { createHash } from 'node:crypto';
 import { mtVec, mtCand, mtNear, mtDiff, mtEsc, mtDiffHtml, mtNearHtml } from '../machi-core.mjs';
+import { mcRegion, mcMan, mcEsc, mcWidth, mcCard, mcStyle, mcCardSvg, mcShareSvg, nationalCard } from '../card-core.mjs';
+import { JMAP } from '../japan-map-data.mjs';
+import { muniList } from '../stats.mjs';
 
 const CORE = [mtVec, mtCand, mtNear, mtDiff, mtEsc, mtDiffHtml, mtNearHtml].map((f) => f.toString()).join('\n');
 
 export const TOOLS_CSS = `.hits button{display:block;width:100%;padding:7px 0;border:0;border-bottom:1px dotted var(--line);background:none;font:inherit;color:var(--ink);text-align:left;text-decoration:underline;cursor:pointer}.hits button small{color:var(--sub);margin-left:6px}
 .kh{margin:14px 0 2px;font:700 17px/1.5 "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif}.kh small{font:400 12px/1 sans-serif;color:var(--sub)}
 .kd{margin:12px 0 0;padding:0 0 10px;border-bottom:1px dotted var(--line)}.kt{margin:0 0 4px;font-size:14px}.kt b{margin-left:8px;font-size:20px;color:var(--accent);font-variant-numeric:tabular-nums}
+.mcs{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:14px 0 4px}.mcs .mc{display:block;width:100%;max-width:340px;height:auto}.mcs+p{text-align:center;margin:4px 0 8px}@media(min-width:720px){.mcs{flex-wrap:nowrap}.mcs .mc{width:calc(50% - 6px)}}
 .kb{grid-template-columns:7em 1fr 6.4em}.kb .kn{overflow:hidden;text-overflow:ellipsis}.kb .ka i{background:var(--bar2)}.kd0{margin:12px 0}`.replace(/\n/g, '');
 
 // 街をえらぶ欄（トップの市区町村さがしと同じ見た目）
@@ -34,11 +39,43 @@ const a=mtQ.get('a');if(a)MT.load().then(K=>{const r=K.r.find(x=>x[0]===a);if(r)
 
 const KURABE_JS = String.raw`(()=>{const fs=document.querySelectorAll('[data-pick]'),out=document.getElementById('kr');if(fs.length<2)return;const s=[null,null];
 const draw=()=>{const[a,b]=s;if(!a||!b)return;history.replaceState(null,'','?a='+a[0]+'&b='+b[0]);if(a[0]===b[0]){out.innerHTML='<p class="kd0">ちがう街をえらんでください。</p>';return}
-MT.load().then(K=>{out.innerHTML='<p class="kh">'+mtEsc(a[1])+' <small>'+mtEsc(K.p[a[0].slice(0,2)])+'</small> から '+mtEsc(b[1])+' <small>'+mtEsc(K.p[b[0].slice(0,2)])+'</small></p><p class="note">赤い字は、'+mtEsc(b[1])+'の数字を'+mtEsc(a[1])+'とくらべたちがいです。</p>'+mtDiffHtml(mtDiff(a,b),a[1],b[1])})};
+MT.load().then(K=>{out.innerHTML='<div id="kc"></div><p class="kh">'+mtEsc(a[1])+' <small>'+mtEsc(K.p[a[0].slice(0,2)])+'</small> から '+mtEsc(b[1])+' <small>'+mtEsc(K.p[b[0].slice(0,2)])+'</small></p><p class="note">赤い字は、'+mtEsc(b[1])+'の数字を'+mtEsc(a[1])+'とくらべたちがいです。</p>'+mtDiffHtml(mtDiff(a,b),a[1],b[1]);const kc=document.getElementById('kc');mtCard().then(()=>{if(kc.isConnected)MCX.show(a,b,K.p,kc)}).catch(()=>{})})};
+// カードの絵と部品は、2つの街をえらんだときだけ読む
+const mtCard=()=>window.MCX?Promise.resolve():new Promise((ok,ng)=>{const e=document.createElement('script');e.src=document.getElementById('kr').dataset.card;e.onload=ok;e.onerror=ng;document.head.append(e)});
 const sets=[...fs].map((f,i)=>mtPick(f,r=>{s[i]=r;draw()}));
 const q=[mtQ.get('a'),mtQ.get('b')];if(q[0]||q[1])MT.load().then(K=>q.forEach((c,i)=>{const r=c&&K.r.find(x=>x[0]===c);if(r)sets[i](r)}))})();`;
 
+// 送る画像の部品（/kurabe/card.js）。カードの数字は kazu.json の行のまま、全国の値はデータの合計から
+const CARD_FN = [mcRegion, mcMan, mcEsc, mcWidth, mcCard, mcStyle, mcCardSvg, mcShareSvg].map((f) => f.toString()).join('\n');
+const CARD_JS = String.raw`(()=>{const img=s=>new Promise((ok,ng)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=ng;i.src=s});
+const svg=s=>'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s);const ei=r=>'/kurabe/e/'+mcRegion(r[0])+'.webp';
+// 1200×900 の PNG：下地の SVG → 絵の窓に地方の絵 → 窓の枠と地図の小窓
+function make(a,b,pa,pb){return Promise.all([img(svg(mcShareSvg(a,b,pa,pb,MC,'base'))),img(svg(mcShareSvg(a,b,pa,pb,MC,'over'))),img(ei(a)),img(ei(b))]).then(([bs,ov,ea,eb])=>{
+const c=document.createElement('canvas');c.width=1200;c.height=900;const x=c.getContext('2d');x.drawImage(bs,0,0);
+[[ea,76],[eb,656]].forEach(([e,dx])=>{x.save();x.beginPath();if(x.roundRect)x.roundRect(dx,164,468,200,4);else x.rect(dx,164,468,200);x.clip();x.drawImage(e,dx,164,468,200);x.restore()});
+x.drawImage(ov,0,0);return new Promise(ok=>c.toBlob(ok,'image/png'))})}
+window.MCX={show(a,b,P,el){const pa=P[a[0].slice(0,2)],pb=P[b[0].slice(0,2)];
+el.innerHTML='<div class="mcs">'+mcCardSvg(a,0,pa,MC,ei(a))+mcCardSvg(b,1,pb,MC,ei(b))+'</div><p><button class="go" type="button">カードを画像で送る</button></p><p class="msg" aria-live="polite"></p>';
+const bt=el.querySelector('button'),msg=el.querySelector('.msg'),name='machi-card-'+a[0]+'-'+b[0]+'.png';let job=null;
+// 押したその場で共有の画面を出せるように、画像は先に作っておく
+const go=()=>job||(job=make(a,b,pa,pb).catch(e=>{job=null;throw e}));setTimeout(go,300);
+bt.addEventListener('click',()=>{go().then(bl=>{const f=new File([bl],name,{type:'image/png'});
+if(navigator.canShare&&navigator.canShare({files:[f]}))return navigator.share({files:[f]}).catch(()=>{});
+const u=URL.createObjectURL(bl),l=document.createElement('a');l.href=u;l.download=name;document.body.append(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),3000)}).catch(()=>{msg.textContent='画像を作れませんでした。もう一度おしてください'})})}}})();`;
+
+export function cardScript({ munis }) {
+  const { w, h, frame, prefs } = JMAP;
+  const MC = {
+    nat: nationalCard(muniList(munis.areas)),
+    src: `▲は全国　出典：総務省「${munis.statName}」を加工して作成`,
+    map: { w, h, frame, d: Object.fromEntries(Object.entries(prefs).map(([c, m]) => [c, m.d])) },
+  };
+  const js = `const MC=${JSON.stringify(MC)};\n${CARD_FN}\n${CARD_JS}\n`;
+  return { js, v: createHash('sha256').update(js).digest('hex').slice(0, 10) };
+}
+
 export function toolPages({ munis, kazu }) {
+  const card = cardScript({ munis });
   const year = munis.survey.slice(0, 4);
   const nCand = kazu.r.filter(mtCand).length;
   const niteru = `<p class="crumb"><a href="/">トップ</a></p>
@@ -55,7 +92,7 @@ ${h2('ほかの道具')}<ul class="list"><li><a href="/kurabe/">2つの街の数
 <p class="lead">今の街と引っ越し先の、ちがいだけを出します。</p>
 ${findForm('qa', '今の街', '例 堺市・さかい')}
 ${findForm('qb', '引っ越し先', '例 岡山市・おかやま')}
-<div id="kr" aria-live="polite"></div>
+<div id="kr" aria-live="polite" data-card="/kurabe/card.js?v=${card.v}"></div>
 <p class="note">割合は5%以上か1.3倍以上、人口の増減は2%以上、人口は1.3倍以上のちがいだけを出します。</p>
 ${srcKokusei(munis)}
 ${h2('ほかの道具')}<ul class="list"><li><a href="/niteru/">数字が似ている街をさがす</a></li><li><a href="/ranking/jinko/">人口が増えた市区町村</a></li></ul>`;
