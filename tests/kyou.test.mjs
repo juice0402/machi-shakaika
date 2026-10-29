@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readMunis } from '../src/munis.mjs';
 import { machiData } from '../src/quiz.mjs';
 import { qFair } from '../src/quiz-core.mjs';
-import { kyouQ, kyouDays, kyouPool, kyouView, kyouShowDiffers, jstDate, addDays, pathBox, KYOU_DAYS, KYOU_ORDER, KYOU_MIN_POP } from '../src/kyou.mjs';
+import { kyouPick, kyouKeep, kyouStreak, KYOU_JS, kyouQ, kyouDays, kyouPool, kyouView, kyouShowDiffers, jstDate, addDays, pathBox, KYOU_DAYS, KYOU_ORDER, KYOU_MIN_POP } from '../src/kyou.mjs';
 import { JMAP } from '../src/japan-map-data.mjs';
 
 const munis = readMunis();
@@ -92,4 +92,47 @@ test('ページ：/quiz/kyou/ は AdSense なし・回答を送らない（fetch
   assert.equal(p.noAds, true);
   assert.ok(!/fetch\(|XMLHttpRequest|sendBeacon/.test(p.script));
   assert.ok(!/\p{Extended_Pictographic}/u.test(p.body + p.script + p.head));
+});
+
+test('日本時間0時の切りかえ：UTC 14:59 と 15:00 で今日の1問が入れかわる', { skip }, () => {
+  const qs = kyouDays(D, START, () => '/x/');
+  assert.equal(kyouPick(qs, jstDate(Date.parse('2026-10-29T14:59:59Z'))).q.d, '2026-10-29');
+  assert.equal(kyouPick(qs, jstDate(Date.parse('2026-10-29T15:00:00Z'))).q.d, '2026-10-30');
+});
+
+test('14日の外の日は問題なし（ページは「読み込めませんでした」）・あしたの題は本当の次の日だけ', () => {
+  const qs = [{ d: '2026-10-29' }, { d: '2026-10-31' }, { d: '2026-11-01' }];
+  assert.equal(kyouPick(qs, '2026-11-12').q, null);
+  assert.equal(kyouPick(qs, '2026-10-28').q, null);
+  assert.equal(kyouPick(qs, '2026-10-29').next, null, '30日が作れなかったので31日の題は予告しない');
+  assert.equal(kyouPick(qs, '2026-10-31').next.d, '2026-11-01');
+  assert.equal(kyouPick(qs, '2026-11-01').next, null);
+});
+
+test('連続正解：途切れ・今日まだ答えていない日・いままでの最高', () => {
+  const R = { '2026-10-20': [0, 1], '2026-10-21': [0, 1], '2026-10-22': [0, 1], '2026-10-23': [0, 1], '2026-10-25': [0, 1], '2026-10-26': [1, 0], '2026-10-27': [0, 1], '2026-10-28': [0, 1] };
+  assert.deepEqual(kyouStreak(R, '2026-10-29'), [2, 4], '今日まだ：きのうまでの2日・最高は20〜23日の4日');
+  assert.deepEqual(kyouStreak({ ...R, '2026-10-29': [0, 1] }, '2026-10-29'), [3, 4]);
+  assert.deepEqual(kyouStreak({ ...R, '2026-10-29': [1, 0] }, '2026-10-29'), [0, 4], 'まちがえたら0');
+  assert.deepEqual(kyouStreak(R, '2026-10-30'), [0, 4], '1日あくと途切れる');
+  assert.deepEqual(kyouStreak({}, '2026-10-29'), [0, 0]);
+  assert.deepEqual(kyouStreak({ '2026-12-31': [0, 1], '2027-01-01': [0, 1] }, '2027-01-01'), [2, 2], '年をまたぐ');
+});
+
+test('組が変わった日の古い記録は消して保存し直す。同じ組なら答えたまま', () => {
+  const q = { p: [['a', 'x', '13'], ['b', 'y', '27']] };
+  const R = { '2026-10-29': [0, 1, '13', '27'] };
+  assert.deepEqual(kyouKeep(R, '2026-10-29', q), { done: true, changed: false });
+  const R2 = { '2026-10-29': [0, 1, '01', '47'], '2026-10-28': [0, 1, '02', '03'] };
+  assert.deepEqual(kyouKeep(R2, '2026-10-29', q), { done: false, changed: true });
+  assert.deepEqual(Object.keys(R2), ['2026-10-28']);
+  assert.deepEqual(kyouKeep({}, '2026-10-29', q), { done: false, changed: false });
+});
+
+test('ブラウザに入れる部品は、外の変数を使わずに動く', () => {
+  const f = new Function(`${KYOU_JS}; return { jstDate, addDays, kyouPick, kyouKeep, kyouStreak };`)();
+  assert.equal(f.jstDate(Date.parse('2026-10-29T15:00:00Z')), '2026-10-30');
+  assert.equal(f.addDays('2026-12-31', 1), '2027-01-01');
+  assert.deepEqual(f.kyouStreak({ '2026-10-28': [0, 1] }, '2026-10-29'), [1, 1]);
+  assert.equal(f.kyouPick([{ d: '2026-10-29' }, { d: '2026-10-30' }], '2026-10-29').next.d, '2026-10-30');
 });

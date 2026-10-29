@@ -11,8 +11,52 @@ export const KYOU_MIN_POP = 100000; // 出す街：人口10万人以上
 export const KYOU_ORDER = [0, 5, 2, 8, 4, 1, 7, 3, 6, 9];
 
 const DAY = 864e5;
-export const jstDate = (t = Date.now()) => new Date(t + 9 * 3600e3).toISOString().slice(0, 10);
-export const addDays = (iso, n) => new Date(Date.parse(`${iso}T00:00:00Z`) + n * DAY).toISOString().slice(0, 10);
+
+// ---- ブラウザでも同じものを使う部品（toString でページに入れる。引数と組みこみの関数だけを使う） ----
+// 日本時間の日付（UTC 15時で次の日）
+export function jstDate(t = Date.now()) {
+  return new Date(t + 9 * 3600e3).toISOString().slice(0, 10);
+}
+export function addDays(iso, n) {
+  return new Date(Date.parse(iso + 'T00:00:00Z') + n * 864e5).toISOString().slice(0, 10);
+}
+// ページの問題の中から今日の1問と、本当のあした（次の日付）の1問。今日がなければ q は null（14日の外）
+export function kyouPick(qs, today) {
+  const i = qs.findIndex((x) => x.d === today);
+  const q = i < 0 ? null : qs[i];
+  const n = q ? qs[i + 1] : null;
+  const tomorrow = new Date(Date.parse(today + 'T00:00:00Z') + 864e5).toISOString().slice(0, 10);
+  return { q, next: n && n.d === tomorrow ? n : null };
+}
+// 今日の記録が今日の問題のものか。組が変わった日（データの直し）の古い記録は消す（changed: true なら保存し直す）
+// 記録 R：{ 日付: [えらんだ番号, 正解なら1, アの県, イの県] }
+export function kyouKeep(R, today, q) {
+  const r = R[today];
+  if (!r) return { done: false, changed: false };
+  if (r[2] === q.p[0][2] && r[3] === q.p[1][2]) return { done: true, changed: false };
+  delete R[today];
+  return { done: false, changed: true };
+}
+// 連続正解（今日を答えていなければ、きのうまで）と、いままでの最高
+export function kyouStreak(R, today) {
+  const prev = (d) => new Date(Date.parse(d + 'T00:00:00Z') - 864e5).toISOString().slice(0, 10);
+  let s = 0;
+  let d = R[today] ? today : prev(today);
+  while (R[d] && R[d][1]) {
+    s++;
+    d = prev(d);
+  }
+  let best = 0;
+  let run = 0;
+  let last = '';
+  for (const k of Object.keys(R).sort()) {
+    run = R[k] && R[k][1] ? (last && prev(k) === last && run ? run + 1 : 1) : 0;
+    last = k;
+    best = Math.max(best, run);
+  }
+  return [s, Math.max(best, s)];
+}
+export const KYOU_JS = [jstDate, addDays, kyouPick, kyouKeep, kyouStreak].map((f) => f.toString()).join('\n');
 const dayNum = (iso) => Math.round(Date.parse(`${iso}T00:00:00Z`) / DAY);
 
 // 文字から 32bit の数（FNV-1a に混ぜを足したもの）

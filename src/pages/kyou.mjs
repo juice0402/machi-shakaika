@@ -5,7 +5,7 @@
 import { esc, fit, srcKokusei, h2 } from '../layout.mjs';
 import { PREFS } from '../areas.mjs';
 import { JMAP } from '../japan-map-data.mjs';
-import { kyouDays, kyouPool } from '../kyou.mjs';
+import { kyouDays, kyouPool, KYOU_JS } from '../kyou.mjs';
 
 const PN = Object.fromEntries(PREFS.map((p) => [p.code, p]));
 const KA = '#b5cfbb'; // アの県（緑）
@@ -17,6 +17,7 @@ const md = (iso) => {
 };
 
 const CSS = `.kd{font-size:13px;color:var(--sub);margin:4px 0 0;font-variant-numeric:tabular-nums}
+#ky .qq{min-height:3.1em}
 .km,.mm{display:block;width:calc(100% + 32px);height:auto;margin:2px -16px 0;-webkit-tap-highlight-color:transparent}
 .km{aspect-ratio:390/190}.km use,.mm use{fill:#f6f9f1}.km use.a{fill:${KA}}.km use.b{fill:${KB}}.mm use.on{fill:${KA}}
 .km text{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-weight:700;fill:var(--ink);stroke:#fff;stroke-width:.22em;paint-order:stroke;stroke-linejoin:round;text-anchor:middle}
@@ -29,8 +30,8 @@ const CSS = `.kd{font-size:13px;color:var(--sub);margin:4px 0 0;font-variant-num
 .ax span{position:absolute;top:0;transform:translateX(-50%);padding-top:4px;white-space:nowrap}
 .ax span::before{content:"";position:absolute;left:50%;top:-1px;height:5px;border-left:1px solid var(--ink)}
 .ax span:first-child{transform:none}.ax span:first-child::before{left:0}.ax span:last-child{transform:translateX(-100%)}.ax span:last-child::before{left:auto;right:0}
-.kr{display:flex;align-items:center;gap:12px;margin:6px 0 0}.kr>div:first-child{flex:1}.dif{margin:0;font-size:14px}.dif b{font-size:18px;color:var(--num);font-variant-numeric:tabular-nums;margin:0 1px 0 4px}
-.han2{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;width:68px;height:68px;border:2.5px solid var(--accent);border-radius:50%;box-shadow:inset 0 0 0 2px #fff,inset 0 0 0 3.5px var(--accent);transform:rotate(-8deg);color:var(--accent);font:700 11px/1.15 "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;text-align:center}.han2 b{font-size:22px;line-height:1}
+.kr{display:flex;align-items:center;gap:12px;margin:4px 0 0}.kr>div:first-child{flex:1}.dif{margin:0;font-size:14px}.dif b{font-size:18px;color:var(--num);font-variant-numeric:tabular-nums;margin:0 1px 0 4px}
+.han2{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;width:62px;height:62px;border:2.5px solid var(--accent);border-radius:50%;box-shadow:inset 0 0 0 2px #fff,inset 0 0 0 3.5px var(--accent);transform:rotate(-8deg);color:var(--accent);font:700 11px/1.15 "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;text-align:center}.han2 b{font-size:22px;line-height:1}
 .wk{margin:6px 0 0;display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:11px;line-height:1.2;color:var(--sub)}.wk p{margin:0}
 .wk i{position:relative;display:block;width:30px;height:30px;margin:3px auto 0;font:400 13px/30px "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;font-style:normal;font-variant-numeric:tabular-nums;color:var(--ink)}
 .wk .o i{color:var(--accent);font-weight:700}.wk .o i::after{content:"";position:absolute;inset:1px;border:2.2px solid var(--accent);border-radius:50%;transform:rotate(-12deg)}
@@ -55,15 +56,16 @@ const choice = (r, i) =>
   `<li><button type="button"><span class="k">${'アイ'[i]}</span><span class="sw" style="background:${i ? KB : KA}" aria-hidden="true"></span><span class="t">${esc(r[1])}<small>${esc(PN[r[2]].name)}</small></span><span class="v"></span></button><div class="bt" hidden><i${i ? ' class="w"' : ''}></i></div></li>`;
 
 // ブラウザ：今日の問題を出す・答える・記録（localStorage）・連続正解・7日・わたしの地図・結果を送る
-const JS = `(()=>{const $=(s,e=document)=>e.querySelector(s);const K=JSON.parse($('#kq').textContent),M=K.m,WD='${WD}',KEY='machi-kyou';
-const DAY=864e5,add=(d,n)=>new Date(Date.parse(d+'T00:00:00Z')+n*DAY).toISOString().slice(0,10),today=new Date(Date.now()+9*36e5).toISOString().slice(0,10);
+const JS = `(()=>{${KYOU_JS}
+const $=(s,e=document)=>e.querySelector(s);const K=JSON.parse($('#kq').textContent),M=K.m,WD='${WD}',KEY='machi-kyou';
+const add=addDays,today=jstDate();
 const md=d=>{const[,m,x]=d.split('-').map(Number);return m+'月'+x+'日（'+WD[new Date(d+'T00:00:00Z').getUTCDay()]+'）'};
 const fmt=(m,v)=>m[3]?Number(v).toFixed(m[3]):Math.round(v).toLocaleString('ja-JP');
 let R={};try{R=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(R))}catch(e){}};
-const box=$('#ky'),qi=K.q.findIndex(x=>x.d===today),q=K.q[qi],kd=$('#kd');
+const box=$('#ky'),{q,next:nx}=kyouPick(K.q,today),kd=$('#kd');
 if(!q){kd.textContent=md(today);box.textContent='';const p=document.createElement('p');p.innerHTML='今日の問題を読み込めませんでした。<a href="/quiz/docchi/">どっちが多い？</a>で遊べます';box.append(p);return}
-kd.textContent=md(today)+'・日本時間の0時に入れかわります';const m=M[q.mi],svg=$('.km',box),ul=$('.ch',box),bs=[...ul.querySelectorAll('button')],ans=q.p[0][3]>q.p[1][3]?0:1,nx=K.q[qi+1];
+kd.textContent=md(today)+'・日本時間の0時に入れかわります';const m=M[q.mi],svg=$('.km',box),ul=$('.ch',box),bs=[...ul.querySelectorAll('button')],ans=q.p[0][3]>q.p[1][3]?0:1;
 $('.qq',box).textContent=m[0];svg.setAttribute('viewBox',q.v.vb.join(' '));
 svg.querySelectorAll('use').forEach(u=>{const c=u.dataset.c;u.setAttribute('class',c===q.p[0][2]?'a':c===q.p[1][2]?'b':'')});
 const kl=$('.kl',svg);kl.setAttribute('font-size',q.v.fs);kl.textContent='';const NS='http://www.w3.org/2000/svg';
@@ -81,8 +83,7 @@ const short=v=>unit==='人'&&!m[3]||unit==='世帯'?(v>=1e4?(v/1e4).toLocaleStri
 const ax=$('.ax',box);ax.textContent='';for(let k=0;k<=4;k++){const s=document.createElement('span');s.style.left=k*25+'%';s.textContent=k?short(st*k)+(k===4?unit:''):'0';ax.append(s)}ax.hidden=false;
 const dp=$('.dif',box);dp.textContent='';const a=document.createElement('a');a.href=q.p[ans][4];a.textContent=q.p[ans][1];const bb=document.createElement('b');bb.textContent=fmt(m,dif);dp.append(a,'のほうが',bb,(unit==='%'?'ポイント':unit)+adj);dp.hidden=false;
 kd.textContent=md(today)+'・つぎは'+md(add(today,1)).replace(/^\\d+月/,'')+'0時';record()}
-function streak(){let s=0,d=R[today]?today:add(today,-1);while(R[d]&&R[d][1]){s++;d=add(d,-1)}let best=0,run=0,prev='';Object.keys(R).sort().forEach(d=>{run=R[d][1]?(prev&&add(prev,1)===d&&run?run+1:1):0;prev=d;best=Math.max(best,run)});return[s,Math.max(best,s)]}
-function record(){const [s,best]=streak(),h=$('.han2',box);h.hidden=!s;$('b',h).textContent=s+'日';h.setAttribute('aria-label','連続正解'+s+'日');
+function record(){const [s,best]=kyouStreak(R,today),h=$('.han2',box);h.hidden=!s;$('b',h).textContent=s+'日';h.setAttribute('aria-label','連続正解'+s+'日');
 const wk=$('.wk',box);wk.textContent='';for(let k=-6;k<=0;k++){const d=add(today,k),x=R[d],p=document.createElement('p'),i=document.createElement('i');p.className=(k?'':'t ')+(x?x[1]?'o':'x':'');p.append(WD[new Date(d+'T00:00:00Z').getUTCDay()]);i.textContent=+d.slice(8);p.append(i);wk.append(p)}
 $('.best b',box).textContent=best+'日';wk.hidden=false;$('.best',box).hidden=!best;
 const nt=$('.ntt',box);if(nx){nt.textContent='あしたの題　'+M[nx.mi][0];nt.hidden=false}
@@ -90,7 +91,7 @@ const res=R[today];$('.nx',box).hidden=false;$('.send',box).onclick=async()=>{co
 try{if(navigator.share){await navigator.share({text,url});return}await navigator.clipboard.writeText(text+' '+url);msg.textContent='コピーしました'}catch(e){if(e&&e.name==='AbortError')return;msg.textContent=text+' '+url}};
 const got=new Set();Object.values(R).forEach(x=>{if(x[2])got.add(x[2]);if(x[3])got.add(x[3])});const mm=$('#mymap');mm.querySelectorAll('use').forEach(u=>u.setAttribute('class',got.has(u.dataset.c)?'on':''));$('.mmc b',mm).textContent=got.size;mm.hidden=false}
 bs.forEach((b,i)=>b.addEventListener('click',()=>{if(ul.dataset.done)return;R[today]=[i,i===ans?1:0,q.p[0][2],q.p[1][2]];save();shown(i)}));
-if(R[today]&&R[today][2]===q.p[0][2]&&R[today][3]===q.p[1][2])shown(R[today][0]);else{delete R[today];if(Object.keys(R).length)record(),['.wk','.best','.han2','.nx','.ntt'].forEach(c=>$(c,box).hidden=true)}})();`;
+const kp=kyouKeep(R,today,q);if(kp.changed)save();if(kp.done)shown(R[today][0]);else{if(Object.keys(R).length)record(),['.wk','.best','.han2','.nx','.ntt'].forEach(c=>$(c,box).hidden=true)}})();`;
 
 export function kyouPage({ munis, machi, start, urlOfRow }) {
   const days = kyouDays(machi, start, urlOfRow);
