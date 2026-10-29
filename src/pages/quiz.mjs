@@ -114,7 +114,7 @@ export function quizPages({ munis, items, sources, machi }) {
     body: `<p class="crumb"><a href="/">トップ</a></p>
 <h1 class="city">クイズ</h1>
 ${h2('街の数字クイズ')}
-<ul class="list"><li><a href="/quiz/docchi/">どっちが多い？</a><small class="sub">都道府県・全国の市区町村・県の中から、2択を10問</small></li><li><a href="/quiz/dobon/">ドボンクイズ</a><small class="sub">トップ10を1つずつ当てる。外れたらドボン</small></li></ul>
+<ul class="list"><li><a href="/quiz/kyou/">今日の1問</a><small class="sub">日本時間の0時に入れかわる2択。答えた県が地図にたまる</small></li><li><a href="/quiz/docchi/">どっちが多い？</a><small class="sub">都道府県・全国の市区町村・県の中から、2択を10問</small></li><li><a href="/quiz/dobon/">ドボンクイズ</a><small class="sub">トップ10を1つずつ当てる。外れたらドボン</small></li></ul>
 <p class="note">市区町村のページの中にも、その街のクイズがあります（例：<a href="/osaka/sakai/">堺市</a>）。</p>
 ${h2('備えの数字クイズ')}
 <ul class="list"><li><a href="/quiz/sonae/">備えの数字クイズ</a><small class="sub">水・食事・携帯トイレの量のめやす5問</small></li></ul>
