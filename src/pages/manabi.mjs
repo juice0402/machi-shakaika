@@ -138,7 +138,8 @@ if(fs[1])mtPick(fs[1],r=>{if(r[0]===d.code){fs[1].querySelector('.msg').textCont
 mf.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!(b.dataset.g||b.dataset.k))return;moved=true;if(b.dataset.g)st.g=b.dataset.g;else st.k=b.dataset.k;draw()});
 mf.querySelector('[data-a]').addEventListener('change',e=>{moved=true;st.a=e.target.checked?1:0;draw()});
 addEventListener('resize',fit);const p=document.querySelector('[data-print]');if(p)p.addEventListener('click',()=>print());
-if(st.m&&set)MT.load().then(K=>{const r=K.r.find(x=>x[0]===st.m);if(r)set(r);else{st.m='';draw()}});draw()})();`;
+// おぼえた街は、読みこんでから描く（先に見本の街で描くと、くらべる街が見本の街と同じときに入れかわってしまう）
+if(st.m&&set)MT.load().then(K=>{const r=K.r.find(x=>x[0]===st.m);if(r)set(r);else{st.m='';draw()}}).catch(draw);else draw()})();`;
 
 export function manabiPages({ munis, list, nat, kazu }) {
   const conf = manabiConf({ munis, list, nat });
