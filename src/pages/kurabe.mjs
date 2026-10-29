@@ -41,7 +41,7 @@ const a=mtQ.get('a');if(a)MT.load().then(K=>{const r=K.r.find(x=>x[0]===a);if(r)
 
 const KURABE_JS = String.raw`(()=>{const fs=document.querySelectorAll('[data-pick]'),out=document.getElementById('kr');if(fs.length<2)return;const s=[null,null];
 const draw=()=>{const[a,b]=s;if(!a||!b)return;history.replaceState(null,'','?a='+a[0]+'&b='+b[0]);if(a[0]===b[0]){out.innerHTML='<p class="kd0">ちがう街をえらんでください。</p>';return}
-MT.load().then(K=>{out.innerHTML='<div id="kc"></div><p class="kh">'+mtEsc(a[1])+' <small>'+mtEsc(K.p[a[0].slice(0,2)])+'</small> から '+mtEsc(b[1])+' <small>'+mtEsc(K.p[b[0].slice(0,2)])+'</small></p><p class="note">赤い字は、'+mtEsc(b[1])+'の数字を'+mtEsc(a[1])+'とくらべたちがいです。</p>'+mtDiffHtml(mtDiff(a,b),a[1],b[1]);const kc=document.getElementById('kc');mtCard().then(()=>{if(kc.isConnected)MCX.show(a,b,K.p,kc)}).catch(()=>{})})};
+MT.load().then(K=>{out.innerHTML='<div id="kc"></div><p class="kh">'+mtEsc(a[1])+' <small>'+mtEsc(K.p[a[0].slice(0,2)])+'</small> から '+mtEsc(b[1])+' <small>'+mtEsc(K.p[b[0].slice(0,2)])+'</small></p><p class="note">赤い字は、'+mtEsc(b[1])+'の数字を'+mtEsc(a[1])+'とくらべたちがいです。</p>'+mtDiffHtml(mtDiff(a,b),a[1],b[1])+'<p><a class="go" href="/dougu/manabi/?k=b&amp;m='+a[0]+'&amp;n='+b[0]+'">この2つの街でプリントを作る</a></p>';const kc=document.getElementById('kc');mtCard().then(()=>{if(kc.isConnected)MCX.show(a,b,K.p,kc)}).catch(()=>{})})};
 // カードの絵と部品は、2つの街をえらんだときだけ読む
 const mtCard=()=>window.MCX?Promise.resolve():new Promise((ok,ng)=>{const e=document.createElement('script');e.src=document.getElementById('kr').dataset.card;e.onload=ok;e.onerror=ng;document.head.append(e)});
 const sets=[...fs].map((f,i)=>mtPick(f,r=>{s[i]=r;draw()}));
@@ -65,13 +65,18 @@ bt.addEventListener('click',()=>{go().then(bl=>{const f=new File([bl],name,{type
 if(navigator.canShare&&navigator.canShare({files:[f]}))return navigator.share({files:[f]}).catch(()=>{});
 const u=URL.createObjectURL(bl),l=document.createElement('a');l.href=u;l.download=name;document.body.append(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),3000)}).catch(()=>{msg.textContent='画像を作れませんでした。もう一度おしてください'})})}}})();`;
 
-export function cardScript({ munis }) {
+// カードの全国の値・出典・地図の形（card.js の MC。まなびプリントの B もこれで紙のカードを作る）
+export function cardData({ munis }) {
   const { w, h, frame, prefs } = JMAP;
-  const MC = {
+  return {
     nat: nationalRates(muniList(munis.areas)),
     src: `▲は全国　出典：総務省「${munis.statName}」を加工して作成`,
     map: { w, h, frame, d: Object.fromEntries(Object.entries(prefs).map(([c, m]) => [c, m.d])) },
   };
+}
+
+export function cardScript({ munis }) {
+  const MC = cardData({ munis });
   const js = `const MC=${JSON.stringify(MC)};\n${CARD_FN}\n${CARD_JS}\n`;
   return { js, v: createHash('sha256').update(js).digest('hex').slice(0, 10) };
 }

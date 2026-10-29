@@ -22,7 +22,7 @@ import { douguPages } from '../src/pages/dougu.mjs';
 import { kigenPages } from '../src/pages/kigen.mjs';
 import { printPages } from '../src/pages/print.mjs';
 import { kartePages } from '../src/pages/karte.mjs';
-import { manabiPages } from '../src/pages/manabi.mjs';
+import { manabiPages, manabiBData, MANABI_B_PATH } from '../src/pages/manabi.mjs';
 import { rankingPages } from '../src/pages/ranking.mjs';
 import { hinmokuPages } from '../src/pages/hinmoku.mjs';
 import { quizPages } from '../src/pages/quiz.mjs';
@@ -108,6 +108,9 @@ writeFileSync(`${DIST}/quiz/machi.json`, JSON.stringify(machi));
 writeFileSync(`${DIST}/kurabe/kazu.json`, JSON.stringify(kazu));
 // 街くらべカードの部品と地方の絵（2つの街をえらんだときだけ読む。夜のメモ #28）
 writeFileSync(`${DIST}/kurabe/card.js`, cardScript({ munis }).js);
+// まなびプリント B の人口密度と一戸建ての割合（B をえらんだときだけ読む。夜のメモ #35）
+mkdirSync(`${DIST}/dougu/manabi`, { recursive: true });
+writeFileSync(`${DIST}${MANABI_B_PATH}`, JSON.stringify(manabiBData(list)));
 mkdirSync(`${DIST}/kurabe/e`, { recursive: true });
 for (const f of readdirSync('static/card')) copyFileSync(`static/card/${f}`, `${DIST}/kurabe/e/${f}`);
 
@@ -161,6 +164,8 @@ out(
     '/quiz/machi.json',
     '  Cache-Control: public, max-age=86400',
     '/kurabe/kazu.json',
+    '  Cache-Control: public, max-age=86400',
+    '/dougu/manabi/b.json',
     '  Cache-Control: public, max-age=86400',
     '/kurabe/card.js',
     '  Cache-Control: public, max-age=604800',
