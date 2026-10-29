@@ -4,7 +4,7 @@
 import { h2, srcKokusei, fmt, fit } from '../layout.mjs';
 import { createHash } from 'node:crypto';
 import { mtVec, mtCand, mtNear, mtDiff, mtEsc, mtDiffHtml, mtNearHtml } from '../machi-core.mjs';
-import { mcRegion, mcMan, mcEsc, mcWidth, mcCard, mcStyle, mcCardSvg, mcShareSvg } from '../card-core.mjs';
+import { mcRegion, mcMan, mcEsc, mcWidth, mcCard, mcPaper, mcStyle, mcCardSvg, mcShareSvg } from '../card-core.mjs';
 import { JMAP } from '../japan-map-data.mjs';
 import { muniList, nationalRates } from '../stats.mjs';
 
@@ -48,7 +48,7 @@ const sets=[...fs].map((f,i)=>mtPick(f,r=>{s[i]=r;draw()}));
 const q=[mtQ.get('a'),mtQ.get('b')];if(q[0]||q[1])MT.load().then(K=>q.forEach((c,i)=>{const r=c&&K.r.find(x=>x[0]===c);if(r)sets[i](r)}))})();`;
 
 // 送る画像の部品（/kurabe/card.js）。カードの数字は kazu.json の行のまま、全国の値はデータの合計から
-const CARD_FN = [mcRegion, mcMan, mcEsc, mcWidth, mcCard, mcStyle, mcCardSvg, mcShareSvg].map((f) => f.toString()).join('\n');
+const CARD_FN = [mcRegion, mcMan, mcEsc, mcWidth, mcCard, mcPaper, mcStyle, mcCardSvg, mcShareSvg].map((f) => f.toString()).join('\n');
 const CARD_JS = String.raw`(()=>{const img=s=>new Promise((ok,ng)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=ng;i.src=s});
 const svg=s=>'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s);const ei=r=>'/kurabe/e/'+mcRegion(r[0])+'.webp';
 // 1200×900 の PNG：下地の SVG → 絵の窓に地方の絵 → 窓の枠と地図の小窓

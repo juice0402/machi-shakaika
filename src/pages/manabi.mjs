@@ -95,7 +95,9 @@ ${S} .mb-hint{display:block;font-size:12.5px;color:var(--sub)}
 ${S} .mb-lines p{height:34px;border-bottom:1px solid #9fb3a6}
 ${S} .mb-ops{margin:2px 0 0 1.2em;font-size:14.5px;line-height:1.7}${S} .mb-ops .mb-kn{margin:0 8px 0 0}
 ${S} .mb-lg{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:13px;margin:12px 0 4px}${S} .mb-lg span{display:inline-flex;align-items:center;gap:6px}${S} .mb-lg i{display:inline-block;width:22px;height:11px}
-${S} .mb-cards{display:flex;justify-content:center;gap:40px;margin-top:12px}
+${S} .mb-cards{display:flex;justify-content:center;gap:40px;margin:18px 0 6px}
+${S} .mb-bs .mb-qh{margin:20px 0 8px}${S} .mb-bs .mb-cq{font-size:16px;padding:8px 0}${S} .mb-bs .mb-or{font-size:16px}
+${S} .mb-bs .mb-qt{font-size:16px;line-height:1.7}${S} .mb-bs .mb-hint{font-size:13px;margin-top:2px}${S} .mb-bs .mb-lines p{height:46px}
 ${S} .mb-cq{display:grid;grid-template-columns:1.6em 1fr auto;align-items:baseline;gap:0 10px;font-size:15px;line-height:1.5;padding:4px 0;border-bottom:1px dotted #9fb3a6}${S} .mb-cq .mb-kn{margin:0}
 ${S} .mb-or{font:700 15px/1.5 ${MINCHO};white-space:nowrap}${S} .mb-or i,${S} .mb-wds i{font-style:normal;color:var(--sub);margin:0 .7em}
 ${S} .mb-wds{margin:4px 0 0 1.2em}

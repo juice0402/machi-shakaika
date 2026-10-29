@@ -275,18 +275,22 @@ test('B の紙：1枚と答えの2枚目・出典とクレジット・使わな�
       assert.equal((one.match(/class="sheet"/g) || []).length, 1);
       assert.equal((two.match(/class="sheet"/g) || []).length, 2);
       assert.ok(!NG.test(two), `${a.name} ${b.name} ${g} ${two.match(NG)?.[0]}`);
-      // 65歳以上は小学生のカードにだけ出る（問いにはしない）
-      if (g !== 's') assert.ok(!/65歳/.test(two));
-      assert.ok(!/65歳以上の.*(多い|少ない)のは/.test(two));
+      // 65歳以上と5年の増減は、どの段階の紙にも出さない（10/29 しょーくん：小学生のカードからものぞく）
+      assert.ok(!/65歳|増減/.test(two), `${a.name} ${b.name} ${g}`);
       assert.equal(two.split(esc(ESTAT_CREDIT)).length - 1, 2);
       assert.equal((two.match(/令和7年国勢調査」を加工して作成（2025年10月1日現在・2026年9月29日公表）/g) || []).length, 2);
       assert.ok(two.includes('住みやすさのよしあしではありません'));
     }
   }
-  // 小学生のカードは絵なし（水彩の絵の image を入れない）
+  // 小学生のカードは紙のカード（絵の窓なし・人口と3つの割合だけ。問いと同じ順）
   const s = mbSheets(C, { k: 'b', m: '27100', n: '27210', g: 's', a: 0 }, cityB('27100'), cityB('27210'));
   assert.ok(!/<image|\.webp/.test(s));
-  assert.equal((s.match(/viewBox="0 0 540 820"/g) || []).length, 2);
+  assert.equal((s.match(/viewBox="0 0 540 620"/g) || []).length, 2);
+  const at = s.indexOf('viewBox="0 0 540 620"');
+  const card = s.slice(at, s.indexOf('</svg>', at));
+  assert.deepEqual(['人口', '15歳未満', 'ひとり暮らし', '共同住宅'].map((t) => card.indexOf(`>${t}</text>`) > 0), [true, true, true, true]);
+  assert.ok(card.indexOf('>人口<') < card.indexOf('>15歳未満<') && card.indexOf('>15歳未満<') < card.indexOf('>ひとり暮らし<') && card.indexOf('>ひとり暮らし<') < card.indexOf('>共同住宅<'));
+  assert.ok(!card.includes('height="200"'));
   // ブラウザと同じように、mb の関数とカードの関数だけで同じ紙ができる
   const src = p.script.slice(p.script.indexOf('function mb'), p.script.indexOf('\nconst C='));
   const fn = new Function('C', 'st', 'd', 'd2', `${Object.values(MC).map((f) => f.toString()).join('\n')}\n${src}\nreturn mbSheets(C, st, d, d2);`);
