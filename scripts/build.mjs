@@ -26,6 +26,8 @@ import { rankingPages } from '../src/pages/ranking.mjs';
 import { hinmokuPages } from '../src/pages/hinmoku.mjs';
 import { quizPages } from '../src/pages/quiz.mjs';
 import { machiData } from '../src/quiz.mjs';
+import { kyouPage } from '../src/pages/kyou.mjs';
+import { jstDate } from '../src/kyou.mjs';
 import { PRODUCTS_PATH } from '../src/rakuten.mjs';
 import { TOWN_SVG } from '../src/art.mjs';
 import { SAIGAI } from '../src/mode.mjs';
@@ -97,6 +99,8 @@ for (const p of toolPages({ munis, kazu })) add(p);
 for (const p of hinmokuPages({ items, sources, products })) add(p);
 const machi = machiData(munis.areas, urlOf);
 for (const p of quizPages({ munis, items, sources, machi })) add(p);
+// 今日の1問：ビルドの日（日本時間）から14日分の問題をページに入れる（毎朝のビルドで入れかわる）
+add(kyouPage({ munis, machi, start: jstDate(), urlOfRow: (r) => r[2] || `/${PREFS.find((p) => p.code === r[0].slice(0, 2)).slug}/#m${r[0]}` }));
 for (const p of infoPages({ munis, estatMeta, hinanMeta })) add(p);
 add({ path: null, title: 'ページが見つかりません', description: 'ページが見つかりません。', noindex: true, noAds: true, body: '<h1 class="city">ページが見つかりません</h1><p><a href="/">トップへ</a></p>' });
 
