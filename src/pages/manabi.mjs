@@ -78,7 +78,7 @@ ${S} .mb-prs{display:grid;gap:4px}${S} .mb-pr{display:grid;grid-template-columns
 ${S} .mb-prl{display:flex;justify-content:space-between;align-items:baseline;font-size:14.5px}${S} .mb-prl b{font:700 21px/1.2 ${GOTHIC};color:var(--num);font-variant-numeric:tabular-nums}
 ${S} .mb-river{display:block;line-height:0;margin:14px 0 0}${S} .mb-river svg{display:block;width:100%;height:10px}
 ${S} .mb-ak{margin-top:6px}${S} .mb-ah{display:flex;align-items:baseline;gap:14px;margin-top:12px}${S} .mb-ah b{font:700 17px/1 ${MINCHO};min-width:2.2em}
-${S} .mb-ar{font:700 21px/1.25 ${MINCHO};color:var(--accent)}
+${S} .mb-ar{font:700 21px/1.25 ${MINCHO};color:var(--num)}
 ${S} .mb-kt{font-size:13px;line-height:1.6;margin-top:2px}
 ${S} .mb-tbl{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:4px}${S} .mb-tbl th,${S} .mb-tbl td{padding:5px 4px;border-bottom:1px dotted #9fb3a6;text-align:right;font-variant-numeric:tabular-nums}
 ${S} .mb-tbl th{font-weight:400;font-size:12px;color:var(--sub);border-bottom:1.3px solid var(--ink)}${S} .mb-tbl td:first-child{text-align:left}

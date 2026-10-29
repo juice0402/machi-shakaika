@@ -60,6 +60,9 @@ test('小学生：答えがデータと合う・0%や100%のマスは出さな�
       assert.ok(gr.v >= 1 && gr.v <= 99, d.name);
       assert.equal(gr.v, Math.round(d[gr.key]));
     }
+    assert.equal(q.perCmp, q.per1 !== q.nper1, d.name);
+    const sheet = mbSheets(C, { k: 'a', m: d.code, g: 's', a: 0 }, d);
+    assert.equal(sheet.includes('少ない</p>'), q.perCmp, d.name);
     const pr = mbPerRange(q.per1, q.nper1);
     assert.ok(pr.lo <= Math.min(d.per, C.nat.per) && pr.hi >= Math.max(d.per, C.nat.per), d.name);
   }
@@ -73,8 +76,12 @@ test('小学生：答えがデータと合う・0%や100%のマスは出さな�
     assert.ok(Math.abs(g1.v - a[key[g1.key]]) <= 0.56, code);
     assert.ok(Math.abs(g2.v - a[key[g2.key]]) <= 0.56, code);
     assert.match(q.ans[0][1], new RegExp(`^約${g1.v}(世帯|人)。全国より${a[key[g1.key]] > nat[g1.key] + 0.5 ? '多い' : a[key[g1.key]] < nat[g1.key] - 0.5 ? '少ない' : ''}`));
-    const sign = Math.round(a.perHh * 100) > Math.round(nat.per * 100) ? 'ア' : Math.round(a.perHh * 100) < Math.round(nat.per * 100) ? 'イ' : 'ウ';
-    assert.equal(q.ans[2][1], `約${(Math.round(a.perHh * 10) / 10).toFixed(1)}人。${sign}`);
+    // 1世帯の人数のくらべは紙の表示（0.1人きざみ）で。同じ表示なら、くらべる問いを出さない
+    const p1 = Math.round(a.perHh * 10) / 10;
+    const n1 = Math.round(nat.per * 10) / 10;
+    const sign = p1 > n1 ? '。ア' : p1 < n1 ? '。イ' : '';
+    assert.equal(q.ans[2][1], `約${p1.toFixed(1)}人${sign}`);
+    assert.equal(q.perCmp, p1 !== n1);
     assert.ok(q.ans[3][1].startsWith('約'));
   }
   // 共同住宅が0%の街は、ひとり暮らしと15歳未満のマス
@@ -115,6 +122,11 @@ test('高校生以上：全国より大きいものがデータと合う', () =>
     if (Math.round(a.perHh * 10) / 10 > Math.round(nat.per * 10) / 10) exp.push('1世帯の人数');
     assert.deepEqual(q.up, exp, code);
     assert.ok(q.ans[1][2].startsWith(`例：${d.pn}の${d.name}は`));
+  }
+  // 問2 の例文に 0.0% や 100% の割合を使わない
+  for (const d of all) {
+    const ex = mbQuizA(C, 'h', d).ans[1][2];
+    assert.ok(!/(^|[^\d.])(0\.0|100\.0)%/.test(ex), `${d.name} ${ex}`);
   }
 });
 

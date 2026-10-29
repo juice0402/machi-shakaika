@@ -254,11 +254,13 @@ export function mbQuizA(C, g, d) {
       ans: [
         ['1', `約${n1}${q1.unit}。全国より${mbCmp(n1, nn1)}`, `${q1.lab}は${d[q1.key].toFixed(1)}%。ぬったマスを数えます。全国は100${q1.unit}のうち${nn1}${q1.unit}`],
         ['2', `約${Math.round(d[two[1].key])}${two[1].unit}`, `${two[1].lab}は${d[two[1].key].toFixed(1)}%`],
-        ['3', `約${per1.toFixed(1)}人。${{ 多い: 'ア', 少ない: 'イ', 同じ: 'ウ' }[mbCmp(Math.round(d.per * 100), Math.round(N.per * 100))]}`, `目盛り1つは0.1人。${d.name}は${d.per.toFixed(2)}人、全国は${N.per.toFixed(2)}人で、▼と▲の位置でくらべます`],
+        // 全国とのくらべは紙の表示（0.1人きざみ）で。同じ表示になる街は、くらべる問いを出さない
+        ['3', per1 !== nper1 ? `約${per1.toFixed(1)}人。${{ 多い: 'ア', 少ない: 'イ' }[mbCmp(per1, nper1)]}` : `約${per1.toFixed(1)}人`, `目盛り1つは0.1人。全国は${nper1.toFixed(1)}人`],
         ['4', popAns, `${mbFmt(d.pop)}人。目盛り1つは${mbMan(sc.step)}人なので、${sc.place}の位までの概数にします`],
         ['5', '', two.some((it) => it.key === 'kyodo') && d.kyodo >= 50 ? '例：停電でポンプの給水が止まることがあるので、家に水を置いておく' : '例：家族の人数分の水と食べものを、家に置いておく', ''],
       ],
       popScale: sc,
+      perCmp: per1 !== nper1,
       per1,
       nper1,
     };
@@ -330,7 +332,7 @@ export function mbQuizA(C, g, d) {
         : `${r.lab}は${r.v.toFixed(1)}%で、全国より${r.v > r.w ? '高い' : '低い'}`;
   const sc = mbPopScale(d.pop);
   const ex1 = `${d.pn}の${d.name}は、人口${sc.round >= 10000 ? `約${mbMan(mbSig2(d.pop))}` : `約${mbFmt(mbSig2(d.pop))}`}人の街。`;
-  const intro = [ex1, ...rel.filter((r) => r.key !== 'pop').slice(0, 2).map((r) => `${say(r)}。`)];
+  const intro = [ex1, ...rel.filter((r) => r.key === 'per' || (r.key !== 'pop' && Math.round(r.v) >= 1 && Math.round(r.v) <= 99)).slice(0, 2).map((r) => `${say(r)}。`)];
   return {
     rows,
     up,
@@ -366,7 +368,7 @@ ${a.note ? `<p class="mb-qt mb-sm">${a.note}</p>` : ''}<p class="mb-qt mb-sm2">�
 </div>
 ${mbQh(C, '3', '1世帯の人数', '目盛りは0.1人ずつ')}
 ${mbNumline(C, { lo: pr.lo, hi: pr.hi, minor: 0.1, major: 0.5, unit: '人', marks: [{ v: d.per, label: d.name, color: co.bar, text: co.num }], nat: N.per, natLabel: `全国 ${q.nper1.toFixed(1)}人` })}
-<p class="mb-qt">${nm}の1世帯の人数は？　答え 約${mbWr(60)}人　全国より　<span class="mb-kn">ア</span>多い　<span class="mb-kn">イ</span>少ない　<span class="mb-kn">ウ</span>同じ</p>
+<p class="mb-qt">${nm}の1世帯の人数は？　答え 約${mbWr(60)}人${q.perCmp ? `　全国より　<span class="mb-kn">ア</span>多い　<span class="mb-kn">イ</span>少ない` : ''}</p>
 ${mbQh(C, '4', '人口', `目盛りは${mbMan(sc.step)}人ずつ`)}
 ${mbPopbar(C, d.pop, sc)}
 <p class="mb-qt">${nm}の人口は約何${sc.round >= 10000 ? '万' : ''}人？（${sc.place}の位までの概数）　答え 約${mbWr(80)}${sc.round >= 10000 ? '万' : ''}人</p>
