@@ -119,6 +119,62 @@ export function mcCard(r, i, pref, M, img, part) {
   return o.join('');
 }
 
+// 紙のカード（まなびプリント B の小学生。540×620）。10/29 しょーくん：絵の窓・65歳以上・5年の増減をのぞき、
+//   問いの4つ（人口・15歳未満・ひとり暮らし・共同住宅）を問いと同じ順に。地図の小窓は右上、字は大きめ
+export function mcPaper(r, i, pref, M) {
+  const W = 540;
+  const H = 620;
+  const col = i ? '#3f8fbf' : '#2f6b45';
+  const col2 = i ? '#bcd9ea' : '#b5cfbb';
+  const INK = '#23312a';
+  const SUB = '#5f6e66';
+  const o = [];
+  o.push(`<rect width="${W}" height="${H}" rx="18" fill="#8a6a4f"/><rect x="10" y="10" width="${W - 20}" height="${H - 20}" rx="10" fill="#fff"/><rect x="18" y="18" width="${W - 36}" height="${H - 36}" rx="6" fill="none" stroke="${col}" stroke-width="2"/>`);
+  // 地図の小窓（右上）：その街の県をカードの色のうすい色でぬる
+  const m = M.map;
+  const bw = 116;
+  const s = (bw - 12) / m.w;
+  const bh = Math.ceil(m.h * s) + 12;
+  const bx = W - 36 - bw;
+  const paths = Object.keys(m.d)
+    .map((c) => `<path d="${m.d[c]}" fill="${c === String(r[0]).slice(0, 2) ? col2 : '#f3f6f1'}"${c === String(r[0]).slice(0, 2) ? ` stroke="${col}"` : ''}/>`)
+    .join('');
+  o.push(`<rect x="${bx}" y="36" width="${bw}" height="${bh}" fill="#fff" stroke="${INK}" stroke-width=".8"/>`);
+  o.push(`<g transform="translate(${bx + 6} 42) scale(${s.toFixed(4)})" stroke="${INK}" stroke-width="${(0.5 / s).toFixed(2)}" stroke-linejoin="round">${paths}<path d="${m.frame}" fill="none"/></g>`);
+  // 県と街の名前（左。地図の小窓にかからない幅で）
+  const tw = bx - 36 - 20;
+  o.push(`<text x="36" y="70" class="gs" font-size="${Math.min(24, Math.floor(tw / Math.max(1, mcWidth(pref))))}" fill="${SUB}">${mcEsc(pref)}</text>`);
+  o.push(`<text x="36" y="130" class="mn" font-size="${Math.max(22, Math.min(52, Math.floor(tw / Math.max(1, mcWidth(r[1])))))}" font-weight="700" fill="${INK}">${mcEsc(r[1])}</text>`);
+  const hb = 36 + bh + 16;
+  o.push(`<line x1="36" y1="${hb}" x2="${W - 36}" y2="${hb}" stroke="${col2}" stroke-width="2"/>`);
+  // 人口
+  let y = hb + 54;
+  o.push(`<text x="36" y="${y}" class="gs" font-size="26" fill="${INK}">人口</text>`);
+  o.push(`<text x="${W - 36}" y="${y + 2}" text-anchor="end" class="gs" font-size="42" font-weight="700" fill="${col}">${mcMan(r[3])}</text>`);
+  // 割合のものさし（0〜100%。10ごとに目盛り。三角は全国）
+  const mw = W - 72;
+  y += 82;
+  for (const [lab, k, nk] of [
+    ['15歳未満', 4, 'p014'],
+    ['ひとり暮らし', 7, 'single'],
+    ['共同住宅', 8, 'kyodo'],
+  ]) {
+    const x = r[k] / 10;
+    o.push(`<text x="36" y="${y}" class="gs" font-size="26" fill="${INK}">${lab}</text>`);
+    o.push(`<text x="${W - 36}" y="${y + 2}" text-anchor="end" class="gs" font-size="42" font-weight="700" fill="${col}">${x.toFixed(1)}<tspan font-size="24">%</tspan></text>`);
+    const by = y + 22;
+    o.push(`<rect x="36" y="${by}" width="${mw}" height="18" fill="#e6efe8"/><rect x="36" y="${by}" width="${((mw * Math.min(100, x)) / 100).toFixed(1)}" height="18" fill="${col}"/>`);
+    for (let t = 0; t <= 10; t++) {
+      const tx = 36 + (mw * t) / 10;
+      o.push(`<line x1="${tx}" y1="${by + 18}" x2="${tx}" y2="${by + (t % 5 ? 22 : 26)}" stroke="${SUB}"/>`);
+    }
+    o.push(`<path d="M${(36 + (mw * M.nat[nk]) / 100).toFixed(1)} ${by - 2}l-6-10h12z" fill="${INK}"/>`);
+    y += 98;
+  }
+  o.push(`<text x="36" y="${H - 34}" class="gs" font-size="16" fill="${SUB}">${mcEsc(M.src)}</text>`);
+  return o.join('');
+}
+
 // 字の形（ページの中も、送る画像も同じ）
 export function mcStyle() {
   return `<style>.mn{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif CJK JP","Noto Serif JP",serif}.gs{font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans CJK JP","Noto Sans JP",sans-serif}</style>`;

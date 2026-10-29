@@ -3,8 +3,8 @@
 //   なので、どの関数もほかの mb* 関数と引数だけを使い、外の変数を読まない。
 //   C はページの設定（src/pages/manabi.mjs の manabiConf）。問いと答えの文は、データの条件ごとの言い回しから作る（AIに書かせない）。
 //   紙の共通の部品（頭・足・答えの2枚目・数の線・マス・棒）は、B「2つの街をくらべる」（#35）でも使う。
-//   B の小学生の紙は街くらべカード（src/card-core.mjs の mcCard・mcStyle）を絵なしで使う。ブラウザでは /kurabe/card.js から読み、C.M はその MC
-import { mcCard, mcStyle } from './card-core.mjs';
+//   B の小学生の紙は紙のカード（src/card-core.mjs の mcPaper・mcStyle。絵の窓なし・問いの4つだけ）。ブラウザでは /kurabe/card.js から読み、C.M はその MC
+import { mcPaper, mcStyle } from './card-core.mjs';
 
 export function mbEsc(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -651,7 +651,7 @@ export function mbSheetB(C, g, a, b, q) {
   const fs = len > 14 ? Math.max(20, Math.floor((31 * 14) / len)) : 0;
   const or2 = `<span class="mb-or">${na}<i>・</i>${nb}</span>`;
   if (g === 's') {
-    const cards = [a, b].map((d, i) => `<svg class="mb-svg" width="290" height="440" viewBox="0 0 540 820" aria-hidden="true">${mcStyle()}${mcCard(d.r, i, d.pn, C.M, null, 'all')}</svg>`).join('');
+    const cards = [a, b].map((d, i) => `<svg class="mb-svg" width="312" height="358" viewBox="0 0 540 620" aria-hidden="true">${mcStyle()}${mcPaper(d.r, i, d.pn, C.M)}</svg>`).join('');
     const body = q.qs
       .map((x, i) => {
         const n = String(i + 1);
@@ -662,7 +662,7 @@ export function mbSheetB(C, g, a, b, q) {
       .join('\n');
     return `${mbHead(C, title, `カードを見て、多いほうの街に丸をつけよう。数字は${C.year}年の国勢調査から`, fs)}
 <div class="mb-cards">${cards}</div>
-${body}
+<div class="mb-bs">${body}</div>
 ${mbFoot(C)}`;
   }
   const its = mbItemsB();
