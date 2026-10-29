@@ -22,6 +22,19 @@ export function muniList(areas) {
   return Object.values(areas).filter((a) => (a.level === '4' || a.level === '6') && a.code !== '13100' && a.pop > 0).map(derive);
 }
 
+// 全国の値の▲（街くらべカードと防災カルテで共通。ビルドのときにデータの合計から作る。年齢は人数、世帯の割合は世帯数で重みづけ）
+//   list は muniList の形（pop・pop2020・age014・age65・single・ippan・kyodo・housed）
+export function nationalRates(list) {
+  const sum = (k) => list.reduce((s, a) => s + (a[k] || 0), 0);
+  return {
+    g: r1(((sum('pop') - sum('pop2020')) / sum('pop2020')) * 100),
+    p014: r1((sum('age014') / sum('pop')) * 100),
+    p65: r1((sum('age65') / sum('pop')) * 100),
+    single: r1((sum('single') / sum('ippan')) * 100),
+    kyodo: r1((sum('kyodo') / sum('housed')) * 100),
+  };
+}
+
 export const prefOf = (code) => prefByCode.get(String(code).slice(0, 2));
 
 // 県内で人口の多い順の何番目か（市区町村の数も）

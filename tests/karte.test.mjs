@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { readYaml } from '../src/data.mjs';
 import { calcConf } from '../src/calc.mjs';
 import { readMunis } from '../src/munis.mjs';
-import { derive, muniList } from '../src/stats.mjs';
+import { derive, muniList, nationalRates } from '../src/stats.mjs';
 import { kazuData } from '../src/machi-tools.mjs';
 import { kaState, kaAmounts, kaUnit, kaWaterSvg, kaGridSvg, kaLines, kaSheet } from '../src/karte-core.mjs';
-import { kartePages, karteConf, karteNational, KARTE_PATH } from '../src/pages/karte.mjs';
+import { kartePages, karteConf, KARTE_PATH } from '../src/pages/karte.mjs';
 import { printPages } from '../src/pages/print.mjs';
 import { douguPages } from '../src/pages/dougu.mjs';
 import { topPage } from '../src/pages/top.mjs';
@@ -17,7 +17,7 @@ const cc = calcConf(items);
 const munis = readMunis();
 const list = muniList(munis.areas);
 const z = derive(munis.areas['00000']);
-const nat = karteNational(list);
+const nat = nationalRates(list);
 const { conf } = karteConf({ cc, items, sources, munis, nat, z });
 const [p] = kartePages({ cc, items, sources, munis, nat, z });
 const kazu = kazuData(munis.areas, () => null);
@@ -53,7 +53,7 @@ test('入れたものは範囲にそろえる（URL の ? やおぼえた値か�
 });
 
 test('全国の▲：データの合計から（街くらべカード #28 と同じ作り方）', () => {
-  assert.deepEqual(nat, { p65: 29.4, single: 41.4, kyodo: 46.1 });
+  assert.deepEqual({ p65: nat.p65, single: nat.single, kyodo: nat.kyodo }, { p65: 29.4, single: 41.4, kyodo: 46.1 });
 });
 
 test('全国の市区町村のどれでもカルテができる', () => {

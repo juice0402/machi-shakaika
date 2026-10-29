@@ -4,9 +4,9 @@
 import { h2, srcKokusei, fmt, fit } from '../layout.mjs';
 import { createHash } from 'node:crypto';
 import { mtVec, mtCand, mtNear, mtDiff, mtEsc, mtDiffHtml, mtNearHtml } from '../machi-core.mjs';
-import { mcRegion, mcMan, mcEsc, mcWidth, mcCard, mcStyle, mcCardSvg, mcShareSvg, nationalCard } from '../card-core.mjs';
+import { mcRegion, mcMan, mcEsc, mcWidth, mcCard, mcStyle, mcCardSvg, mcShareSvg } from '../card-core.mjs';
 import { JMAP } from '../japan-map-data.mjs';
-import { muniList } from '../stats.mjs';
+import { muniList, nationalRates } from '../stats.mjs';
 
 const CORE = [mtVec, mtCand, mtNear, mtDiff, mtEsc, mtDiffHtml, mtNearHtml].map((f) => f.toString()).join('\n');
 
@@ -68,7 +68,7 @@ const u=URL.createObjectURL(bl),l=document.createElement('a');l.href=u;l.downloa
 export function cardScript({ munis }) {
   const { w, h, frame, prefs } = JMAP;
   const MC = {
-    nat: nationalCard(muniList(munis.areas)),
+    nat: nationalRates(muniList(munis.areas)),
     src: `▲は全国　出典：総務省「${munis.statName}」を加工して作成`,
     map: { w, h, frame, d: Object.fromEntries(Object.entries(prefs).map(([c, m]) => [c, m.d])) },
   };

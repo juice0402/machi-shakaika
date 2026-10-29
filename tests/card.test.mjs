@@ -3,10 +3,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { readMunis } from '../src/munis.mjs';
-import { derive, muniList } from '../src/stats.mjs';
+import { derive, muniList, nationalRates } from '../src/stats.mjs';
 import { PREFS } from '../src/areas.mjs';
 import { kazuData } from '../src/machi-tools.mjs';
-import { mcRegion, mcMan, mcCardSvg, mcShareSvg, nationalCard } from '../src/card-core.mjs';
+import { mcRegion, mcMan, mcCardSvg, mcShareSvg } from '../src/card-core.mjs';
 import { cardScript, toolPages } from '../src/pages/kurabe.mjs';
 
 const munis = readMunis();
@@ -44,7 +44,7 @@ test('47都道府県が9つの地方のどれかに入る', () => {
 
 test('全国の▲：データの合計から（年齢は人数、世帯の割合は世帯数で重みづけ）', () => {
   const z = munis.areas['00000'];
-  const n = nationalCard(muniList(munis.areas));
+  const n = nationalRates(muniList(munis.areas));
   assert.deepEqual(MC.nat, n);
   // 全国の行の値と0.1までで合う
   assert.ok(Math.abs(n.p014 - (z.age014 / z.pop) * 100) < 0.11);
