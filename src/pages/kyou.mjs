@@ -71,13 +71,13 @@ const tx=(x,y,t,c)=>{const e=document.createElementNS(NS,'text');e.setAttribute(
 const names=q.p.map((r,i)=>tx(q.v.lab[i][0],q.v.lab[i][1],'アイ'[i]+' '+r[1]));
 svg.setAttribute('aria-label',q.p.map(r=>r[1]+'（'+K.pn[r[2]]+'）').join('と')+'の場所');
 q.p.forEach((r,i)=>{const t=$('.t',bs[i]);t.firstChild.textContent=r[1];$('small',t).textContent=K.pn[r[2]]});
-const unit=m[2],dif=Math.abs(q.p[0][3]-q.p[1][3]),adj=(m[0].match(/が(多い|高い|広い)のは/)||[,'多い'])[1];
+const unit=m[2],dif=Math.abs(Number(Number(q.p[0][3]).toFixed(m[3]))-Number(Number(q.p[1][3]).toFixed(m[3]))),adj=(m[0].match(/が(多い|高い|広い)のは/)||[,'多い'])[1];
 function shown(pick){const ok=pick===ans;ul.dataset.done=1;bs.forEach((b,i)=>{b.disabled=true;$('.v',b).textContent=fmt(m,q.p[i][3])+unit;if(i===ans)b.classList.add('ok')});if(!ok)bs[pick].classList.add('ng');
 const fs=+q.v.fs;q.p.forEach((r,i)=>{tx(q.v.lab[i][0],+q.v.lab[i][1]+fs*1.15,fmt(m,r[3])+unit,'v').setAttribute('font-size',fs*.8)});
 names[ans].setAttribute('class','ok');const b=names[ans].getBBox(),e=document.createElementNS(NS,'ellipse');e.setAttribute('cx',b.x+b.width/2);e.setAttribute('cy',b.y+b.height/2);e.setAttribute('rx',b.width/2+fs*.6);e.setAttribute('ry',b.height/2+fs*.25);e.setAttribute('stroke-width',fs*.1);e.setAttribute('transform','rotate(-6 '+(b.x+b.width/2)+' '+(b.y+b.height/2)+')');kl.append(e);
 const mx=Math.max(q.p[0][3],q.p[1][3]),p10=Math.pow(10,Math.floor(Math.log10(mx/4))),st=[1,2,2.5,5,10].map(x=>x*p10).find(x=>x*4>=mx),top=st*4;
 q.p.forEach((r,i)=>{const bt=bs[i].nextElementSibling;bt.hidden=false;$('i',bt).style.width=(r[3]/top*100).toFixed(1)+'%'});
-const short=v=>unit==='人'&&!m[3]||unit==='世帯'?(v>=1e4?(v/1e4).toLocaleString('ja-JP')+'万':String(v)):String(Math.round(v*100)/100);
+const short=v=>unit==='人'&&!m[3]||unit==='世帯'?(v>=1e4?(v/1e4).toLocaleString('ja-JP')+'万':String(v)):(Math.round(v*100)/100).toLocaleString('ja-JP');
 const ax=$('.ax',box);ax.textContent='';for(let k=0;k<=4;k++){const s=document.createElement('span');s.style.left=k*25+'%';s.textContent=k?short(st*k)+(k===4?unit:''):'0';ax.append(s)}ax.hidden=false;
 const dp=$('.dif',box);dp.textContent='';const a=document.createElement('a');a.href=q.p[ans][4];a.textContent=q.p[ans][1];const bb=document.createElement('b');bb.textContent=fmt(m,dif);dp.append(a,'のほうが',bb,(unit==='%'?'ポイント':unit)+adj);dp.hidden=false;
 kd.textContent=md(today)+'・つぎは'+md(add(today,1)).replace(/^\\d+月/,'')+'0時';record()}
