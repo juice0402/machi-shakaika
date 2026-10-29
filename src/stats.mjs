@@ -23,7 +23,7 @@ export function muniList(areas) {
 }
 
 // 全国の値の▲（街くらべカードと防災カルテで共通。ビルドのときにデータの合計から作る。年齢は人数、世帯の割合は世帯数で重みづけ）
-//   list は muniList の形（pop・pop2020・age014・age65・single・ippan・kyodo・housed）
+//   list は muniList の形（pop・pop2020・age014・age65・single・ippan・kyodo・housed・perHh）
 export function nationalRates(list) {
   const sum = (k) => list.reduce((s, a) => s + (a[k] || 0), 0);
   return {
@@ -32,6 +32,8 @@ export function nationalRates(list) {
     p65: r1((sum('age65') / sum('pop')) * 100),
     single: r1((sum('single') / sum('ippan')) * 100),
     kyodo: r1((sum('kyodo') / sum('housed')) * 100),
+    // 1世帯の人数（一般世帯）：街ごとの人数を一般世帯の数で重みづけ（＝全国の行と同じ）。小数第2位まで
+    per: Math.round((list.reduce((s, a) => s + (a.perHh || 0) * (a.ippan || 0), 0) / sum('ippan')) * 100) / 100,
   };
 }
 

@@ -12,7 +12,7 @@ const x10 = (v) => (Number.isFinite(v) ? Math.round(v * 10) : 0);
 export function kazuData(areas, urlOf) {
   const r = muniList(areas)
     .sort((a, b) => b.pop - a.pop || (a.code < b.code ? -1 : 1))
-    .map((a) => [a.code, a.name, urlOf(a.code) ?? 0, a.pop, x10(a.p014), x10(a.p65), x10(a.rate), x10(a.pSingle), x10(a.pKyodo)]);
+    .map((a) => [a.code, a.name, urlOf(a.code) ?? 0, a.pop, x10(a.p014), x10(a.p65), x10(a.rate), x10(a.pSingle), x10(a.pKyodo), Number.isFinite(a.perHh) ? Math.round(a.perHh * 100) : 0]);
   return { s: mtStats(r), p: Object.fromEntries(PREFS.map((p) => [p.code, p.name])), r };
 }
 

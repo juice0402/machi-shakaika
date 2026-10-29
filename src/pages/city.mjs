@@ -87,6 +87,7 @@ ${h2('この街の備え')}
 ${links.map((l) => `<p class="why">${esc(l.why)}<a href="${l.href}">${esc(l.text)}</a></p>`).join('\n')}
 ${bichikuLine(city, bichiku)}
 <p class="why"><a href="/dougu/karte/?m=${a.code}">${esc(a.name)}のわが家の防災カルテを作る</a></p>
+<p class="why"><a href="/dougu/manabi/?m=${a.code}">${esc(a.name)}の数字を読むプリント</a></p>
 ${
   h
     ? `<div class="cnt"><p>指定緊急避難場所<b>${fmt(h[0])}</b></p><p>指定避難所<b>${fmt(h[1])}</b></p></div>

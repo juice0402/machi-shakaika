@@ -43,7 +43,7 @@ ${calcHtml(cc, { n, d, q: '人数と日数', ans: false })}
 <p class="src">量は人数分。最低${days.min}日分、できれば${days.better}日分。チェックはこの端末の中だけに残ります</p>
 ${lists.map(section).join('\n')}
 <p><button class="clr" type="button" data-reset>チェックをすべて消す</button></p>
-<p><a class="go" href="/hinmoku/">品目ごとのめやす</a><br><a class="go" href="/dougu/keisan/">備蓄の量を計算する</a><br><a class="go" href="/dougu/kigen/">賞味期限をメモする</a><br><a class="go" href="/dougu/print/">冷蔵庫に貼る紙（A4）</a><br><a class="go" href="/dougu/karte/">わが家の防災カルテ（A4）</a></p>
+<p><a class="go" href="/hinmoku/">品目ごとのめやす</a><br><a class="go" href="/dougu/keisan/">備蓄の量を計算する</a><br><a class="go" href="/dougu/kigen/">賞味期限をメモする</a><br><a class="go" href="/dougu/print/">冷蔵庫に貼る紙（A4）</a><br><a class="go" href="/dougu/karte/">わが家の防災カルテ（A4）</a><br><a class="go" href="/dougu/manabi/">まなびプリント（街の数字を読む・A4）</a></p>
 ${h2('出典')}
 ${sourceList(allSources, sources)}`,
       script: CALC_JS + CHECK_JS,
