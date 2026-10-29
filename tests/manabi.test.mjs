@@ -88,6 +88,7 @@ test('中学生：答えがデータと合う・正しいものは毎回まざ�
     const q = mbQuizA(C, 'c', d);
     assert.equal(q.n014, mbSig2((d.pop * d.p014) / 100), d.name);
     assert.ok(q.big.df !== 0, d.name);
+    assert.ok(Math.round(d[q.big.key]) >= 1 && Math.round(d[q.big.key]) <= 99, d.name);
     assert.ok(near(q.big.df, Math.round((d[q.big.key] - C.nat[q.big.key]) * 10) / 10), d.name);
     assert.equal(q.ops.length, 4, d.name);
     for (const o of q.ops) assert.equal(o.ok, o.hi ? o.v > o.w : o.v < o.w, d.name);

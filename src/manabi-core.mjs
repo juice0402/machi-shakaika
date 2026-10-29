@@ -266,7 +266,7 @@ export function mbQuizA(C, g, d) {
   if (g === 'c') {
     // 問1 割合から人数。問2 全国との差がいちばん大きい割合（差が0のものは出さない）
     const n014 = mbSig2((d.pop * d.p014) / 100);
-    const diffs = its.map((it) => ({ it, df: Math.round((d[it.key] - N[it.key]) * 10) / 10 })).filter((x) => x.df !== 0).sort((p, q) => Math.abs(q.df) - Math.abs(p.df));
+    const diffs = its.map((it) => ({ it, df: Math.round((d[it.key] - N[it.key]) * 10) / 10 })).filter((x) => x.df !== 0 && Math.round(d[x.it.key]) >= 1 && Math.round(d[x.it.key]) <= 99).sort((p, q) => Math.abs(q.df) - Math.abs(p.df));
     const big = diffs[0] || { it: its[0], df: 0 };
     // 問3 正しいものを全部えらぶ。言い方（高い・低い）は街のコードで決め、全部同じ正誤にならないように最後を入れかえる
     const seed = Number(d.code) || 0;
