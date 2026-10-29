@@ -2,18 +2,21 @@
 //   ページを作るときと、ブラウザの中の両方で同じ関数を使う（toString でページのスクリプトに入れる）。
 //   なので、どの関数もほかの mb* 関数と引数だけを使い、外の変数を読まない。
 //   C はページの設定（src/pages/manabi.mjs の manabiConf）。問いと答えの文は、データの条件ごとの言い回しから作る（AIに書かせない）。
-//   紙の共通の部品（頭・足・答えの2枚目・数の線・マス・棒）は、B「2つの街をくらべる」でも使う。
+//   紙の共通の部品（頭・足・答えの2枚目・数の線・マス・棒）は、B「2つの街をくらべる」（#35）でも使う。
+//   B の小学生の紙は街くらべカード（src/card-core.mjs の mcCard・mcStyle）を絵なしで使う。ブラウザでは /kurabe/card.js から読み、C.M はその MC
+import { mcCard, mcStyle } from './card-core.mjs';
 
 export function mbEsc(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 }
 
 // 入れたものを、ありえる範囲にそろえる（URL の ? やおぼえた値から来るので）
-//   k＝プリントの種類（A のほかは C.kinds に足す）・m＝街のコード・g＝段階（s 小学生・c 中学生・h 高校生以上）・a＝答えもつける
+//   k＝プリントの種類（a 1つの街・b 2つの街）・m＝街のコード・n＝くらべる街のコード（B）・g＝段階（s 小学生・c 中学生・h 高校生以上）・a＝答えもつける
 export function mbState(o, kinds) {
   return {
     k: kinds.includes(o.k) ? o.k : kinds[0],
     m: /^\d{5}$/.test(String(o.m ?? '')) ? String(o.m) : '',
+    n: /^\d{5}$/.test(String(o.n ?? '')) ? String(o.n) : '',
     g: ['s', 'c', 'h'].includes(o.g) ? o.g : 's',
     a: o.a === '1' || o.a === 1 || o.a === true ? 1 : 0,
   };
@@ -21,7 +24,12 @@ export function mbState(o, kinds) {
 
 // /kurabe/kazu.json の1行（割合は10倍、1世帯の人数は100倍の整数）→ 紙で使う数字。pn は都道府県の名前
 export function mbCity(row, pn) {
-  return { code: row[0], name: row[1], pn, pop: row[3], p014: row[4] / 10, single: row[7] / 10, kyodo: row[8] / 10, per: row[9] / 100 };
+  return { code: row[0], name: row[1], pn, pop: row[3], p014: row[4] / 10, single: row[7] / 10, kyodo: row[8] / 10, per: row[9] / 100, r: row };
+}
+
+// B で使う数字を足す。x は /dougu/manabi/b.json の [人口密度（1km²あたり）×10, 一戸建てに住む世帯の割合×10]
+export function mbAddB(d, x) {
+  return { ...d, dens: x ? x[0] / 10 : 0, ikko: x ? x[1] / 10 : 0 };
 }
 
 export function mbFmt(n) {
@@ -101,7 +109,7 @@ export function mbNumline(C, o) {
   const w = o.w || 688;
   const dec = o.dec ?? 1;
   const px = (v) => 22 + ((v - o.lo) / (o.hi - o.lo)) * (w - 44);
-  const ay = 44;
+  const ay = 44 + (o.top || 0);
   let s = `<line x1="${px(o.lo)}" x2="${px(o.hi)}" y1="${ay}" y2="${ay}" stroke="${C.col.ink}" stroke-width="1.3"/>`;
   const steps = Math.round((o.hi - o.lo) / o.minor);
   for (let i = 0; i <= steps; i++) {
@@ -113,7 +121,10 @@ export function mbNumline(C, o) {
   }
   for (const mk of o.marks || []) {
     const x = px(mk.v);
-    s += `<path d="M${x - 7} ${ay - 22}h14l-7 11z" fill="${mk.color}"/><text x="${x}" y="${ay - 28}" font-size="13" font-weight="700" text-anchor="middle" fill="${mk.text || C.col.ink}">${mbEsc(mk.label)}</text>`;
+    // 字が紙の外に出ないように、字の幅のめやすで寄せる
+    const tw = [...String(mk.label)].reduce((t, c) => t + (/[ -~]/.test(c) ? 7.6 : 13), 0);
+    const tx = Math.max(tw / 2, Math.min(w - tw / 2, x));
+    s += `<path d="M${x - 7} ${ay - 22}h14l-7 11z" fill="${mk.color}"/><text x="${tx}" y="${ay - 28 - (mk.up || 0)}" font-size="13" font-weight="700" text-anchor="middle" fill="${mk.text || C.col.ink}">${mbEsc(mk.label)}</text>`;
   }
   if (o.nat != null) {
     const x = px(o.nat);
@@ -189,10 +200,10 @@ export function mbProfileRow(C, r) {
   return `<div class="mb-pr"><p class="mb-prl">${r.label}<b>${r.text}</b></p><svg class="mb-svg" width="${w}" height="48" viewBox="0 0 ${w} 48" aria-hidden="true">${s}</svg></div>`;
 }
 
-// 紙の頭（木の帯・題・名前の欄・1行の説明）
-export function mbHead(C, title, lead) {
+// 紙の頭（木の帯・題・名前の欄・1行の説明）。fs は長い題の字の大きさ
+export function mbHead(C, title, lead, fs) {
   return `<span class="mb-band">${C.band}</span>
-<div class="mb-ttl"><p class="mb-h1">${title}</p><span class="mb-nmf">名前${mbWr(170)}</span></div><p class="mb-ld">${lead}</p>`;
+<div class="mb-ttl"><p class="mb-h1"${fs ? ` style="font-size:${fs}px"` : ''}>${title}</p><span class="mb-nmf">名前${mbWr(170)}</span></div><p class="mb-ld">${lead}</p>`;
 }
 
 // 紙の足（出典・調査の日・公表日・e-Stat のクレジット・サイト）
@@ -200,15 +211,15 @@ export function mbFoot(C) {
   return `<div class="mb-foot"><p>${C.src}</p><p>${C.credit}</p><p><span class="mb-site">${mbEsc(C.site)}</span>${C.host}/dougu/manabi/</p></div>`;
 }
 
-// 答えの2枚目。ans は [番号, 答え, 考え方]、table は [名前, 街, 全国] の行
-export function mbAnsSheet(C, sub, ans, d, table, notes) {
+// 答えの2枚目。ans は [番号, 答え, 考え方]、heads は表の列の名前（街と全国）、table は [名前, 街…, 全国] の行
+export function mbAnsSheet(C, sub, ans, heads, table, notes) {
   return `<div class="sheet" lang="ja"><span class="mb-band">${C.band2}</span>
 <div class="mb-ttl"><p class="mb-h1">答えと考え方</p><span class="mb-nmf">${mbEsc(sub)}</span></div>
 <p class="mb-ld">先生・おうちの人へ。数字は${C.statName}（${C.survey}現在）のものです</p>
 <div class="mb-ak">${ans.map((x) => `<p class="mb-ah"><b>${x[0]}</b><span class="mb-ar">${x[1]}</span></p>${x[2] ? `<p class="mb-kt">${x[2]}</p>` : ''}`).join('')}</div>
 <span class="mb-river">${C.river}</span>
 <p class="mb-qh">${C.hm}この紙の数字</p>
-<table class="mb-tbl"><tr><th></th><th>${mbEsc(d.name)}</th><th>全国</th></tr>${table.map((r) => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</table>
+<table class="mb-tbl"><tr><th></th>${heads.map((h) => `<th>${mbEsc(h)}</th>`).join('')}</tr>${table.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join('')}</tr>`).join('')}</table>
 ${notes.map((n) => `<p class="mb-nt">${n}</p>`).join('')}
 ${mbFoot(C)}</div>`;
 }
@@ -422,13 +433,298 @@ ${mbFoot(C)}`;
 ${mbFoot(C)}`;
 }
 
-// 紙を全部（問題の1枚と、えらんだときは答えの2枚目）。d は mbCity の形
-export function mbSheets(C, st, d) {
+
+// ---------- B「2つの街をくらべる」（#35） ----------
+// 紙に出る表示でくらべる値（割合・人口密度は0.1、1世帯の人数は0.1人、popc はカードの人口の表示）
+export function mbShow(d, k) {
+  if (k === 'per') return mbPer1(d.per);
+  if (k === 'popc') return d.pop >= 100000 ? Math.round(d.pop / 10000) * 10000 : d.pop;
+  if (k === 'pop') return d.pop;
+  return Math.round(d[k] * 10) / 10;
+}
+
+// 紙に出す字
+export function mbV(d, k) {
+  const v = d[k];
+  if (k === 'dens') return `${v.toLocaleString('ja-JP', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}人`;
+  if (k === 'per') return `${mbPer1(v).toFixed(1)}人`;
+  if (k === 'pop' || k === 'popc') return d.pop >= 100000 && k === 'popc' ? `${Math.round(d.pop / 10000)}万人` : `${mbFmt(d.pop)}人`;
+  return `${v.toFixed(1)}%`;
+}
+
+// 割合が 1〜99% に見えるか（例文に 0% や 100% を使わない）。割合でないものはいつも true
+export function mbMid(k, ...ds) {
+  if (!['kyodo', 'ikko', 'single', 'p014'].includes(k)) return true;
+  return ds.every((d) => Math.round(d[k]) >= 1 && Math.round(d[k]) <= 99);
+}
+
+// 何倍（大きいほう ÷ 小さいほう、小数第1位に四捨五入）。1.0倍になるときは null
+export function mbRatio(x, y) {
+  const big = Math.max(x, y);
+  const sm = Math.min(x, y);
+  if (!(sm > 0)) return null;
+  const r = Math.round((big / sm) * 10) / 10;
+  return r > 1 ? r : null;
+}
+
+// B の割合の項目
+export function mbItemsB() {
+  return [
+    { key: 'kyodo', lab: '共同住宅に住む世帯', sh: '共同住宅' },
+    { key: 'ikko', lab: '一戸建てに住む世帯', sh: '一戸建て' },
+    { key: 'single', lab: 'ひとり暮らしの世帯', sh: 'ひとり暮らし' },
+    { key: 'p014', lab: '15歳未満の人', sh: '15歳未満' },
+  ];
+}
+
+// 人口密度の物差し：0〜max（全国の▲も入る、きりのいい数）
+export function mbDensScale(...vs) {
+  const top = Math.max(...vs) * 1.05;
+  const k = 10 ** Math.floor(Math.log10(top));
+  let m = 10;
+  for (const x of [1, 1.5, 2, 3, 4, 5, 6, 8, 10]) {
+    if (x * k >= top) {
+      m = x;
+      break;
+    }
+  }
+  const max = m * k;
+  const n = [1.5, 3, 6].includes(m) ? 3 : [2, 4, 8].includes(m) ? 4 : 5;
+  const ticks = [];
+  for (let i = 0; i <= n; i++) ticks.push([(max * i) / n, mbFmt((max * i) / n)]);
+  return { max, n: n * 2, ticks };
+}
+
+// 2つの街の横棒（上が1つ目の街、下が2つ目の街）。全国は点線と▲。sc は {max, n（白い区切りの数）, ticks}
+export function mbPairBars(C, rows, sc) {
+  const w = 688;
+  const lw = 150;
+  const bw = 460;
+  const rh = 46;
+  const px = (v) => lw + (Math.max(0, Math.min(sc.max, v)) / sc.max) * bw;
+  let s = '';
+  rows.forEach((r, i) => {
+    const y = 4 + i * rh;
+    s += `<text x="0" y="${y + 26}" font-size="13.5" fill="${C.col.ink}">${r.label}</text>`;
+    for (const [v, f, tc, t, yy] of [
+      [r.a, C.col.bar, C.col.num, r.ta, 11],
+      [r.b, C.col.water, C.col.num2, r.tb, 26],
+    ]) {
+      s += `<rect x="${lw}" y="${y + yy}" width="${bw}" height="13" fill="${C.col.track}"/><rect x="${lw}" y="${y + yy}" width="${(px(v) - lw).toFixed(1)}" height="13" fill="${f}"/><text x="${lw + bw + 8}" y="${y + yy + 11}" font-size="12.5" font-weight="700" fill="${tc}">${t}</text>`;
+    }
+    for (let k = 1; k < sc.n; k++) s += `<line x1="${lw + (bw * k) / sc.n}" x2="${lw + (bw * k) / sc.n}" y1="${y + 11}" y2="${y + 39}" stroke="#fff" stroke-width="1"/>`;
+    const x = px(r.nat).toFixed(1);
+    s += `<line x1="${x}" x2="${x}" y1="${y + 8}" y2="${y + 41}" stroke="${C.col.ink}" stroke-width="1" stroke-dasharray="2 2"/><path d="M${x} ${y + 39}l5 7h-10z" fill="${C.col.ink}"/>`;
+  });
+  const yb = 4 + rows.length * rh + 2;
+  s += `<line x1="${lw}" x2="${lw + bw}" y1="${yb}" y2="${yb}" stroke="${C.col.ink}" stroke-width="1"/>`;
+  for (const [t, lab] of sc.ticks) s += `<line x1="${px(t)}" x2="${px(t)}" y1="${yb}" y2="${yb + 5}" stroke="${C.col.ink}"/><text x="${px(t)}" y="${yb + 19}" font-size="11.5" text-anchor="middle" fill="${C.col.sub}">${lab}</text>`;
+  return `<svg class="mb-svg" width="${w}" height="${yb + 23}" viewBox="0 0 ${w} ${yb + 23}" aria-hidden="true">${s}</svg>`;
+}
+
+// B の問いと答え（データだけで作る。テストもこれを見る）。a・b は mbAddB の形
+export function mbQuizB(C, g, a, b) {
+  const N = C.nat;
+  const S = mbShow;
+  const kana = ['ア', 'イ', 'ウ', 'エ'];
+  const hiOf = (k) => (S(a, k) > S(b, k) ? [a, b] : S(a, k) < S(b, k) ? [b, a] : null);
+  const its = mbItemsB();
+  const lab = (k) => (its.find((x) => x.key === k) || { lab: { dens: '人口密度', per: '1世帯の人数', pop: '人口' }[k] }).lab;
+  const sh = (k) => (its.find((x) => x.key === k) || { sh: { dens: '人口密度', per: '1世帯の人数', pop: '人口' }[k] }).sh;
+  const both = (k) => `${a.name}${mbV(a, k)}、${b.name}${mbV(b, k)}`;
+  const seed = (Number(a.code) || 0) + (Number(b.code) || 0);
+  const qs = [];
+  if (g === 's') {
+    // 1 どっちが多い？（カードに出ている数字で。表示が同じものは出さない）
+    const cmp = [
+      ['popc', '人口が多いのは？', '人口'],
+      ['p014', '15歳未満の人の割合が多いのは？', '15歳未満'],
+      ['single', 'ひとり暮らしの世帯の割合が多いのは？', 'ひとり暮らし'],
+      ['kyodo', '共同住宅に住む世帯の割合が多いのは？', '共同住宅'],
+    ]
+      .filter(([k]) => hiOf(k))
+      .map(([k, q, l], i) => ({ k, q, l, kn: kana[i], w: hiOf(k)[0].name }));
+    if (cmp.length) qs.push({ t: 'cmp', head: 'どっちが多い？', small: '多いほうの街の名前に丸', cmp, ans: cmp.map((x) => `${x.kn} ${x.w}`).join('　'), ex: cmp.map((x) => `${x.kn} ${x.l}は${both(x.k)}`).join('<br>') });
+    // 2 全国（▲）より多いのは？（どちらの街も全国と表示がちがう割合）
+    const nk = ['kyodo', 'single', 'p014'].find((k) => S(a, k) !== S(N, k) && S(b, k) !== S(N, k));
+    if (nk) {
+      const up = [a, b].filter((d) => S(d, nk) > S(N, nk));
+      qs.push({ t: 'nat', k: nk, head: '全国（▲）とくらべる', q: `${lab(nk)}の割合が、全国（▲）より多いのは？`, ans: up.length === 2 ? 'どちらも' : up.length ? up[0].name : 'どちらでもない', ex: `${sh(nk)}は${both(nk)}。全国は${N[nk].toFixed(1)}%` });
+    }
+    // 3 いちばんちがうと思ったもの（書く）
+    const rel = ['kyodo', 'single', 'p014'].filter((k) => hiOf(k) && mbMid(k, a, b)).sort((p, q) => Math.abs(Math.log(a[q] / b[q])) - Math.abs(Math.log(a[p] / b[p])));
+    qs.push({ t: 'write', head: 'カードでくらべる', q: '2まいのカードで、いちばんちがうと思ったものと、そのわけを書こう。', hint: 'ヒント：ものさしの棒の長さのちがいを見てみよう', lines: 2, ans: '', ex: rel.length ? `例：${sh(rel[0])}（${both(rel[0])}）。棒の長さが大きくちがいます` : `例：人口（${a.name}${mbV(a, 'popc')}、${b.name}${mbV(b, 'popc')}）` });
+  } else {
+    if (g === 'c') {
+      // 正しいものを全部えらぶ。言い方は2つの街のコードで決め、全部同じ正誤にならないように入れかえる
+      const pool = [];
+      const two = (k, l, adj) => {
+        if (!hiOf(k)) return;
+        pool.push({ two: 1, mk: (f) => ({ t: `${l}は、${(f ? b : a).name}のほうが${adj}。`, ok: f ? S(b, k) > S(a, k) : S(a, k) > S(b, k) }), n: `${sh(k)}は${both(k)}` });
+      };
+      two('kyodo', '共同住宅に住む世帯の割合', '高い');
+      two('per', '1世帯の人数', '多い');
+      if ([a, b].every((d) => S(d, 'ikko') !== S(N, 'ikko')))
+        pool.push({ mk: (f) => ({ t: `一戸建てに住む世帯の割合は、どちらの街も全国より${f ? '低い' : '高い'}。`, ok: [a, b].every((d) => (f ? S(d, 'ikko') < S(N, 'ikko') : S(d, 'ikko') > S(N, 'ikko'))) }), n: `一戸建ては${both('ikko')}、全国${N.ikko.toFixed(1)}%` });
+      const wc = [b, a].find((d) => S(d, 'ikko') !== S(d, 'kyodo'));
+      if (wc)
+        pool.push({ two: 1, mk: (f) => ({ t: `${wc.name}では、${f ? '共同住宅に住む世帯のほうが、一戸建てに住む世帯' : '一戸建てに住む世帯のほうが、共同住宅に住む世帯'}より多い。`, ok: f ? S(wc, 'kyodo') > S(wc, 'ikko') : S(wc, 'ikko') > S(wc, 'kyodo') }), n: `${wc.name}は一戸建て${mbV(wc, 'ikko')}、共同住宅${mbV(wc, 'kyodo')}` });
+      two('single', 'ひとり暮らしの世帯の割合', '高い');
+      two('p014', '15歳未満の人の割合', '高い');
+      two('dens', '人口密度', '高い');
+      const ops = pool.slice(0, 4).map((x, i) => ({ ...x, f: (seed >> i) & 1, ...x.mk((seed >> i) & 1) }));
+      for (let i = ops.length - 1; i >= 0 && ops.length > 1 && ops.every((o) => o.ok === ops[0].ok); i--) {
+        if (!ops[i].two) continue;
+        const f = ops[i].f ? 0 : 1;
+        Object.assign(ops[i], { f }, ops[i].mk(f));
+      }
+      qs.push({ t: 'ops', q: '正しいものを全部えらんで、記号に丸をつけよう。', ops, ans: ops.map((o, i) => (o.ok ? kana[i] : '')).filter(Boolean).join('・') || 'なし', ex: ops.map((o, i) => `${kana[i]} ${o.n}`).join('<br>') });
+      // 何倍（人口密度、1.0倍なら人口）
+      const rt = ['dens', 'pop'].map((k) => ({ k, r: mbRatio(a[k], b[k]) })).find((x) => x.r);
+      if (rt) {
+        const [hi, lo] = a[rt.k] > b[rt.k] ? [a, b] : [b, a];
+        const num = (d) => (rt.k === 'dens' ? mbV(d, 'dens').replace('人', '') : mbFmt(d.pop));
+        qs.push({ t: 'ratio', q: `${hi.name}の${lab(rt.k)}は、${lo.name}の約何倍？（小数第1位まで）`, ans: `約${rt.r.toFixed(1)}倍`, ex: `${num(hi)} ÷ ${num(lo)} ＝ ${(Math.floor((hi[rt.k] / lo[rt.k]) * 100) / 100).toFixed(2)}…（小数第2位を四捨五入）` });
+      }
+      // 1世帯の人数（同じ表示なら共同住宅）とつながる数字
+      const mid = (k, ...ds) => mbMid(k, ...ds);
+      if (hiOf('per')) {
+        const [hi, lo] = hiOf('per');
+        const ex =
+          S(lo, 'single') > S(hi, 'single') && mid('single', lo, hi)
+            ? `例：ひとり暮らしの世帯の割合（${lo.name}${mbV(lo, 'single')}、${hi.name}${mbV(hi, 'single')}）。ひとり暮らしが多いと、1世帯の人数は少なくなります`
+            : S(lo, 'p014') < S(hi, 'p014') && mid('p014', lo, hi)
+              ? `例：15歳未満の人の割合（${lo.name}${mbV(lo, 'p014')}、${hi.name}${mbV(hi, 'p014')}）。子どもといっしょに住む世帯が少ないと、1世帯の人数は少なくなります`
+              : '例：ひとり暮らしの世帯の割合。ひとり暮らしの世帯は1人なので、多いほど1世帯の人数は少なくなります';
+        qs.push({ t: 'write', q: '1世帯の人数が少ないのはどちらの街？ グラフの中で、それとつながっていそうな数字を1つ書こう。', lines: 1, ans: lo.name, ex });
+      } else if (hiOf('kyodo')) {
+        const [hi, lo] = hiOf('kyodo');
+        const ex =
+          S(hi, 'dens') > S(lo, 'dens')
+            ? `例：人口密度（${hi.name}${mbV(hi, 'dens')}、${lo.name}${mbV(lo, 'dens')}）。人が多く集まる街では、マンションなどの共同住宅が多くなります`
+            : '例：一戸建てに住む世帯の割合。一戸建てが少ないと、共同住宅に住む世帯が多くなります';
+        qs.push({ t: 'write', q: '共同住宅に住む世帯の割合が高いのはどちらの街？ グラフの中で、それとつながっていそうな数字を1つ書こう。', lines: 1, ans: hi.name, ex });
+      }
+      // 家の備え（1文は C.mansion。出典は data/sources.yml）。共同住宅の割合が同じ表示のときは出さない
+      const kh = hiOf('kyodo');
+      if (kh) qs.push({ t: 'home', q: `${C.mansion.why}この備えが当てはまる世帯の割合が高いのは？　`, src: C.mansion.src, ans: kh[0].name, ex: `共同住宅に住む世帯は${both('kyodo')}。家の数字は、まちの社会科の「わが家の防災カルテ」で計算できます` });
+    } else {
+      // 高校生以上：全国とくらべて向きが逆の数字
+      const ks = ['kyodo', 'ikko', 'single', 'p014', 'dens', 'per'];
+      const opp = ks.filter((k) => S(a, k) !== S(N, k) && S(b, k) !== S(N, k) && S(a, k) > S(N, k) !== S(b, k) > S(N, k));
+      qs.push({ t: 'opp', q: '全国（▲）より、片方の街は高く、もう片方は低い数字に、全部丸をつけよう。', words: [...ks.map(sh), 'なし'], ans: opp.length ? opp.map(sh).join('・') : 'なし', ex: ks.map((k) => `${sh(k)} ${both(k)}・全国${k === 'dens' ? mbV(N, 'dens') : k === 'per' ? mbV(N, 'per') : `${N[k].toFixed(1)}%`}`).join('<br>') });
+      // ちがいの理由（仮説）：ちがいがいちばん大きい割合
+      const big = ['kyodo', 'ikko', 'single', 'p014'].filter((k) => hiOf(k) && mbMid(k, a, b)).sort((p, q) => Math.abs(a[q] - b[q]) - Math.abs(a[p] - b[p]))[0];
+      if (big) {
+        const [hi, lo] = hiOf(big);
+        const df = (Math.round((hi[big] - lo[big]) * 10) / 10).toFixed(1);
+        const dr = mbRatio(hi.dens, lo.dens);
+        let ex = '';
+        if ((big === 'kyodo' && hi.dens > lo.dens && dr) || (big === 'ikko' && lo.dens > hi.dens && dr)) {
+          const [dh, dl] = hi.dens > lo.dens ? [hi, lo] : [lo, hi];
+          ex = `例：${dh.name}は人口密度が${mbV(dh, 'dens')}で、${dl.name}の約${dr.toFixed(1)}倍。土地が少なく人が多く集まる街では、マンションなどの共同住宅が多くなる、と考えられます`;
+        } else if ((big === 'kyodo' || big === 'single') && S(hi, big === 'kyodo' ? 'single' : 'kyodo') > S(lo, big === 'kyodo' ? 'single' : 'kyodo') && mbMid(big === 'kyodo' ? 'single' : 'kyodo', hi, lo)) {
+          const o = big === 'kyodo' ? 'single' : 'kyodo';
+          ex = `例：${hi.name}は${lab(o)}の割合も${mbV(hi, o)}で、${lo.name}（${mbV(lo, o)}）より高い。${big === 'kyodo' ? 'ひとり暮らしの人は、アパートなどの共同住宅に住むことが多い' : 'アパートなど1人で住む部屋の多い住まいがあると、ひとり暮らしの人がふえる'}、と考えられます`;
+        } else if ((big === 'p014' || big === 'ikko') && S(hi, big === 'p014' ? 'ikko' : 'p014') > S(lo, big === 'p014' ? 'ikko' : 'p014') && mbMid(big === 'p014' ? 'ikko' : 'p014', hi, lo)) {
+          const o = big === 'p014' ? 'ikko' : 'p014';
+          ex = `例：${hi.name}は${lab(o)}の割合も${mbV(hi, o)}で、${lo.name}（${mbV(lo, o)}）より高い。子どものいる家族は一戸建てに住むことが多い、と考えられます`;
+        } else {
+          ex = `例：${hi.name}と${lo.name}で、駅からの近さや住宅が建った時期がちがうのかもしれない。たしかめるには、この紙にない数字も要ります`;
+        }
+        qs.push({ t: 'write', q: `${lab(big)}の割合は、${hi.name}のほうが${df}%高い。このちがいが生まれる理由を、グラフのほかの数字を使って考えて書こう（仮説）。`, lines: 2, ans: '', ex });
+      }
+      qs.push({ t: 'write', q: 'この2つの街について、ほかに調べたい数字と、そう思った理由を書こう。', lines: 2, ans: '', ex: '例：通勤・通学で街に出入りする人の数（国勢調査の「昼間人口」）。人口密度や住まいのちがいと、働く場所や学校の近さがつながっているか調べられます' });
+    }
+  }
+  return { qs, ans: qs.map((q, i) => [g === 's' ? String(i + 1) : `問${i + 1}`, q.ans, q.ex]) };
+}
+
+// B の問題の紙（.sheet の中身）
+export function mbSheetB(C, g, a, b, q) {
+  const N = C.nat;
+  const co = C.col;
+  const na = mbEsc(a.name);
+  const nb = mbEsc(b.name);
+  const title = `${na}と${nb}をくらべる`;
+  const len = a.name.length + b.name.length + 6;
+  const fs = len > 14 ? Math.max(20, Math.floor((31 * 14) / len)) : 0;
+  const or2 = `<span class="mb-or">${na}<i>・</i>${nb}</span>`;
+  if (g === 's') {
+    const cards = [a, b].map((d, i) => `<svg class="mb-svg" width="290" height="440" viewBox="0 0 540 820" aria-hidden="true">${mcStyle()}${mcCard(d.r, i, d.pn, C.M, null, 'all')}</svg>`).join('');
+    const body = q.qs
+      .map((x, i) => {
+        const n = String(i + 1);
+        if (x.t === 'cmp') return `${mbQh(C, n, x.head, x.small)}<div class="mb-cqs">${x.cmp.map((c) => `<p class="mb-cq"><span class="mb-kn">${c.kn}</span><span>${c.q}</span>${or2}</p>`).join('')}</div>`;
+        if (x.t === 'nat') return `${mbQh(C, n, x.head)}<p class="mb-qt">${x.q}</p><p class="mb-qt mb-wds"><span class="mb-or">${na}<i>・</i>${nb}<i>・</i>どちらも<i>・</i>どちらでもない</span></p>`;
+        return `${mbQh(C, n, x.head)}<p class="mb-qt">${x.q}<span class="mb-hint">${x.hint}</span></p><div class="mb-lines">${'<p></p>'.repeat(x.lines)}</div>`;
+      })
+      .join('\n');
+    return `${mbHead(C, title, `カードを見て、多いほうの街に丸をつけよう。数字は${C.year}年の国勢調査から`, fs)}
+<div class="mb-cards">${cards}</div>
+${body}
+${mbFoot(C)}`;
+  }
+  const its = mbItemsB();
+  const pa = mbPer1(a.per);
+  const pb = mbPer1(b.per);
+  const pr = mbPerRange(Math.min(pa, pb, mbPer1(N.per), a.per, b.per, N.per), Math.max(pa, pb, mbPer1(N.per), a.per, b.per, N.per));
+  const close = (Math.abs(a.per - b.per) / (pr.hi - pr.lo)) * 644 < 150;
+  const kana = ['ア', 'イ', 'ウ', 'エ'];
+  const body = q.qs
+    .map((x, i) => {
+      const n = `<b>問${i + 1}</b>`;
+      if (x.t === 'ops') return `<p class="mb-qt mb-qq">${n}${x.q}</p><div class="mb-ops">${x.ops.map((o, j) => `<p><span class="mb-kn">${kana[j]}</span>${o.t}</p>`).join('')}</div>`;
+      if (x.t === 'ratio') return `<p class="mb-qt mb-qq">${n}${x.q}　答え 約${mbWr(70)}倍</p>`;
+      if (x.t === 'home') return `<p class="mb-qt mb-qq">${n}${x.q}${or2}　あなたの家は？　共同住宅 ・ 一戸建て ・ そのほか</p><p class="mb-qt mb-sm">${x.src}</p>`;
+      if (x.t === 'opp') return `<p class="mb-qt mb-qq">${n}${x.q}</p><p class="mb-qt mb-wds">${x.words.join('<i>・</i>')}</p>`;
+      return `<p class="mb-qt mb-qq">${n}${x.q}</p><div class="mb-lines">${'<p></p>'.repeat(x.lines)}</div>`;
+    })
+    .join('\n');
+  const lead = g === 'c' ? 'グラフを読んで、2つの街のちがいを考えよう' : '2つの街のちがいと、その理由を数字から考えよう';
+  return `${mbHead(C, title, `${lead}。数字は${C.year}年の国勢調査から`, fs)}
+<p class="mb-lg"><span><i style="background:${co.bar}"></i>${na}</span><span><i style="background:${co.water}"></i>${nb}</span><span><svg width="12" height="10" viewBox="0 0 12 10"><path d="M6 1l5 8H1z" fill="${co.ink}"/></svg>全国</span></p>
+${mbQh(C, '1', '世帯と人の割合', '共同住宅＝マンション・アパートなど')}
+${mbPairBars(C, its.map((x) => ({ label: x.lab, a: a[x.key], b: b[x.key], nat: N[x.key], ta: mbV(a, x.key), tb: mbV(b, x.key) })), { max: 100, n: 10, ticks: [[0, '0%'], [50, '50%'], [100, '100%']] })}
+${mbQh(C, '2', '人口密度', '1km²あたりの人口')}
+${mbPairBars(C, [{ label: '人口密度', a: a.dens, b: b.dens, nat: N.dens, ta: mbV(a, 'dens'), tb: mbV(b, 'dens') }], mbDensScale(a.dens, b.dens, N.dens))}
+${mbQh(C, '3', '1世帯の人数', '目盛りは0.1人ずつ')}
+${mbNumline(C, { lo: pr.lo, hi: pr.hi, minor: 0.1, major: 0.5, unit: '人', top: close ? 18 : 0, marks: [{ v: a.per, label: `${a.name} ${pa.toFixed(1)}人`, color: co.bar, text: co.num, up: close ? 18 : 0 }, { v: b.per, label: `${b.name} ${pb.toFixed(1)}人`, color: co.water, text: co.num2 }], nat: N.per, natLabel: `全国 ${mbPer1(N.per).toFixed(1)}人` })}
+<span class="mb-river">${C.river}</span>
+${body}
+${mbFoot(C)}`;
+}
+
+// B の答えの紙の数字の表
+export function mbTableB(C, a, b) {
+  const N = C.nat;
+  const row = (l, k, f) => [l, f(a, k), f(b, k), f(N, k)];
+  const pct = (d, k) => `${d[k].toFixed(1)}%`;
+  return [
+    row('人口', 'pop', (d) => `${mbFmt(d.pop)}人`),
+    row('1世帯の人数', 'per', (d) => `${d.per.toFixed(2)}人`),
+    row('人口密度（1km²あたり）', 'dens', (d) => mbV(d, 'dens')),
+    row('共同住宅に住む世帯', 'kyodo', pct),
+    row('一戸建てに住む世帯', 'ikko', pct),
+    row('ひとり暮らしの世帯', 'single', pct),
+    row('15歳未満の人', 'p014', pct),
+  ];
+}
+
+// 紙を全部（問題の1枚と、えらんだときは答えの2枚目）。d は mbCity の形、B は d と d2 が mbAddB の形
+export function mbSheets(C, st, d, d2) {
   const G = { s: '小学生', c: '中学生', h: '高校生以上' };
+  if (st.k === 'b' && d2) {
+    const q = mbQuizB(C, st.g, d, d2);
+    const p1 = `<div class="sheet" lang="ja">${mbSheetB(C, st.g, d, d2, q)}</div>`;
+    if (!st.a) return p1;
+    const notes = ['共同住宅・一戸建ては住宅に住む一般世帯のうち、ひとり暮らしは一般世帯のうちの割合。全国は市区町村の合計から計算（人口密度は全国の人口と面積から）', 'くらべているのは数字の大きさです。住みやすさのよしあしではありません'];
+    return p1 + mbAnsSheet(C, `${d.name}と${d2.name}（${G[st.g]}）`, q.ans, [d.name, d2.name, '全国'], mbTableB(C, d, d2), notes);
+  }
   const q = mbQuizA(C, st.g, d);
   const p1 = `<div class="sheet" lang="ja">${mbSheetA(C, st.g, d)}</div>`;
   if (!st.a) return p1;
   const notes = ['15歳未満は人口のうち、ひとり暮らしは一般世帯のうち、共同住宅は住宅に住む一般世帯のうちの割合。全国は市区町村の合計から計算'];
   if (st.g === 'h') notes.push(`人口の▲は全国の${mbFmt(C.nat.count)}市区町村の人口のまん中（${mbFmt(C.nat.popMid)}人）`);
-  return p1 + mbAnsSheet(C, `${d.name}を読む（${G[st.g]}）`, q.ans, d, mbTable(C, d), notes);
+  return p1 + mbAnsSheet(C, `${d.name}を読む（${G[st.g]}）`, q.ans, [d.name, '全国'], mbTable(C, d), notes);
 }
