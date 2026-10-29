@@ -605,9 +605,9 @@ export function mbQuizB(C, g, a, b) {
             : '例：一戸建てに住む世帯の割合。一戸建てが少ないと、共同住宅に住む世帯が多くなります';
         qs.push({ t: 'write', q: '共同住宅に住む世帯の割合が高いのはどちらの街？ グラフの中で、それとつながっていそうな数字を1つ書こう。', lines: 1, ans: hi.name, ex });
       }
-      // 家の備え
+      // 家の備え（1文は C.mansion。出典は data/sources.yml）。共同住宅の割合が同じ表示のときは出さない
       const kh = hiOf('kyodo');
-      qs.push({ t: 'home', q: `マンションは停電でポンプの給水が止まることがあります。${kh ? 'この備えが当てはまる世帯の割合が高いのは？　' : ''}`, choose: kh ? [a.name, b.name] : null, ans: kh ? kh[0].name : '', ex: `共同住宅に住む世帯は${both('kyodo')}。家の数字は、まちの社会科の「わが家の防災カルテ」で計算できます` });
+      if (kh) qs.push({ t: 'home', q: `${C.mansion.why}この備えが当てはまる世帯の割合が高いのは？　`, src: C.mansion.src, ans: kh[0].name, ex: `共同住宅に住む世帯は${both('kyodo')}。家の数字は、まちの社会科の「わが家の防災カルテ」で計算できます` });
     } else {
       // 高校生以上：全国とくらべて向きが逆の数字
       const ks = ['kyodo', 'ikko', 'single', 'p014', 'dens', 'per'];
@@ -676,7 +676,7 @@ ${mbFoot(C)}`;
       const n = `<b>問${i + 1}</b>`;
       if (x.t === 'ops') return `<p class="mb-qt mb-qq">${n}${x.q}</p><div class="mb-ops">${x.ops.map((o, j) => `<p><span class="mb-kn">${kana[j]}</span>${o.t}</p>`).join('')}</div>`;
       if (x.t === 'ratio') return `<p class="mb-qt mb-qq">${n}${x.q}　答え 約${mbWr(70)}倍</p>`;
-      if (x.t === 'home') return `<p class="mb-qt mb-qq">${n}${x.q}${x.choose ? `${or2}　` : ''}あなたの家は？　共同住宅 ・ 一戸建て ・ そのほか</p>`;
+      if (x.t === 'home') return `<p class="mb-qt mb-qq">${n}${x.q}${or2}　あなたの家は？　共同住宅 ・ 一戸建て ・ そのほか</p><p class="mb-qt mb-sm">${x.src}</p>`;
       if (x.t === 'opp') return `<p class="mb-qt mb-qq">${n}${x.q}</p><p class="mb-qt mb-wds">${x.words.join('<i>・</i>')}</p>`;
       return `<p class="mb-qt mb-qq">${n}${x.q}</p><div class="mb-lines">${'<p></p>'.repeat(x.lines)}</div>`;
     })

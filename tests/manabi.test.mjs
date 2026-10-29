@@ -4,8 +4,9 @@ import { readMunis } from '../src/munis.mjs';
 import { derive, muniList, nationalRates } from '../src/stats.mjs';
 import { kazuData } from '../src/machi-tools.mjs';
 import { ESTAT_CREDIT } from '../src/site.mjs';
+import { readYaml } from '../src/data.mjs';
 import { esc } from '../src/layout.mjs';
-import { mbState, mbCity, mbPopScale, mbQuizA, mbSheets, mbPerRange, mbSig2, mbAddB, mbQuizB, mbRatio, mbDensScale } from '../src/manabi-core.mjs';
+import { mbState, mbCity, mbPopScale, mbQuizA, mbSheets, mbPerRange, mbSig2, mbAddB, mbQuizB, mbRatio, mbDensScale, mbPer1 } from '../src/manabi-core.mjs';
 import { manabiPages, manabiConf, manabiBData, MANABI_PATH } from '../src/pages/manabi.mjs';
 import { cardData, toolPages } from '../src/pages/kurabe.mjs';
 import * as MC from '../src/card-core.mjs';
@@ -14,8 +15,9 @@ const munis = readMunis();
 const list = muniList(munis.areas);
 const nat = nationalRates(list);
 const kazu = kazuData(munis.areas, () => null);
-const C = manabiConf({ munis, list, nat });
-const [p] = manabiPages({ munis, list, nat, kazu });
+const sources = readYaml('sources.yml');
+const C = manabiConf({ munis, list, nat, sources });
+const [p] = manabiPages({ munis, list, nat, kazu, sources });
 const city = (code) => {
   const r = kazu.r.find((x) => x[0] === code);
   return mbCity(r, kazu.p[code.slice(0, 2)]);
@@ -301,4 +303,54 @@ test('B の入口：/kurabe/ の2つの街から1行のリンク・ページに�
   assert.ok(p.body.includes('id="f2" hidden'));
   assert.ok(p.script.includes('/kurabe/card.js?v='));
   assert.ok(p.script.includes('/dougu/manabi/b.json'));
+});
+
+test('B：手で計算した例（大阪市と枚方市・横浜市と青ヶ島村）', () => {
+  const osk = cityB('27100');
+  const hrk = cityB('27210');
+  // 全国の▲：共同住宅46.1%・一戸建て52.7%・ひとり暮らし41.4%・15歳未満10.9%・人口密度329.7人・1世帯2.1人
+  assert.deepEqual([C.nat.kyodo, C.nat.ikko, C.nat.single, C.nat.p014, C.nat.dens, mbPer1(C.nat.per)], [46.1, 52.7, 41.4, 10.9, 329.7, 2.1]);
+  // 中学生：12,449.5 ÷ 5,971.4 ＝ 2.08… → 約2.1倍
+  const c = mbQuizB(C, 'c', osk, hrk);
+  assert.equal(c.qs.find((t) => t.t === 'ratio').ans, '約2.1倍');
+  // 正しいものを全部：コード 27100＋27210＝54310（2進で …0110）なので、言い方は 0・1・1・0 番目
+  //   ア 共同住宅 大阪市77.1%＞枚方市44.5% → 正　イ 1世帯 枚方市2.2人＞大阪市1.7人 → 正
+  //   ウ 一戸建て「どちらも全国より低い」大阪市20.7%＜52.7%、枚方市54.1%＞52.7% → 誤　エ 枚方市 一戸建て54.1%＞共同住宅44.5% → 正
+  const ops = c.qs.find((t) => t.t === 'ops');
+  assert.deepEqual(
+    ops.ops.map((o) => [o.t, o.ok]),
+    [
+      ['共同住宅に住む世帯の割合は、大阪市のほうが高い。', true],
+      ['1世帯の人数は、枚方市のほうが多い。', true],
+      ['一戸建てに住む世帯の割合は、どちらの街も全国より低い。', false],
+      ['枚方市では、一戸建てに住む世帯のほうが、共同住宅に住む世帯より多い。', true],
+    ],
+  );
+  assert.equal(ops.ans, 'ア・イ・エ');
+  // 高校生以上：向きが逆＝共同住宅（77.1↑・44.5↓）・一戸建て（20.7↓・54.1↑）・ひとり暮らし（58.7↑・37.8↓）・1世帯（1.7↓・2.2↑）
+  //   15歳未満は枚方市が全国と同じ10.9%なので入れない。人口密度はどちらも全国より高い
+  assert.equal(mbQuizB(C, 'h', osk, hrk).ans[0][1], '共同住宅・一戸建て・ひとり暮らし・1世帯の人数');
+  // 横浜市と青ヶ島村：人口密度 8,559.3 ÷ 28.2 ＝ 303.52… → 約303.5倍。向きが逆は人口密度だけ（横浜市の1世帯は全国と同じ2.1人）
+  const yk = cityB('14100');
+  const ao = cityB('13402');
+  assert.deepEqual([yk.dens, ao.dens], [8559.3, 28.2]);
+  assert.equal(mbQuizB(C, 'c', yk, ao).qs.find((t) => t.t === 'ratio').ans, '約303.5倍');
+  assert.equal(mbQuizB(C, 'h', yk, ao).ans[0][1], '人口密度');
+});
+
+test('B 中学生：家の備えの問いは出典つき・共同住宅の割合が同じ表示なら出さない', () => {
+  const osk = cityB('27100');
+  const hrk = cityB('27210');
+  const home = mbQuizB(C, 'c', osk, hrk).qs.find((t) => t.t === 'home');
+  assert.equal(home.ans, '大阪市');
+  assert.equal(home.src, '出典：千葉県<cite>「マンション特有の課題と対策(マンション防災)」</cite>');
+  assert.ok(mbSheets(C, { k: 'b', m: '27100', n: '27210', g: 'c', a: 0 }, osk, hrk).includes(home.src));
+  // 共同住宅の割合を同じ表示にした組
+  const same = { ...hrk, kyodo: osk.kyodo + 0.01 };
+  const q = mbQuizB(C, 'c', osk, same);
+  assert.equal(q.qs.find((t) => t.t === 'home'), undefined);
+  for (const a of q.ans) assert.ok(a[1] || a[2], a[0]);
+  assert.ok(!mbSheets(C, { k: 'b', m: '27100', n: '27210', g: 'c', a: 1 }, osk, same).includes('ポンプ'));
+  // 全部の組で、答えの欄が空の問いは書く問いだけ
+  for (const [x, y] of ALLP) for (const t of mbQuizB(C, 'c', cityB(x), cityB(y)).qs) assert.ok(t.ans || t.t === 'write', `${x} ${y} ${t.t}`);
 });

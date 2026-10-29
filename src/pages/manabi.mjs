@@ -4,7 +4,7 @@
 //   街の数字は /kurabe/kazu.json を街をえらんだときだけ読む、入れたものは URL の ? とこの端末におぼえるだけ。印刷は /dougu/print/ と同じ。AdSense なし
 //   B「2つの街をくらべる」（#35）も、街のえらび方・段階・答えの2枚目・印刷は同じ。B の人口密度と一戸建ての割合は
 //   kazu.json に入れず（100KBまで）、/dougu/manabi/b.json を B をえらんだときだけ読む。小学生のカードは /kurabe/card.js を読む
-import { esc, h2, fit, srcKokusei, jpDate, TREES, RIVER, HAN, MINCHO, GOTHIC } from '../layout.mjs';
+import { esc, h2, fit, srcKokusei, srcName, jpDate, TREES, RIVER, HAN, MINCHO, GOTHIC } from '../layout.mjs';
 import { SITE, ESTAT_CREDIT } from '../site.mjs';
 import * as MB from '../manabi-core.mjs';
 import { findForm, PICK_JS, cardScript } from './kurabe.mjs';
@@ -35,7 +35,12 @@ export function manabiBData(list) {
   return Object.fromEntries(list.map((a) => [a.code, [Math.round(a.density * 10), a.housed ? Math.round((a.ikkodate / a.housed) * 1000) : 0]]));
 }
 
-export function manabiConf({ munis, list, nat }) {
+// B の中学生の「家の備え」の問いの1文と出典（data/sources.yml の千葉県のマンション防災のページ）
+const MANSION_SRC = 'chiba-pref-mansion';
+
+export function manabiConf({ munis, list, nat, sources }) {
+  const ms = sources.sources.find((s) => s.id === MANSION_SRC);
+  if (!ms) throw new Error(`まなびプリントの出典 ${MANSION_SRC} が data/sources.yml にない`);
   const pops = list.map((a) => a.pop).sort((a, b) => a - b);
   const z = munis.areas['00000'];
   const sum = (k) => list.reduce((s, a) => s + (a[k] || 0), 0);
@@ -46,6 +51,7 @@ export function manabiConf({ munis, list, nat }) {
     // 横顔の物差し（全国のどの街も入る、きりのいい数）
     prof: { popLo: 2, popHi: 7, p014Hi: 30, perLo: 1, perHi: 4 },
     col: { ink: '#23312a', sub: '#5f6e66', bar: '#4f8d5e', water: '#3f8fbf', track: '#e6efe8', num: '#2f6b45', num2: '#2b6f99' },
+    mansion: { why: 'マンションは停電でポンプの給水が止まることがあります。', src: `出典：${srcName(ms)}` },
     bUrl: MANABI_B_PATH,
     cardUrl: `/kurabe/card.js?v=${cardScript({ munis }).v}`,
     year: Number(String(munis.survey).slice(0, 4)),
@@ -141,8 +147,8 @@ addEventListener('resize',fit);const p=document.querySelector('[data-print]');if
 // おぼえた街は、読みこんでから描く（先に見本の街で描くと、くらべる街が見本の街と同じときに入れかわってしまう）
 if(st.m&&set)MT.load().then(K=>{const r=K.r.find(x=>x[0]===st.m);if(r)set(r);else{st.m='';draw()}}).catch(draw);else draw()})();`;
 
-export function manabiPages({ munis, list, nat, kazu }) {
-  const conf = manabiConf({ munis, list, nat });
+export function manabiPages({ munis, list, nat, kazu, sources }) {
+  const conf = manabiConf({ munis, list, nat, sources });
   const row = kazu.r.find((r) => r[0] === DEF);
   if (!row) throw new Error(`まなびプリントの見本の街 ${DEF} が kazu にない`);
   const d = MB.mbCity(row, kazu.p[DEF.slice(0, 2)]);

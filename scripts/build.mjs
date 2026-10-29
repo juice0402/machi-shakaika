@@ -95,7 +95,7 @@ for (const p of printPages({ cc, items, sources })) add(p);
 for (const p of kartePages({ cc, items, sources, munis, nat: nationalRates(list), z })) add(p);
 for (const p of rankingPages({ munis, list, urlOf })) add(p);
 for (const p of toolPages({ munis, kazu })) add(p);
-for (const p of manabiPages({ munis, list, nat: nationalRates(list), kazu })) add(p);
+for (const p of manabiPages({ munis, list, nat: nationalRates(list), kazu, sources })) add(p);
 for (const p of hinmokuPages({ items, sources, products })) add(p);
 const machi = machiData(munis.areas, urlOf);
 for (const p of quizPages({ munis, items, sources, machi })) add(p);
