@@ -3,12 +3,18 @@
 // 回答はどこにも送らない。結果を送るのは「◯問中◯問」の文とURLだけ（見る人がえらんだときだけ）
 // AdSense は置かない（答えのボタンの近くに自動広告が入ると誤クリックをまねくため）
 // どっちが多い・ドボンクイズは、開いたときに /quiz/machi.json（都道府県47と全国の市区町村の数字）を読み、問題を毎回ブラウザで作る
-import { esc, h2, srcKokusei } from '../layout.mjs';
+import { esc, h2, srcKokusei, srcName, jpDate, fmt } from '../layout.mjs';
 import { PREFS } from '../areas.mjs';
 import { japanMap, JMAP_CSS } from '../japan-map.mjs';
-import { sonaeData } from '../quiz.mjs';
-import { CORE_JS, qFair, qDobonTopics } from '../quiz-core.mjs';
+import { sonaeData, rng } from '../quiz.mjs';
+import { CORE_JS, qFair, qFmt, qDocchi, qDobonTopics, qDobonBoard } from '../quiz-core.mjs';
+import { kyouPool, KYOU_MIN_POP } from '../kyou.mjs';
+import { need } from '../calc.mjs';
 import { fit } from '../layout.mjs';
+
+// 1回の問題の数（ページのスクリプトもこの数を使う。tests/honbun-pages.test.mjs で照らし合わせる）
+export const DOCCHI_N = 10;
+export const SONAE_N = 5;
 
 // どっちが多いの組み合わせの数（都道府県どうし・人口10万人以上どうし・県の中どうし）
 function docchiPairs(D) {
@@ -41,7 +47,7 @@ const scopeSelect = (id, withBig) => `<p class="sc"><label for="${id}">出題の
 
 const DOCCHI_JS = `(()=>{${COMMON}
 ${CORE_JS}
-const box=$('#quiz'),meta=$('.meta',box),qq=$('.qq',box),ul=$('.ch',box),ex=$('.ex',box),next=$('.next',box),res=$('#res'),sel=$('#sc');const save=scope(sel,'machi-docchi');let D,PN={},qs,i,score,N=10;
+const box=$('#quiz'),meta=$('.meta',box),qq=$('.qq',box),ul=$('.ch',box),ex=$('.ex',box),next=$('.next',box),res=$('#res'),sel=$('#sc');const save=scope(sel,'machi-docchi');let D,PN={},qs,i,score,N=${DOCCHI_N};
 const sub=(r,k)=>k==='m'?PN[r[0].slice(0,2)][1]:'',url=(r,k)=>k==='p'?'/'+r[2]+'/':(r[2]||'/'+PN[r[0].slice(0,2)][2]+'/#m'+r[0]);
 function show(){const q=qs[i],m=D.m[q.mi];meta.textContent=(i+1)+'／'+qs.length;qq.textContent=m[0];ex.hidden=true;next.hidden=true;delete ul.dataset.done;
 const vals=q.p.map(r=>r[3+q.mi]),ans=vals[0]>vals[1]?0:1;choices(ul,q.p.map(r=>r[1]),q.p.map(r=>sub(r,q.kind)),vals.map(v=>qFmt(m,v)+m[2]),ans,ok=>{if(ok)score++;
@@ -96,6 +102,134 @@ const SONAE_T = `[()=>calc(D.w,'L','水','mizu','飲み水と調理に使う水�
 ()=>({q:'ふだん食べている食品を少し多めに買い、食べた分を買い足して備える方法は？',ch:['ローリングストック','フードバンク','まとめ買い'],a:0,ex:'ローリングストックです。期限の近いものから食べていけば、むだになりにくくなります',src:'rolling',link:['/sonae/rolling-stock/','ローリングストック']})]`;
 export const SONAE_KINDS = (SONAE_T.match(/\(\)=>/g) ?? []).length;
 
+// ---- クイズの下の説明（夜 #47）：数字のもと・1問の読み方の例・よくある問い。数字はデータとページの定数から ----
+const qa = (q, a) => `<h3>${q}</h3>\n<p>${a}</p>`;
+const label = (m) => m[0].replace(/(が多い|が高い|が広い)のは？$/, '');
+const prefName = (r) => PREFS.find((p) => p.code === r[0].slice(0, 2))?.name ?? '';
+const kokuseiText = (munis) => `総務省「${esc(munis.statName)}」の数字から作っています。${jpDate(munis.survey)}の数字で、${jpDate(munis.published)}に公表されました。`;
+const OKURANAI = '答え合わせは、この端末の中だけでしています。当サイトにも、ほかのどこにも送りません。「結果を送る」をおしたときだけ、点数の文とページのURLを、自分でえらんだ相手に送れます。';
+
+function shelfMore({ munis, machi, docchiMan, dobonN, sd }) {
+  const nPool = kyouPool(machi).length;
+  return `<div class="prose">
+${h2('数字のもと')}
+<p>街の数字クイズは、${kokuseiText(munis)}</p>
+<p>くらべる数字は、人口や面積など${machi.m.length}種類です。全国${fmt(machi.munis.length)}の市区町村と、${machi.prefs.length}都道府県の数字を使います。</p>
+<p>備えの数字クイズは、農林水産省などが出している備えのめやすから作っています。水は1人1日${sd.w}L、携帯トイレは1人1日${sd.t}回といった数字です。</p>
+</div>
+${h2('問題の数')}
+<table class="tbl"><thead><tr><th>クイズ</th><th>1回の問題</th><th>問題のもと</th></tr></thead><tbody>
+<tr><td>今日の1問</td><td>1日1問</td><td>人口${fmt(KYOU_MIN_POP / 10000)}万人以上の${fmt(nPool)}市区町村</td></tr>
+<tr><td>どっちが多い？</td><td>${DOCCHI_N}問</td><td>組み合わせ${fmt(docchiMan)}万通り以上</td></tr>
+<tr><td>ドボンクイズ</td><td>お題1つ</td><td>お題${fmt(dobonN)}</td></tr>
+<tr><td>備えの数字クイズ</td><td>${SONAE_N}問</td><td>${SONAE_KINDS}種類のひな形</td></tr>
+</tbody></table>
+<div class="prose">
+${h2('よくある問い')}
+${qa('答えはどこかに送られますか', OKURANAI)}
+${qa('同じ問題ばかり出ませんか', 'どっちが多い？とドボンクイズは、開くたびにブラウザの中で問題を作り直します。今日の1問は日付で決まるので、同じ日ならだれが開いても同じ問題です。')}
+${qa('出ない数字はありますか', '人口の減り方と、65歳以上の人の割合は、クイズの題にしていません。住んでいる人が気にする数字だからです。')}
+${qa('広告は出ますか', 'クイズのページには、広告を置いていません。答えのボタンの近くに広告があると、まちがえておしてしまうことがあるためです。')}
+</div>`;
+}
+
+function docchiMore({ munis, machi, docchiMan }) {
+  const rows = machi.m
+    .map((m) => `<tr><td>${esc(label(m))}</td><td>${m[4] ? `${m[4]}${esc(m[2])}未満` : `大きいほうの${Math.round(m[5] * 100)}%未満`}</td></tr>`)
+    .join('');
+  // 1問の例：データの公表日から作る乱数で、人口10万人以上の組を1つ（データが同じなら毎回同じ例）
+  const ex = qDocchi(machi, 'big', rng(Number(String(munis.published).replace(/-/g, ''))), 1)[0];
+  let exText = '';
+  if (ex) {
+    const m = machi.m[ex.mi];
+    const v = ex.p.map((r) => r[3 + ex.mi]);
+    const ans = v[0] > v[1] ? 0 : 1;
+    const nm = (r) => `${esc(prefName(r))}の${esc(r[1])}`;
+    exText = `${h2('1問の例')}
+<p>たとえば${esc(label(m).replace(/（[^）]*）/g, ''))}をくらべる問題で、アに${nm(ex.p[0])}、イに${nm(ex.p[1])}が出たとします。</p>
+<p>答えをえらぶと、2つの数字が出ます。${esc(ex.p[0][1])}は${qFmt(m, v[0])}${esc(m[2])}、${esc(ex.p[1][1])}は${qFmt(m, v[1])}${esc(m[2])}なので、正解は${'アイ'[ans]}です。</p>
+<p>正解には赤い丸がつき、まちがえたときは、えらんだ所にバツがつきます。答えのあとに出る街の名前をおすと、その街のページが開きます。</p>`;
+  }
+  return `<div class="prose">
+${h2('しくみ')}
+<p>2つの街や都道府県から、数字が大きいほうをえらびます。問題は1回${DOCCHI_N}問で、開くたびにブラウザの中で作ります。</p>
+<p>数字は、${kokuseiText(munis)}</p>
+<p>差が小さすぎる組は出しません。差が下の表より小さい組と、表示した数字が同じになる組は外します。人口や面積のように数の大きい数字では、開きすぎている組も外します。</p>
+</div>
+<table class="tbl"><thead><tr><th>くらべる数字</th><th>出さない組の差</th></tr></thead><tbody>${rows}</tbody></table>
+<div class="prose">
+${exText}
+${h2('よくある問い')}
+${qa('出題の範囲は変えられますか', '上の「出題の範囲」で、都道府県だけや、1つの県の中の市区町村だけにしぼれます。えらんだ範囲は、この端末の中だけにおぼえておきます。')}
+${qa('問題は何通りありますか', `出せる組み合わせは${fmt(docchiMan)}万通り以上あります。1回の${DOCCHI_N}問は、その中から毎回えらび直します。`)}
+${qa('答えはどこかに送られますか', OKURANAI)}
+</div>`;
+}
+
+function dobonMore({ munis, machi }) {
+  const T = qDobonTopics(machi);
+  const nP = T.filter((t) => t.scope === 'p').length;
+  const nAll = T.filter((t) => t.scope === 'all').length;
+  const nPref = T.length - nP - nAll;
+  const big = Math.max(...T.map((t) => t.N));
+  // 例：県ごとのお題で、トップ5になる人口のお題のうち最初のもの
+  const t5 = T.find((t) => t.scope !== 'p' && t.scope !== 'all' && t.N < big && t.mi === 0);
+  let exText = '';
+  if (t5) {
+    const m = machi.m[t5.mi];
+    const { order, board } = qDobonBoard(machi, t5, rng(1));
+    const pn = PREFS.find((p) => p.code === t5.scope)?.name ?? '';
+    const v = (r) => `${esc(r[1])}の${qFmt([m[0], m[1], m[2], t5.digits], r[3 + t5.mi])}${esc(m[2])}`;
+    exText = `${h2('例')}
+<p>${esc(pn)}の${esc(m[1])}市区町村トップ${t5.N}なら、1位は${v(order[0])}、${t5.N}位は${v(order[t5.N - 1])}です。</p>
+<p>${t5.N + 1}位は${v(order[t5.N])}で、これをえらぶとドボンです。</p>
+<p>${esc(pn)}は市区町村が${order.length}と少ないので、トップ${t5.N}のお題です。このお題の語群には${board.length}の市区町村が並びます。</p>`;
+  }
+  return `<div class="prose">
+${h2('しくみ')}
+<p>お題の数字が大きい順に、トップ${big}に入る都道府県や市区町村を1つずつえらびます。${big + 1}位より下をえらぶとドボンで、そこでおしまいです。</p>
+<p>お題は全部で${fmt(T.length)}あります。都道府県が${nP}、全国の市区町村が${nAll}、県ごとの市区町村が${fmt(nPref)}です。</p>
+<p>都道府県は地図から、市区町村は名前の並んだ語群からえらびます。語群には、トップの街と、そのすぐ下の街がまざっています。市区町村の数が少ない県では、トップ${Math.min(...T.map((t) => t.N))}を当てます。</p>
+<p>数字は、${kokuseiText(munis)}</p>
+${exText}
+${h2('よくある問い')}
+${qa('順位の数字が同じになったら', `${big}位と${big + 1}位が同じ表示になるお題は出しません。割合のお題は、小数のけたを1つふやして見分けます。`)}
+${qa('人口の減り方のお題はありますか', 'ありません。人口の減り方と65歳以上の人の割合は、住んでいる人が気にする数字なので、お題にしていません。')}
+${qa('答えはどこかに送られますか', OKURANAI)}
+</div>`;
+}
+
+function sonaeMore({ items, sources, sd }) {
+  const by = Object.fromEntries(items.items.map((it) => [it.id, it]));
+  const src = new Map(sources.sources.map((s) => [s.id, s]));
+  const n = 4;
+  const d = sd.min;
+  const c = need(sd.w, n, d);
+  const lo = Math.max(1, Math.round(c / 2));
+  const ids = [...new Set([by.mizu.sources[0], by.shushoku.sources[0], by['keitai-toilet'].sources[0], items.days.sources[0], items.yohairyo_sources[0], by.gas.sources[0], 'kantei-sonae', 'maff-guide'])];
+  return `${h2('数字のもと')}
+<table class="tbl"><thead><tr><th>数字</th><th>めやす</th></tr></thead><tbody>
+<tr><td>水（飲み水と調理の水）</td><td>1人1日${sd.w}L</td></tr>
+<tr><td>主食</td><td>1人1日${sd.m}食</td></tr>
+<tr><td>携帯トイレ</td><td>1人1日${sd.t}回</td></tr>
+<tr><td>家の備蓄の日数</td><td>最低${sd.min}日分・できれば${sd.better}日分</td></tr>
+<tr><td>高齢の家族や小さな子どもがいる家</td><td>少なくとも${sd.y}日分</td></tr>
+<tr><td>カセットボンベ</td><td>大人1人1週間の例で${sd.gas}本</td></tr>
+</tbody></table>
+<div class="prose">
+<p>問題は、この表の数字だけから作ります。答えのあとに、どの資料の数字かと、その資料を確かめた日が出ます。</p>
+${h2('1問の例')}
+<p>たとえば「${n}人家族の${d}日分、水は？」という問題なら、1人1日${sd.w}L×${n}人×${d}日で、${fmt(c)}Lが正解です。</p>
+<p>ほかの2つの答えは、正解の半分の${fmt(lo)}Lと、2倍の${fmt(c * 2)}Lです。答えたあとは、計算の式と出典が出ます。</p>
+${h2('よくある問い')}
+${qa('問題は何問ありますか', `1回${SONAE_N}問です。${SONAE_KINDS}種類のひな形から、毎回ちがう${SONAE_N}つをえらびます。人数と日数も、問題ごとに変わります。`)}
+${qa('わが家の量を知りたいときは', '<a href="/dougu/keisan/">備蓄の量の計算</a>で、家族の人数と日数を入れると、わが家の量が出ます。')}
+${qa('答えはどこかに送られますか', OKURANAI)}
+</div>
+${h2('出典')}
+<ul class="notes">${ids.map((id) => `<li>${srcName(src.get(id))}（${jpDate(src.get(id).checked)}確認）</li>`).join('')}</ul>`;
+}
+
 export function quizPages({ munis, items, sources, machi }) {
   const nMunis = machi.munis.length;
   const docchiMan = Math.floor(docchiPairs(machi) / 10000);
@@ -118,7 +252,8 @@ ${h2('街の数字クイズ')}
 <p class="note">市区町村のページの中にも、その街のクイズがあります（例：<a href="/osaka/sakai/">堺市</a>）。</p>
 ${h2('備えの数字クイズ')}
 <ul class="list"><li><a href="/quiz/sonae/">備えの数字クイズ</a><small class="sub">水・食事・携帯トイレの量のめやす5問</small></li></ul>
-<p class="note">答えはこの端末の中だけで決まり、どこにも送りません。</p>`,
+<p class="note">答えはこの端末の中だけで決まり、どこにも送りません。</p>
+${shelfMore({ munis, machi, docchiMan, dobonN, sd: sonaeData(items, sources) })}`,
   });
 
   out.push({
@@ -136,7 +271,8 @@ ${scopeSelect('sc', true)}
 <section id="res" class="qz" hidden aria-live="polite"><p class="score"><b>0</b><span>／10</span></p><p><button class="go send" type="button">結果を送る</button>　<button class="go again" type="button">もう一度</button></p><p class="note" id="sent"></p>
 <p><a href="/ranking/jinko/">人口が増えた市区町村</a>・<a href="/quiz/dobon/">ドボンクイズ</a></p></section>
 <noscript><p>このクイズはスクリプトで動きます。</p></noscript>
-${src}`,
+${src}
+${docchiMore({ munis, machi, docchiMan })}`,
     script: DOCCHI_JS,
   });
 
@@ -158,7 +294,8 @@ ${scopeSelect('sc', false)}
 <ol class="t5l"></ol>
 <p class="dbn" hidden><button class="go next" type="button">次のお題</button>　<button class="go send" type="button">結果を送る</button></p><p class="note" id="sent"></p></section>
 <noscript><p>このクイズはスクリプトで動きます。</p></noscript>
-${src}`,
+${src}
+${dobonMore({ munis, machi })}`,
     script: DOBON_JS,
   });
 
@@ -177,10 +314,11 @@ ${src}`,
 <section id="quiz" class="qz"><p class="meta"></p><p class="qq"></p><ul class="ch"></ul><div class="ex" hidden></div><p><button class="go next" type="button" hidden>次の問題</button></p></section>
 <section id="res" class="qz" hidden aria-live="polite"><p class="score"><b>0</b><span>／5</span></p><p><a class="go" href="/dougu/keisan/">わが家の人数で計算する</a></p><p><button class="go send" type="button">結果を送る</button>　<button class="go again" type="button">もう一度</button></p><p class="note" id="sent"></p></section>
 <noscript><p>このクイズはスクリプトで動きます。</p></noscript>
-<p class="src">数字は公的な資料のめやすです。家の備えは人数分、最低${sd.min}日分、できれば${sd.better}日分</p>`,
+<p class="src">数字は公的な資料のめやすです。家の備えは人数分、最低${sd.min}日分、できれば${sd.better}日分</p>
+${sonaeMore({ items, sources, sd })}`,
     head: data(sd),
     script: `(()=>{${COMMON}
-const D=JSON.parse($('#qd').textContent),N=5,f=v=>v.toLocaleString('ja-JP');const nd=()=>[1+R(6),Math.random()<.5?D.min:D.better];
+const D=JSON.parse($('#qd').textContent),N=${SONAE_N},f=v=>v.toLocaleString('ja-JP');const nd=()=>[1+R(6),Math.random()<.5?D.min:D.better];
 const dist=(c,x=[Math.max(1,Math.round(c/2)),c*2])=>{const s=[...new Set(x.filter(v=>v>0&&v!==c))];return s.length>=2?s.slice(0,2):[c+1,c+2]};
 const three=(c,unit,o)=>{const ch=[c,...dist(c,o)];return{ch:ch.map(v=>f(v)+unit),a:0}};
 const U=u=>u==='回分'?'回':u;

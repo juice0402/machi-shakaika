@@ -139,9 +139,54 @@ ${calcHtml(cc)}
 <p><a class="go" data-keep href="/dougu/check/">この人数でチェックリストを見る</a><br><a class="go" href="/dougu/kigen/">賞味期限をメモする</a></p>
 ${h2('量のめやすのもと')}
 <div class="prose"><p>水は飲む水と調理の水の合計で、トイレや体をふく生活用水は別です。高齢の家族や小さな子どもがいる家は、<a href="/sonae/bichiku/#yohairyo">少なくとも${y}日分</a>がめやすです。</p></div>
+${keisanMore(cc, y)}
 ${h2('出典')}
 ${sourceList([...new Set([...days.sources, ...by.mizu.sources, ...by.shushoku.sources, ...by['keitai-toilet'].sources])], sources)}`,
     script: CALC_JS,
   });
   return out;
+}
+
+// 計算のページ（/dougu/keisan/）の下の説明（夜 #47）：しくみ・1世帯の平均人数で出した例（国勢調査）・よくある問い
+//   例の街は、ページのある市区町村のうち1世帯の平均人数がいちばん多い街と少ない街。人数は市区町村ページと同じく小数1けた
+//   （/sonae/ のページと同じファイルなので、この説明の import と部品はファイルの最後にまとめて置く）
+import { readMunis } from '../munis.mjs';
+import { resolveCities, PREFS } from '../areas.mjs';
+
+const PREF_NAME = new Map(PREFS.map((p) => [p.slug, p.name]));
+function keisanMore(cc, y) {
+  const { by, days } = cc;
+  const w = by.mizu.per_day;
+  const m = by.shushoku.per_day;
+  const t = by['keitai-toilet'].per_day;
+  const d = days.better;
+  const munis = readMunis();
+  let rei = '';
+  if (munis) {
+    const z = munis.areas['00000'];
+    const { cities } = resolveCities(munis.areas);
+    const cs = cities.map((c) => ({ ...c, a: munis.areas[c.code] })).filter((c) => c.a?.perHh > 0).sort((p, q) => q.a.perHh - p.a.perHh);
+    if (z?.perHh > 0 && cs.length >= 2) {
+      const r1 = (v) => Math.round(v * 10) / 10;
+      const row = (name, per) => `<tr><td>${name}</td><td>${per.toFixed(1)}人</td><td>${need(w, per, d).toLocaleString('ja-JP')}L</td><td>${need(t, per, d).toLocaleString('ja-JP')}回分</td></tr>`;
+      const pick = [cs[0], cs[cs.length - 1]];
+      const pn = (c) => esc(PREF_NAME.get(c.pref) ?? '');
+      rei = `${h2('例')}
+<p>人数に1世帯の平均人数を入れると、その街の平均的な家の量のめやすになります。平均人数は国勢調査の数字で、小数1けたにしています。</p>
+<table class="tbl"><thead><tr><th>街</th><th>1世帯の人数</th><th>${d}日分の水</th><th>携帯トイレ</th></tr></thead><tbody>${row('全国', r1(z.perHh))}${pick.map((c) => row(`<a href="/${c.pref}/${c.slug}/">${esc(c.name)}</a>`, r1(c.a.perHh))).join('')}</tbody></table>
+<p>${pick.map((c) => `${pn(c)}の${esc(c.name)}`).join('と')}は、1世帯の人数がいちばん多い街と少ない街です。このサイトにページのある${cs.length}の市区町村の中でくらべました。</p>
+<p class="src">出典：総務省「${esc(munis.statName)}」を加工して作成（${jpDate(munis.survey)}現在）</p>`;
+    }
+  }
+  return `<div class="prose">
+${h2('しくみ')}
+<p>量は、1人1日の量×人数×日数で出します。1未満は四捨五入します。</p>
+<p>${days.min}日分は最低のめやす、${d}日分はできればそろえたい量です。食事は主食の数で、1人1日${m}食で数えます。おかずの缶詰などは<a href="/dougu/check/">チェックリスト</a>で別に確かめます。</p>
+${rei}
+${h2('よくある問い')}
+<h3>入れた人数は送られますか</h3>
+<p>送りません。計算はこの端末のブラウザの中でしています。</p>
+<h3>${y}日分を出したいときは</h3>
+<p>計算のマスは${days.choices.join('日と')}日です。${y}日分は、1人1日の量×人数×${y}日で出せます。4人なら水は${need(w, 4, y)}L、携帯トイレは${need(t, 4, y)}回分です。</p>
+</div>`;
 }
