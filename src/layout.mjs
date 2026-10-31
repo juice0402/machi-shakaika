@@ -156,6 +156,17 @@ export const TREES = (id) =>
   `<svg viewBox="0 0 390 24" preserveAspectRatio="none" height="24" aria-hidden="true"><defs><pattern id="${id}" width="28" height="24" patternUnits="userSpaceOnUse"><rect y="21" width="28" height="3" fill="#b9d3a3"/><path d="M3 21l6-16 6 16z" fill="#356b44"/><rect x="8.4" y="20" width="1.2" height="2" fill="#5a4636"/><circle cx="21" cy="14" r="5" fill="#76a95a"/><rect x="20.4" y="18" width="1.2" height="4" fill="#5a4636"/></pattern></defs><rect width="390" height="24" fill="url(#${id})"/></svg>`;
 export const RIVER = `<svg viewBox="0 0 390 10" preserveAspectRatio="none" height="10" aria-hidden="true"><path d="M0 5C16 1 32 1 48 5S80 9 96 5 128 1 144 5 176 9 192 5 224 1 240 5 272 9 288 5 320 1 336 5 368 9 390 4" fill="none" stroke="#3f8fbf" stroke-width="1.5"/></svg>`;
 const HM = `<svg class="hm" viewBox="0 0 18 14" aria-hidden="true"><path d="M2 13l5-11 5 11z" fill="currentColor"/><circle cx="13" cy="7" r="4" fill="currentColor" opacity=".55"/></svg>`;
+// パソコンの画面（10/31 しょーくん：案B「右に柱」・夜 #41）。スマホ（〜759px）と印刷は変えない
+//   760〜1099px：1列のまま、中身の幅 640px まで
+//   1100px〜：枠 1120px。柱のあるページ（main.hashira）は左 640px・右の柱（.side）360px・あいだ 56px。柱のないページは 640px を真ん中に
+//   100人の村のマスは、もとの大きさ（302px）より大きくしない
+//   木の帯は、広い幅で横にのびないよう、同じ木を背景でくり返す（SVG の TREES は印刷の紙も使うのでそのまま）
+const TREE_TILE = `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="28" height="24">${TREES('x').match(/<pattern[^>]*>(.*)<\/pattern>/)[1]}</svg>`)}")`;
+export const WIDE_CSS = `@media screen and (min-width:760px){.pg,.ft{max-width:672px}.deco{height:24px;background:${TREE_TILE} repeat-x 0 0}.deco svg{display:none}main .vw{grid-template-columns:minmax(0,302px) 9.5em;justify-content:start}}
+@media screen and (min-width:1100px){.pg{max-width:1120px;padding:0 32px 32px}.deco{margin:0 -32px}.ft{max-width:1120px;padding:16px 32px 28px}
+main{max-width:640px;margin:0 auto}main.hashira{max-width:none;display:grid;grid-template-columns:minmax(0,640px) 360px;column-gap:56px;justify-content:space-between;align-items:start}
+main.hashira>*{grid-column:1;min-width:0}main.hashira>.side{grid-column:2;grid-row:1/span 40}}`.replace(/\n/g, '');
+
 export const h2 = (t, id) => `<h2${id ? ` id="${id}"` : ''}>${HM}${t}</h2>`;
 export const HAN = `<span class="han" aria-hidden="true"></span>`;
 
@@ -190,6 +201,7 @@ const ogTags = (o) =>
  * @param {string} [p.head]    head に足すもの（構造化データなど）
  * @param {boolean}[p.rakuten] 楽天の商品を出すページ（AdSense を置かない・フッターに楽天のクレジット）
  * @param {object} [p.og]      このページだけの共有画像（file・w・h・alt）。ないときはサイトの OG
+ * @param {boolean}[p.hashira] パソコンの広い画面で右に柱（main の子の .side が柱。トップ・市区町村・都道府県・今日の1問）
  * @param {boolean}[p.saigai]  災害時モード（ふだんは data/mode.yml のとおり。テスト用に変えられる）：上に案内の帯・AdSense なし
  */
 export function page(p) {
@@ -212,12 +224,12 @@ export function page(p) {
 ${robots}${canonical}
 <meta property="og:site_name" content="${esc(SITE.name)}"><meta property="og:title" content="${esc(full)}"><meta property="og:description" content="${esc(p.description)}"><meta property="og:type" content="${isTop ? 'website' : 'article'}">${p.path ? `<meta property="og:url" content="${SITE.url}${p.path}">` : ''}
 ${ogTags(p.og ?? OG)}
-${ads && !p.adsLate ? `<script async src="${adsSrc}" crossorigin="anonymous"></script>\n` : ''}<style>${CSS}${ART_CSS}</style>${p.head ?? ''}
+${ads && !p.adsLate ? `<script async src="${adsSrc}" crossorigin="anonymous"></script>\n` : ''}<style>${CSS}${ART_CSS}${WIDE_CSS}</style>${p.head ?? ''}
 </head>
 <body${ads ? (p.adsLate ? ` data-ads-late="${adsSrc}"` : '') : ' data-ads="off"'}>
 ${saigai ? `${SAIGAI_BAR}\n` : ''}<div class="pg">
 <header><span class="deco">${TREES('trh')}</span><div class="bar">${isTop ? `<h1 class="logo">${esc(SITE.name)}</h1>` : `<a class="logo" href="/">${esc(SITE.name)}</a>`}${NAV}</div></header>
-<main>
+<main${p.hashira ? ' class="hashira"' : ''}>
 ${p.body}
 </main>
 </div>

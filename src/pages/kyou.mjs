@@ -16,7 +16,8 @@ const md = (iso) => {
   return `${mo}月${d}日（${WD[new Date(`${iso}T00:00:00Z`).getUTCDay()]}）`;
 };
 
-const CSS = `.kd{font-size:13px;color:var(--sub);margin:4px 0 0;font-variant-numeric:tabular-nums}
+// パソコンの広い画面では、わたしの地図を右の柱にいつも出す（答える前は 0／47。スマホは今のまま、答えてから出す）
+const CSS = `@media screen and (min-width:1100px){#mymap.side[hidden]{display:block!important}}.kd{font-size:13px;color:var(--sub);margin:4px 0 0;font-variant-numeric:tabular-nums}
 #ky .qq{min-height:3.1em}
 .km,.mm{display:block;width:calc(100% + 32px);height:auto;margin:2px -16px 0;-webkit-tap-highlight-color:transparent}
 .km{aspect-ratio:390/190}.km use,.mm use{fill:#f6f9f1}.km use.a{fill:${KA}}.km use.b{fill:${KB}}.mm use.on{fill:${KA}}
@@ -109,6 +110,7 @@ export function kyouPage({ munis, machi, start, urlOfRow }) {
       [`${year}年国勢調査の数字です。`, '答えた県が地図にたまります。'],
     ),
     noAds: true,
+    hashira: true,
     head: `<style>${CSS}</style><script type="application/json" id="kq">${JSON.stringify(data).replace(/</g, '\\u003c')}</script>`,
     body: `<p class="crumb"><a href="/">トップ</a> / <a href="/quiz/">クイズ</a></p>
 <h1 class="city">今日の1問</h1>
@@ -122,7 +124,7 @@ ${today}
 <p class="nx" hidden><button class="go send" type="button">結果を送る</button><span class="ntt" hidden></span><a href="/quiz/docchi/">どっちが多い？を10問</a></p><p class="note" id="sent"></p>
 </section>
 <noscript><p>このクイズはスクリプトで動きます。</p></noscript>
-<section id="mymap" hidden>${h2('わたしの地図')}<p class="mmc">答えた県<b>0</b>／47</p>${mine}</section>
+<section id="mymap" class="side" hidden>${h2('わたしの地図')}<p class="mmc">答えた県<b>0</b>／47</p>${mine}</section>
 ${srcKokusei(munis)}`,
     script: JS,
   };
