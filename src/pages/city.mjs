@@ -1,4 +1,5 @@
 // 市区町村のページ（/都道府県/市区町村/）。上が「この街の数字」、下が「この街の備え」
+// 見出し（h2）ごとに section。パソコンの広い画面では「この街の備え」が右の柱（.side）
 import { esc, fmt, h2, scale, srcName, srcKokusei, jpDate, RIVER, fit } from '../layout.mjs';
 import { derive, feature, prefRank, similar, sonaeLinks, prefOf, r1 } from '../stats.mjs';
 import { need } from '../calc.mjs';
@@ -31,6 +32,7 @@ export function cityPage({ city, munis, list, z, cc, hinan, hinanMeta, urlOf, ka
   const path = urlOf(city.code);
   const meRow = kazu.r.find((r) => r[0] === city.code);
   const niteru = mtNear(kazu.r, kazu.s, city.code, 3);
+  const quiz = machiQuizHtml(a.name, machiQuiz(a, list, near, list.filter((x) => urlOf(x.code))));
 
   const scales = [
     ['人口の増減', '2020年から2025年', { lo: -15, hi: 10, me: a.rate, zk: z.rate, unit: '%', meLabel: `${a.name} ${signed(a.rate)}`, zkLabel: `全国 ${signed(z.rate)}` }],
@@ -49,30 +51,30 @@ export function cityPage({ city, munis, list, z, cc, hinan, hinanMeta, urlOf, ka
 <p class="s1">1世帯の平均人数（${per.toFixed(1)}人）で計算すると、1週間に 水 <b>約${need(cc.per.mizu, per, 7)}L</b>・携帯トイレ <b>約${need(cc.per.toilet, per, 7)}回分</b><br><a class="go" href="/dougu/keisan/?d=7">わが家の人数で計算</a></p>
 ${srcKokusei(munis)}
 
-${h2('この街の数字')}
+<section>${h2('この街の数字')}
 ${scales.map(([t, sub, s]) => `<div class="g"><p><b>${t}</b>　${sub}</p>${scale(s)}</div>`).join('\n')}
-<p class="note">目盛りのはしは、全国の市区町村のおおよその幅です。</p>
+<p class="note">目盛りのはしは、全国の市区町村のおおよその幅です。</p></section>
 
-${h2('100人の村にすると')}
+<section>${h2('100人の村にすると')}
 ${villageHtml(a.name, a, z)}
-${srcKokusei(munis)}
+${srcKokusei(munis)}</section>
 
-${machiQuizHtml(a.name, machiQuiz(a, list, near, list.filter((x) => urlOf(x.code))))}
+${quiz ? `<section>${quiz}</section>` : ''}
 
-${h2('県内と、人口が近い街')}
+<section>${h2('県内と、人口が近い街')}
 <p>${esc(pref.name)}の${of}市区町村のうち、人口は${rank}番目に多い街です。</p>
 <table class="tbl"><thead><tr><th>人口が近い街</th><th>人口</th><th>5年の増減</th></tr></thead><tbody>
 <tr class="me"><td>${esc(a.name)}</td><td>${fmt(a.pop)}</td><td>${signed(a.rate)}</td></tr>
 ${near.map((x) => `<tr><td>${urlOf(x.code) ? `<a href="${urlOf(x.code)}">${esc(x.name)}</a>` : esc(x.name)}<br><span class="note">${esc(prefOf(x.code).name)}</span></td><td>${fmt(x.pop)}</td><td>${signed(x.rate)}</td></tr>`).join('\n')}
-</tbody></table>
+</tbody></table></section>
 
-${h2('数字が似ている街')}
+<section>${h2('数字が似ている街')}
 ${mtNearHtml(meRow, niteru, kazu.p)}
 <p class="note">人口・年齢の割合・5年の増減・ひとり暮らしと共同住宅の割合が近い街です。</p>
 <p><a class="go" href="/kurabe/?a=${a.code}">この街をほかの街とカードでくらべる</a></p>
-${srcKokusei(munis)}
+${srcKokusei(munis)}</section>
 
-${h2('年齢と世帯')}
+<section>${h2('年齢と世帯')}
 <div class="bars">
 <span>15歳未満</span><div class="share"><i style="width:${r1(a.p014)}%"></i></div><span class="num">${pct(a.p014)}</span>
 <span>65歳以上</span><div class="share"><i style="width:${r1(a.p65)}%"></i></div><span class="num">${pct(a.p65)}</span>
@@ -80,9 +82,9 @@ ${h2('年齢と世帯')}
 <span>共同住宅</span><div class="share"><i style="width:${r1(a.pKyodo)}%"></i></div><span class="num">${pct(a.pKyodo)}</span>
 </div>
 <p class="note">15歳未満と65歳以上は人口のうち、ひとり暮らしは一般世帯のうち、共同住宅は住宅に住む一般世帯のうち。年齢などが不詳の人を割り振った値（不詳補完値）です。</p>
-${srcKokusei(munis)}
+${srcKokusei(munis)}</section>
 
-<section class="sonae"><span class="edge">${RIVER}</span>
+<section class="sonae side"><span class="edge">${RIVER}</span>
 ${h2('この街の備え')}
 ${links.map((l) => `<p class="why">${esc(l.why)}<a href="${l.href}">${esc(l.text)}</a></p>`).join('\n')}
 ${bichikuLine(city, bichiku)}
@@ -122,6 +124,7 @@ const h2=document.createElement('li');h2.textContent='指定避難所';h2.style.
     ),
     head: `<style>${VILLAGE_CSS}</style>`,
     body,
+    hashira: true,
     script,
     gsi: true,
   };

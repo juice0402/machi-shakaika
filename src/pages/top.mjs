@@ -1,4 +1,4 @@
-// トップ（/）：上に街さがし（漢字・ひらがな・カタカナ。読みがなは data/yomi.json）、すぐ下に計算。その下に都道府県の地図と備えの知識
+// トップ（/）：パソコンの広い画面では、街さがし・計算・出典が右の柱（.side）。上に街さがし（漢字・ひらがな・カタカナ。読みがなは data/yomi.json）、すぐ下に計算。その下に都道府県の地図と備えの知識
 import { esc, h2, jpDate, fmt, fit } from '../layout.mjs';
 import { SITE } from '../site.mjs';
 import { calcHtml, CALC_JS } from '../calc.mjs';
@@ -15,9 +15,9 @@ i.addEventListener('focus',load,{once:true});i.addEventListener('input',show);f.
 
 export function topPage({ cc, munis, hinanMeta, nMunis }) {
   const body = `${heroHtml()}
-<form class="find" data-find role="search"><label for="q">市区町村</label><input id="q" type="search" placeholder="例 堺市・さかい" autocomplete="off" enterkeyhint="search"><button>さがす</button><ul class="hits"></ul><p class="msg" aria-live="polite"></p></form>
+<div class="side"><form class="find" data-find role="search"><label for="q">市区町村</label><input id="q" type="search" placeholder="例 堺市・さかい" autocomplete="off" enterkeyhint="search"><button>さがす</button><ul class="hits"></ul><p class="msg" aria-live="polite"></p></form>
 ${calcHtml(cc)}
-<p class="src">${cc.perText}（農林水産省・内閣府のガイドラインほか）<br>${esc(munis.statName)}（${jpDate(munis.published)}公表）・避難場所データ ${jpDate(hinanMeta.checked)}取得</p>
+<p class="src">${cc.perText}（農林水産省・内閣府のガイドラインほか）<br>${esc(munis.statName)}（${jpDate(munis.published)}公表）・避難場所データ ${jpDate(hinanMeta.checked)}取得</p></div>
 <section id="map">${h2('都道府県から')}${japanMap()}<ul class="list"><li><a href="/ranking/jinko/">人口が増えた市区町村</a></li><li><a href="/niteru/">数字が似ている街をさがす</a></li><li><a href="/kurabe/">2つの街の数字をくらべる</a></li></ul></section>
 <section>${h2('備えの知識')}<ul class="list"><li><a href="/sonae/bichiku/">備蓄の量のめやす</a></li><li><a href="/sonae/rolling-stock/">ローリングストック</a></li><li><a href="/sonae/keitai-toilet/">携帯トイレの備え</a></li><li><a href="/sonae/fuyu-teiden/">冬の停電と寒さの備え</a></li><li><a href="/dougu/check/">チェックリスト</a></li><li><a href="/dougu/kigen/">期限メモ</a></li><li><a href="/dougu/karte/">わが家の防災カルテ</a></li><li><a href="/hinmoku/">品目ごとのめやす</a></li></ul></section>
 <section>${h2('クイズ')}<ul class="list"><li><a href="/quiz/kyou/">今日の1問</a></li><li><a href="/quiz/docchi/">どっちが多い？</a></li><li><a href="/quiz/dobon/">ドボンクイズ</a></li><li><a href="/quiz/sonae/">備えの数字クイズ</a></li></ul></section>`;
@@ -31,6 +31,7 @@ ${calcHtml(cc)}
     // Google の「サイト名」がドメインのまま出ないように（WebSite の構造化データ）
     head: `<style>${JMAP_CSS}</style><script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'WebSite', name: SITE.name, alternateName: SITE.project, url: `${SITE.url}/` })}</script>`,
     body,
+    hashira: true,
     script: CALC_JS + FIND_JS,
   };
 }

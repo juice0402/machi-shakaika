@@ -1,4 +1,4 @@
-// 都道府県のページ（/都道府県/）。県全体の数字と、県内の市区町村の一覧（人口の多い順）
+// 都道府県のページ（/都道府県/）。パソコンの広い画面では、1世帯の計算と「くわしく見られる街」が右の柱（.side）。県全体の数字と、県内の市区町村の一覧（人口の多い順）
 import { esc, fmt, h2, srcKokusei, fit } from '../layout.mjs';
 import { derive, r1 } from '../stats.mjs';
 import { need } from '../calc.mjs';
@@ -17,9 +17,9 @@ export function prefPage({ pref, munis, list, z, cc, urlOf }) {
 <p class="chg">2020年から <b>${fmt(Math.abs(a.popChange))}</b>人${a.popChange >= 0 ? 'ふえた' : 'へった'}（${signed(a.rate)}・全国 ${signed(z.rate)}）</p>
 <p class="hh">世帯 <b>${fmt(a.hh)}</b>・1世帯 <b>${per.toFixed(1)}</b>人・${inPref.length}市区町村</p>
 <p class="feat">${up ? `2020年から人口が増えたのは、${inPref.length}市区町村のうち${up}` : `${inPref.length}市区町村の人口と世帯の数字`}</p>
-<p class="s1">1世帯の平均人数（${per.toFixed(1)}人）で計算すると、1週間に 水 <b>約${need(cc.per.mizu, per, 7)}L</b>・携帯トイレ <b>約${need(cc.per.toilet, per, 7)}回分</b><br><a class="go" href="/dougu/keisan/?d=7">わが家の人数で計算</a></p>
+<div class="side"><p class="s1">1世帯の平均人数（${per.toFixed(1)}人）で計算すると、1週間に 水 <b>約${need(cc.per.mizu, per, 7)}L</b>・携帯トイレ <b>約${need(cc.per.toilet, per, 7)}回分</b><br><a class="go" href="/dougu/keisan/?d=7">わが家の人数で計算</a></p>
 ${srcKokusei(munis)}
-${withPage.length ? `${h2('くわしく見られる街')}<ul class="list cols">${withPage.map((x) => `<li><a href="${urlOf(x.code)}">${esc(x.name)}</a></li>`).join('')}</ul>` : ''}
+${withPage.length ? `${h2('くわしく見られる街')}<ul class="list cols">${withPage.map((x) => `<li><a href="${urlOf(x.code)}">${esc(x.name)}</a></li>`).join('')}</ul>` : ''}</div>
 ${h2('市区町村の人口（多い順）')}
 <table class="tbl"><thead><tr><th>市区町村</th><th>人口</th><th>5年の増減</th><th>1世帯</th></tr></thead><tbody>
 ${inPref.map((x) => `<tr id="m${x.code}"><td>${urlOf(x.code) ? `<a href="${urlOf(x.code)}">${esc(x.name)}</a>` : esc(x.name)}</td><td>${fmt(x.pop)}</td><td>${signed(x.rate)}</td><td>${r1(x.per).toFixed(1)}</td></tr>`).join('\n')}
@@ -38,5 +38,6 @@ ${srcKokusei(munis)}`;
       [[`1世帯${per.toFixed(1)}人で1週間に水約${need(cc.per.mizu, per, 7)}L・携帯トイレ約${need(cc.per.toilet, per, 7)}回分。`, `1世帯の平均は${per.toFixed(1)}人。`]],
     ),
     body,
+    hashira: true,
   };
 }
