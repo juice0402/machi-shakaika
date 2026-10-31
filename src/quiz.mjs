@@ -40,14 +40,15 @@ export function rng(seed) {
   };
 }
 
-// /quiz/machi.json：都道府県47と全国の市区町村（どっちが多い・ドボンクイズが開いたときに読む）
-export function machiData(areas, urlOf) {
+// /quiz/machi.json：都道府県47と全国の市区町村（クイズのページが開いたときに読む）
+//   市区町村の行の最後は読みがな（この街はどこ？で使う。data/yomi.json がないときは ''）
+export function machiData(areas, urlOf, yomi = null) {
   const vals = (a) => METRICS.map((m) => keep(m, a[m.key]));
   const prefs = PREFS.map((p) => [p.code, p.name, p.slug, ...vals(plus(derive(areas[`${p.code}000`])))]);
   const munis = muniList(areas)
     .map(plus)
     .sort((x, y) => (x.code < y.code ? -1 : 1))
-    .map((a) => [a.code, a.name, urlOf(a.code) ?? 0, ...vals(a)]);
+    .map((a) => [a.code, a.name, urlOf(a.code) ?? 0, ...vals(a), yomi?.munis?.[a.code] ?? '']);
   return { m: METRICS.map((m) => [m.q, m.top, m.unit, m.digits, m.diff ?? 0, m.rel ?? 0]), prefs, munis };
 }
 
