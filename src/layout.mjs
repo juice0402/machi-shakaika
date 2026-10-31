@@ -169,6 +169,7 @@ export const RAKUTEN_CREDIT = `<!-- Rakuten Web Services Attribution Snippet FRO
 export const FOOT_LINKS = [
   ['/about/', 'このサイトについて'],
   ['/privacy/', 'プライバシーポリシー'],
+  [SITE.contact, 'お問い合わせ'], // 楽天のページ（p.rakuten）では外へのリンクを出さない（楽天 API の規約。お問い合わせは /about/ から）
 ];
 
 // 共有画像（10/27 しょーくんが案B：トップの絵と明朝の名前と川の線。作り方は tools/og/）。ページごとの画像は p.og
@@ -221,7 +222,8 @@ ${p.body}
 </main>
 </div>
 ${townHtml()}<footer class="ft">
-<div class="fl">${FOOT_LINKS.map(([h, t]) => `<a href="${h}">${t}</a>`).join('')}</div>
+<div class="fl">${FOOT_LINKS.filter(([h]) => !(p.rakuten && h.startsWith('http'))).map(([h, t]) => `<a href="${esc(h)}"${h.startsWith('http') ? ' rel="noopener"' : ''}>${t}</a>`).join('')}</div>
+${p.rakuten ? '' : '<p>お問い合わせは、名前とメールを書かなくても送れます。</p>'}
 <p>${esc(ESTAT_CREDIT)}</p>
 ${p.gsi ? '<p>出典：<a href="https://www.gsi.go.jp/bousaichiri/hinanbasho.html">国土地理院ウェブサイト</a>（指定緊急避難場所・指定避難所データ）</p>' : ''}
 ${p.rakuten ? `<p>${RAKUTEN_CREDIT}</p>` : ''}
