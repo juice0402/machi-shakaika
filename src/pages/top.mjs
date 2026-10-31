@@ -35,18 +35,19 @@ function moreHtml({ cc, munis }) {
     const nm = (r) => (r[2] ? `<a href="${r[2]}">${esc(r[1])}</a>` : esc(r[1]));
     const { up, byRate } = rankingData({ munis, list });
     const top1 = byRate[0];
+    const prevYear = Number(munis.survey.slice(0, 4)) - 5; // 国勢調査は5年ごと。くらべるのは前の回の人口
     out.push(`<section class="prose">${h2('街の数字')}
 <p>市区町村のページには、国勢調査の人口と世帯の数、年齢と世帯の割合を、全国の中の位置といっしょに出しています。数字は${jpDate(munis.survey)}のもので、${jpDate(munis.published)}に公表されました。</p>
-<p>たとえば${pn}の<a href="${url.get(a.code)}">${esc(a.name)}</a>は、人口${fmt(a.pop)}人、世帯の数は${fmt(a.hh)}です。1世帯の平均は${per.toFixed(1)}人で、この人数で${cc.days.better}日分を計算すると、水は約${need(cc.per.mizu, per, cc.days.better)}Lです。</p>
+<p>たとえば${pn}の<a href="${url.get(a.code)}">${esc(a.name)}</a>は、人口${fmt(a.pop)}人、世帯の数は${fmt(a.hh)}です。一般世帯の1世帯の人数は${per.toFixed(1)}人で、この人数で${cc.days.better}日分を計算すると、水は約${need(cc.per.mizu, per, cc.days.better)}Lです。</p>
 ${near.length === 2 ? `<p><a href="/niteru/">数字が似ている街</a>で${esc(a.name)}を入れると、いちばん近いのは${nm(near[0])}で、次が${nm(near[1])}です。人口や年齢の割合などの近さで、住みやすさの近さではありません。</p>` : ''}
-${top1 ? `<p>2020年から<a href="/ranking/jinko/">人口が増えた市区町村</a>は、全国で${fmt(up.length)}あります。人口${fmt(MIN_POP / 10000)}万人以上の街で増えた割合がいちばん大きいのは、${esc(PREF_NAME.get(top1.code.slice(0, 2)) ?? '')}の${esc(top1.name)}の${rateText(top1)}です。</p>` : ''}
+${top1 ? `<p>${prevYear}年から<a href="/ranking/jinko/">人口が増えた市区町村</a>は、全国で${fmt(up.length)}あります。人口${fmt(MIN_POP / 10000)}万人以上の街で増えた割合がいちばん大きいのは、${esc(PREF_NAME.get(top1.code.slice(0, 2)) ?? '')}の${esc(top1.name)}の${rateText(top1)}です。</p>` : ''}
 </section>`);
   }
   const { by, days } = cc;
   const q = (id, n, d) => `${fmt(need(by[id].per_day, n, d))}${esc(by[id].unit)}`;
   out.push(`<section class="prose">${h2('家の備え')}
 <p>このページの計算は、${esc(cc.perText)}に、人数と日数をかけています。2人で${days.better}日分なら、水は${q('mizu', 2, days.better)}、食事は${q('shushoku', 2, days.better)}です。携帯トイレは${q('keitai-toilet', 2, days.better)}になります。</p>
-<p>備えの知識のページには、どの資料の数字かと、その資料を確かめた日を書いています。<a href="/hinmoku/">備えの品目</a>のページでは、人数と日数の早見表を見られます。</p>
+<p><a href="/hinmoku/">備えの品目</a>のページでは、量を出せる品目の早見表を見られます。</p>
 </section>`);
   return out.join('\n');
 }

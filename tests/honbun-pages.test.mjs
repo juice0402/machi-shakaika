@@ -8,7 +8,7 @@ import { calcConf, need } from '../src/calc.mjs';
 import { muniList } from '../src/stats.mjs';
 import { kazuData } from '../src/machi-tools.mjs';
 import { mtDiff } from '../src/machi-core.mjs';
-import { machiData } from '../src/quiz.mjs';
+import { machiData, METRICS } from '../src/quiz.mjs';
 import { qDobonTopics } from '../src/quiz-core.mjs';
 import { KYOU_ORDER } from '../src/kyou.mjs';
 import { page } from '../src/layout.mjs';
@@ -84,21 +84,25 @@ test('クイズ5：本文600字以上・広告なし・問題の数はページ�
   for (const p of ps) {
     assert.equal(p.noAds, true, p.path);
     assert.ok(count(p) >= HONBUN_MIN, `${p.path} ${count(p)}字`);
-    assert.ok(/送りません/.test(p.body), `${p.path}：答えを送らないことを書く`);
+    // 答えは送らない：読むのは /quiz/machi.json だけ、sendBeacon・XMLHttpRequest・POST を使わない
+    for (const m of (p.script ?? '').matchAll(/fetch\(([^)]*)\)/g)) assert.equal(m[1], "'/quiz/machi.json'", `${p.path}：fetch(${m[1]})`);
+    assert.ok(!/sendBeacon|XMLHttpRequest|method\s*:/.test(p.script ?? ''), `${p.path}：送る処理がある`);
     wording(p, /docchi|dobon/.test(p.path) ? 'しくみ</h2>' : '数字のもと</h2>');
   }
   const by = (x) => ps.find((p) => p.path === x);
   assert.ok(by('/quiz/docchi/').script.includes(`N=${DOCCHI_N};`));
   assert.ok(by('/quiz/sonae/').script.includes(`N=${SONAE_N},`));
-  assert.ok(by('/quiz/').body.includes(`>${SONAE_KINDS}種類のひな形<`));
+  assert.ok(by('/quiz/').body.includes(`>${SONAE_KINDS}種類の問題の型<`));
   assert.ok(by('/quiz/dobon/').body.includes(`お題は全部で${qDobonTopics(machi).length.toLocaleString('ja-JP')}あります`));
   // 今日の1問：題の順番は KYOU_ORDER のまま、今日の答えはページの下に書かない（例はきのうの1問）
   const k = by('/quiz/kyou/');
   const ol = [...k.body.matchAll(/<ol>([\s\S]*?)<\/ol>/g)].map((m) => m[1]).join('');
   assert.equal((ol.match(/<li>/g) ?? []).length, KYOU_ORDER.filter((i) => i < machi.m.length).length);
   assert.ok(k.body.includes('10月28日（水）の問題'));
-  // 減り方・65歳以上はクイズの題にしないと書く（題にはしない）
-  assert.ok(/人口の減り方/.test(by('/quiz/').body));
+  // 減り方・65歳以上はクイズの題にしない（くらべる数字に入っていない）
+  const keys = METRICS.map((m) => m.key);
+  for (const k of ['rate', 'popChange', 'popChangeRate', 'p65', 'age65', 'age75', 'single65', 'with65', 'pWith65']) assert.ok(!keys.includes(k), k);
+  assert.ok(!machi.m.some((m) => /65歳|減/.test(m[0] + (m[1] ?? ''))));
 });
 
 test('道具：/kurabe/・/niteru/ の例はデータから作り、ページの計算と同じ', { skip }, () => {

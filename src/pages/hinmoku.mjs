@@ -70,11 +70,11 @@ function jimae(it, items, sources) {
   const { min, better } = items.days;
   const y = items.yohairyo_days;
   const cols = [...new Set([...items.days.choices, y])];
-  const kigen = `<p>期限は<a href="/dougu/kigen/">期限メモ</a>に入れると、近い順に並びます。期限の${KIGEN_NOTICE_DAYS}日前に知らせる予定を、カレンダーに入れることもできます。</p>`;
-  const nocount = '<p>目安の数は公的な資料で確かめていないので、このページでは数を出していません。';
+  // 期限メモの1行（品目ごとに言い方を変える。同じ文を4ページに並べない）
+  const kigen = (what, tail) => `<p>${what}は<a href="/dougu/kigen/">期限メモ</a>に入れると、近い順に並びます。${tail}</p>`;
   const T = {
     mizu: {
-      src: ['nerima-yohairyo', 'kantei-sonae', 'bousai-teiden', 'maff-tanshin', 'maff-shuno', 'maff-guide'],
+      src: ['nerima-yohairyo', 'kantei-sonae', 'bousai-teiden', 'chiba-pref-mansion', 'suginami-mansion', 'maff-tanshin', 'maff-guide'],
       html: `${h2('人数と日数の早見表')}
 <p>1人1日${it.per_day}${esc(it.unit)}に、人数と日数をかけた量です。${min}日分は最低のめやす、${better}日分は大きな災害に備える量です。</p>
 ${hayami(it, cols)}
@@ -84,27 +84,27 @@ ${h2('量にふくまれる水')}
 <p>${pub('miyagi-mizu')}と${pub('kantei-sonae')}の備えの例でも、生活用水は飲み水と分けて書かれています。</p>
 <p>マンションなどでは、停電で建物の給水ポンプが止まり、断水になることがあります。建物ごとの備えは<a href="/sonae/mansion/">マンション（共同住宅）の備え</a>に。</p>
 ${h2('置き場所と入れかえ')}
-<p>水は重く、場所もとります。${pub('maff-tanshin')}の単身者向けのガイドは、食品を台所に置かなくてもよいとしています。クローゼットのすき間やベッドの下も使えます。</p>
-<p>ふだん飲む水を多めに買い、古いものから飲んで買い足すと、期限の近いものが残りにくくなります。この備え方を<a href="/sonae/rolling-stock/">ローリングストック</a>といいます。</p>
-${kigen}`,
+<p>${pub('maff-tanshin')}の単身者向けのガイドは、食品について、台所に置かなくてもよいと紹介しています。クローゼットのすき間やベッドの下も使えるとしています。</p>
+<p>ふだん使いながら買い足していく備え方は、<a href="/sonae/rolling-stock/">ローリングストック</a>のページにまとめました。</p>
+${kigen('ボトルの期限', `期限の${KIGEN_NOTICE_DAYS}日前に知らせる予定を、カレンダーに入れることもできます。`)}`,
     },
     shushoku: {
-      src: ['nerima-yohairyo', 'maff-guide', 'maff-shuno'],
+      src: ['nerima-yohairyo', 'kantei-sonae', 'maff-guide', 'maff-shuno'],
       html: `${h2('人数と日数の早見表')}
 <p>1人1日${it.per_day}${esc(it.unit)}に、人数と日数をかけた数です。${pub('maff-sonae')}は、食品の備えを最低${min}日分から${better}日分、人数分そろえるよう勧めています。</p>
 ${hayami(it, cols)}
-<p>${y}日分は、ふだんの食事や薬が手に入りにくくなると困りやすい人がいる家のめやすです。</p>
+<p>${y}日分は、乳幼児・妊産婦・高齢者・慢性疾患や食物アレルギーのある人などがいる家のめやすです。</p>
 ${h2('そろえ方')}
-<p>主食は、米やパックごはんなどです。缶詰やレトルトのおかず、野菜の缶詰や乾物と組み合わせて、ふだんの食事に近い形でそろえます。</p>
+<p>${pub('kantei-sonae')}の備えの例には、非常食として、ご飯や缶詰、乾パンなどが入っています。</p>
 <p>かむ力や飲みこむ力が弱い家族には、やわらかい介護食品やとろみ調整食品を用意します。食物アレルギーのある家族の食品も、ふだんから回しながら置いておきます。</p>
-<p>ごはんを温めたり湯をわかしたりするには、<a href="/hinmoku/gas/">カセットコンロとボンベ</a>も要ります。</p>
+<p>${pub('maff-sonae')}の大人1人1週間の例には、食品と水のほかに<a href="/hinmoku/gas/">カセットコンロとボンベ</a>も入っています。</p>
 ${h2('置き場所と入れかえ')}
 <p>${pub('maff-shuno')}のストックガイドは、置き場所を分ける方法を紹介しています。毎日使う食品は台所で回し、たまに使うものは押し入れなどに置きます。</p>
 <p>中身が見える箱に入れ、箱の横に期限を書いておきます。重いものは下に置き、入りきらない分は家のすき間に分けて置きます。</p>
-${kigen}`,
+${kigen('賞味期限', '箱の横に書いた期限と、同じ日を入れておけます。')}`,
     },
     'keitai-toilet': {
-      src: ['miyagi-mizu', 'nagasaki-mochidashi', 'kantei-sonae'],
+      src: ['chiba-pref-mansion', 'miyagi-mizu', 'nagasaki-mochidashi', 'kantei-sonae'],
       html: `${h2('人数と日数の早見表')}
 <p>1人1日${it.per_day}回に、人数と日数をかけた回数です。${pub('hiroshima-toilet')}は、${it.per_day}回×家族の人数×${min}日分、できれば${better}日分をめやすにしています。</p>
 ${hayami(it, cols)}
@@ -114,47 +114,47 @@ ${h2('使えなくなるとき')}
 <p>マンションなどの集合住宅で、配管が傷んだまま流すと、下の階で汚水があふれるおそれがあります。${pub('kanagawa-toilet')}が注意をよびかけていることです。</p>
 <p>配管の状態がわかるまでは、携帯トイレを使います。断水のあいだ、トイレを流す生活用水は飲み水とは別に要ります。</p>
 ${h2('置き場所と入れかえ')}
-<p>携帯トイレは、家に置く備えと持ち出す袋の両方に入る品目です。${pub('nagasaki-mochidashi')}の非常持出品の例にも入っています。</p>
+<p>このサイトのチェックリストでは、携帯トイレは家に置く備えと持ち出す袋の両方に入っています。${pub('nagasaki-mochidashi')}の非常持出品の例にもあります。</p>
 <p>トイレットペーパーやティッシュペーパーも、${pub('kantei-sonae')}の備えの例にあります。<a href="/dougu/check/">チェックリスト</a>で、ほかの品目とあわせて確かめられます。</p>
-${kigen.replace('期限は', '使用期限は')}`,
+${kigen('使用期限', `${KIGEN_NOTICE_DAYS}日前に通知が来るように、カレンダーにも入れられます。`)}`,
     },
     gas: {
       src: ['hepco-saigai', 'hokkaido-gas-teiden', 'caa-hakkaden', 'maff-shuno', 'maff-tanshin'],
       html: `${h2('出典の例')}
 <p>上の数は、${pub('maff-sonae')}が示す大人1人の例です。家族の人数での数え方は出典で確かめていないので、このページは例の数だけを出しています。何本要るかは、家で何に使うかで変わります。</p>
 ${h2('使う場面')}
-<p>停電するとIHは使えません。${pub('hepco-saigai')}は、停電のときにカセットコンロを使うなら換気に気をつけるよう書いています。</p>
+<p>停電するとIHは使えません。カセットコンロを使うときの換気の注意は、${pub('hepco-saigai')}の災害の備えのページにあります。</p>
 <p>ガスの給湯器や暖房機の中にも、電気がないと動かないものがあります。${pub('hokkaido-gas-teiden')}のページにある注意です。冬の停電は<a href="/sonae/fuyu-teiden/">冬の停電と寒さの備え</a>に。</p>
-<p>主食やレトルトを温めたり、湯をわかしたりするのに使います。主食の量は<a href="/hinmoku/shushoku/">備蓄の主食</a>に。</p>
+<p>${pub('maff-sonae')}の大人1人1週間の例では、食品や水と同じ例の中にコンロとボンベがあります。主食の量は<a href="/hinmoku/shushoku/">備蓄の主食</a>に。</p>
 ${h2('使うときの注意')}
-<p>${pub('caa-hakkaden')}は、コンロを並べて使わないことと、大きな調理器具をのせないことを注意しています。ボンベは正しくつけます。</p>
+<p>コンロを並べて使わないこと、大きな調理器具をのせないことは、${pub('caa-hakkaden')}の注意です。ボンベは正しくつけます。</p>
 ${h2('置き場所と入れかえ')}
-<p>${pub('maff-shuno')}のストックガイドは、コンロとボンベを同じ場所に置くよう紹介しています。単身者向けのガイドには、コンロをケースに入れて立てて置く方法もあります。</p>
-${kigen.replace('期限は', 'ボンベの期限は')}`,
+<p>${pub('maff-shuno')}のストックガイドには、コンロとボンベを同じ場所に置く例があります。単身者向けのガイドには、コンロをケースに入れて立てて置く方法もあります。</p>
+${kigen('ボンベの期限', '水や主食の期限とあわせて、1つの一覧で見られます。')}`,
     },
     light: {
       src: ['osaka-bichiku', 'bousai-teiden', 'tfd-jishin', 'bousai-kitaku', 'cbr-mie-fuyu'],
       html: `${h2('出典の例')}
-${nocount}${pub('osaka-bichiku')}の備蓄品のリスト例では、懐中電灯と予備の電池が生活用品に入っています。</p>
+<p>ライトを何個そろえるかの目安は、公的な資料で確かめていません。${pub('osaka-bichiku')}の備蓄品のリスト例では、懐中電灯と予備の電池が生活用品に入っています。</p>
 ${h2('使う場面')}
-<p>${pub('bousai-teiden')}は、停電に備えて足元灯や懐中電灯を用意するよう書いています。</p>
-<p>${pub('tfd-jishin')}は、割れたガラスでけがをしないように、懐中電灯とスリッパやスニーカーを用意するよう勧めています。地震の前の備えは<a href="/sonae/jishin/">地震の前に足すもの</a>に。</p>
+<p>停電に備える項目として、足元灯や懐中電灯が${pub('bousai-teiden')}のページにあります。</p>
+<p>${pub('tfd-jishin')}の地震に対する備えには、懐中電灯とスリッパやスニーカーが入っています。地震の前の備えは<a href="/sonae/jishin/">地震の前に足すもの</a>に。</p>
 <p>職場の備蓄の例にも、懐中電灯が入っています。内閣府の帰宅困難者のガイドラインにあるもので、<a href="/sonae/kitaku-konnan/">職場と通勤の備え</a>にまとめました。</p>
-<p>雪道を走る車に積むものの例にもあります。<a href="/sonae/kuruma-taisetsu/">車の大雪の備え</a>に。</p>
-${h2('置き場所と入れかえ')}
+<p>雪道を走る前に準備しておきたいものの例にもあります。<a href="/sonae/kuruma-taisetsu/">車の大雪の備え</a>に。</p>
+${h2('どの備えに入るか')}
 <p>${pub('nagasaki-mochidashi')}の例では持ち出す袋に、${pub('osaka-bichiku')}の例では家に置く備えに入っています。</p>
 <p>電池で動くライトは、予備の乾電池もあわせて置きます。乾電池の期限は<a href="/dougu/kigen/">期限メモ</a>に入れられます。</p>`,
     },
     battery: {
       src: ['osaka-bichiku', 'hepco-saigai', 'chiba-zaitaku', 'bousai-teiden', 'bousai-kitaku'],
       html: `${h2('出典の例')}
-${nocount}${pub('osaka-bichiku')}の備蓄品のリスト例では、携帯電話の充電器とモバイルバッテリーが生活用品に入っています。</p>
+<p>何個あればよいかは公的な資料で確かめていないので、数は書いていません。${pub('osaka-bichiku')}の備蓄品のリスト例では、携帯電話の充電器とモバイルバッテリーが生活用品に入っています。</p>
 ${h2('使う場面')}
-<p>${pub('hepco-saigai')}は、長い停電に備えて予備のバッテリーを用意するよう書いています。${pub('chiba-zaitaku')}の在宅避難の備えにも、ポータブル電源やモバイルバッテリーがあります。</p>
-<p>電気で動く医療機器を使う家は、予備のバッテリーや代わりの手段も考えます。${pub('bousai-teiden')}の停電対策のページにある項目です。</p>
-<p>スマホは家族との連絡にも使います。内閣府の帰宅困難者のガイドラインは、連絡の手段をいくつか決めておくよう書いています。災害用伝言ダイヤルは${esc(items.kitaku.dengon)}です。</p>
-${h2('置き場所と入れかえ')}
-<p>${pub('nagasaki-mochidashi')}の例では持ち出す袋に、${pub('osaka-bichiku')}の例では家に置く備えに入っています。家で過ごすときの備えは<a href="/sonae/zaitaku-hinan/">在宅避難の備え</a>に。</p>`,
+<p>長い停電への備えとして、予備のバッテリーが${pub('hepco-saigai')}のページにあります。${pub('chiba-zaitaku')}の在宅避難の備えにも、ポータブル電源やモバイルバッテリーがあります。</p>
+<p>電気で動く医療機器を使う家は、予備のバッテリーを用意します。${pub('bousai-teiden')}の停電対策のページにある項目です。</p>
+<p>家族との連絡について、内閣府の帰宅困難者のガイドラインは、いくつかの手段を決めておくよう書いています。災害用伝言ダイヤルは${esc(items.kitaku.dengon)}です。</p>
+${h2('どの備えに入るか')}
+<p>持ち出す袋に入れる例は${pub('nagasaki-mochidashi')}に、家に置く備蓄品の例は${pub('osaka-bichiku')}にあります。家で過ごすときの備えは<a href="/sonae/zaitaku-hinan/">在宅避難の備え</a>に。</p>`,
     },
   };
   const t = T[it.id];
@@ -180,7 +180,7 @@ ${none.length ? `<p>${nm(none)}は、目安の数を公的な資料で確かめ�
 ${h2('例')}
 ${by.mizu && by.shushoku && by['keitai-toilet'] ? `<p>4人家族が${better}日分をそろえると、水は${q('mizu', 4, better)}、主食は${q('shushoku', 4, better)}です。携帯トイレは${q('keitai-toilet', 4, better)}になります。</p>
 <p>高齢の家族や小さな子どもがいる家は、少なくとも${y}日分がめやすです。3人の家なら、水は${q('mizu', 3, y)}、携帯トイレは${q('keitai-toilet', 3, y)}です。</p>` : ''}
-<p>品目のページには、人数と日数の早見表と、置き場所や入れかえのことをまとめました。${saigai ? '' : '楽天市場の商品も、毎朝えらび直して並べています。'}</p>
+<p>${calc.map((it) => esc(it.name)).join('・')}のページには、人数と日数の早見表があります。ほかの品目のページには、どの資料の例に入っているかをまとめました。${saigai ? '' : '楽天市場の商品も、毎朝えらび直して並べています。'}</p>
 </div>`;
 }
 
