@@ -1,8 +1,34 @@
 // 備えの知識（/sonae/）と計算のページ（/dougu/keisan/）
 // 数字はすべて data/items.yml から。出典は data/sources.yml の id で書き、ページの下に確認日つきで出す
-import { esc, h2, jpDate, fit, srcName } from '../layout.mjs';
+import { esc, h2, jpDate, fit, srcName, srcKokusei } from '../layout.mjs';
 import { calcHtml, CALC_JS, need } from '../calc.mjs';
 import { a8Ad } from '../a8.mjs';
+import { readMunis } from '../munis.mjs';
+import { resolveCities } from '../areas.mjs';
+import { derive, r1 } from '../stats.mjs';
+
+// 備えのページに出す街の例（国勢調査の数字から。データがなければ null で、例の文を出さない）
+//   くわしく見られる街（市区町村ページのある街）だけから、1世帯の人数がいちばん多い・少ない街と、共同住宅・ひとり暮らしの割合がいちばん高い街
+export function machiRei(munis) {
+  if (!munis?.areas?.['00000']) return null;
+  const { cities } = resolveCities(munis.areas);
+  const cs = cities.map((c) => ({ ...derive(munis.areas[c.code]), url: `/${c.pref}/${c.slug}/` })).filter((x) => x.per > 0);
+  if (cs.length < 2) return null;
+  const by = (k) => [...cs].sort((x, y) => y[k] - x[k] || (x.code < y.code ? -1 : 1));
+  const kyodo = by('pKyodo')[0];
+  return {
+    munis,
+    z: derive(munis.areas['00000']),
+    n: cs.length,
+    perMax: by('per')[0],
+    perMin: by('per').at(-1),
+    kyodo,
+    kyodoHalf: cs.filter((x) => x.pKyodo > 50).length,
+    single: by('pSingle').find((x) => x.code !== kyodo.code),
+  };
+}
+const pct1 = (v) => `${r1(v).toFixed(1)}%`;
+const per1 = (v) => r1(v).toFixed(1);
 
 export function sourceList(ids, sources) {
   const by = new Map(sources.sources.map((s) => [s.id, s]));
@@ -23,8 +49,11 @@ function hayami(cc, id, unit) {
   return `<table class="tbl"><thead><tr><th>人数</th>${cc.days.choices.map((d) => `<th>${d}日分</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>`;
 }
 
-export function sonaePages({ cc, items, sources }) {
+export function sonaePages({ cc, items, sources, munis = readMunis() }) {
   const { by, days } = cc;
+  const rei = machiRei(munis);
+  const gas = by.gas;
+  const link = (c) => `<a href="${c.url}">${esc(c.name)}</a>`;
   const w = by.mizu.per_day;
   const m = by.shushoku.per_day;
   const t = by['keitai-toilet'].per_day;
@@ -42,7 +71,24 @@ export function sonaePages({ cc, items, sources }) {
 <h1 class="city">備えの知識</h1>
 <p class="lead">公的な資料の数字をもとに、家の備えを人数と日数で考える</p>
 <ul class="list"><li><a href="/sonae/bichiku/">備蓄の量のめやす</a></li><li><a href="/sonae/rolling-stock/">ローリングストック</a></li><li><a href="/sonae/keitai-toilet/">携帯トイレの備え</a></li><li><a href="/sonae/fuyu-teiden/">冬の停電と寒さの備え</a></li><li><a href="/sonae/jishin/">地震の前に足すもの</a></li><li><a href="/sonae/zaitaku-hinan/">在宅避難の備え</a></li><li><a href="/sonae/akachan-koureisha/">赤ちゃん・高齢の家族がいる家の備え</a></li><li><a href="/sonae/hitorigurashi/">ひとり暮らしの備え</a></li><li><a href="/sonae/mansion/">マンション（共同住宅）の備え</a></li><li><a href="/sonae/kuruma-taisetsu/">車の大雪の備え</a></li><li><a href="/sonae/kitaku-konnan/">職場と通勤の備え</a></li><li><a href="/dougu/keisan/">備蓄の量を計算する</a></li><li><a href="/dougu/check/">チェックリスト</a></li><li><a href="/hinmoku/">品目ごとのめやす</a></li><li><a href="/quiz/sonae/">備えの数字クイズ</a></li></ul>
-<p class="note">発生したときの行動や避難の判断は、お住まいの自治体の案内とハザードマップを優先してください。</p>`,
+<p class="note">発生したときの行動や避難の判断は、お住まいの自治体の案内とハザードマップを優先してください。</p>
+<div class="prose">
+${
+  rei
+    ? `${h2('街の数字で見る')}
+<p>市区町村のページでは、その街の1世帯の平均人数で、1週間分の水と携帯トイレの量を出しています。</p>
+<p>くわしく見られる${rei.n}の街で1世帯の人数がいちばん多いのは${link(rei.perMax)}の${per1(rei.perMax.per)}人で、1週間分の水は約${need(w, r1(rei.perMax.per), 7)}Lです。いちばん少ない${link(rei.perMin)}は${per1(rei.perMin.per)}人で、約${need(w, r1(rei.perMin.per), 7)}Lです。</p>
+<p>共同住宅に住む世帯が${pct1(rei.kyodo.pKyodo)}の${link(rei.kyodo)}のページからは、<a href="/sonae/mansion/">マンション（共同住宅）の備え</a>につながります。ひとり暮らしの世帯が${pct1(rei.single.pSingle)}の${link(rei.single)}からは、<a href="/sonae/hitorigurashi/">ひとり暮らしの備え</a>につながります。</p>`
+    : ''
+}
+${h2('人数と日数の例')}
+<p>1人1日の量は、水${w}L、携帯トイレ${t}回がめやすです。4人家族の${days.better}日分なら、水は${need(w, 4, days.better)}L、携帯トイレは${need(t, 4, days.better)}回分になります。</p>
+<p>ひとり暮らしの${days.better}日分は、水${need(w, 1, days.better)}Lと主食${need(m, 1, days.better)}食です。高齢の家族や小さな子どもがいる家は${y}日分がめやすで、2人なら水は${need(w, 2, y)}Lです。</p>
+<p>カセットコンロのボンベは、${esc(gas.example_text)}${gas.example_qty}${esc(gas.unit)}です。</p>
+</div>
+${h2('出典')}
+${sourceList([...new Set([...days.sources, ...by.mizu.sources, ...by.shushoku.sources, ...by['keitai-toilet'].sources, ...items.yohairyo_sources, ...gas.sources])], sources)}
+${rei ? srcKokusei(rei.munis) : ''}`,
   });
 
   out.push({
@@ -89,10 +135,12 @@ ${h2('災害用の食品とのちがい')}
 <p>しまいこむ非常食とちがって、ふだんの買い物の中で回すので、期限の近いものから食べていけば、むだになりにくくなります。災害のあとも、食べ慣れた味のものを食べられます。</p>
 ${h2('どれだけ置いておくか')}
 <p>めやすは最低${days.min}日分、できれば${days.better}日分。1人1日${m}食で数えると、4人家族の${days.better}日分は${need(m, 4, days.better)}食です。水は1人1日${w}Lなので、同じ4人の${days.better}日分は${need(w, 4, days.better)}Lになります。</p>
-<p>主食（米、パックごはん、めん）、主菜になるもの（缶詰、レトルト）、野菜や果物の缶詰や乾物などを、ふだんの食事に近い形で組み合わせます。</p>
+<p>ひとり暮らしなら、${days.better}日分は主食${need(m, 1, days.better)}食と水${need(w, 1, days.better)}Lです。</p>
+<p>主食は米、パックごはん、めん。主菜になるものは缶詰やレトルトです。野菜や果物の缶詰や乾物も足して、ふだんの食事に近い形で組み合わせます。</p>
 ${h2('回し方')}
 <p>買ってきたものは奥に入れて、手前の古いものから使う。使ったら、次の買い物で同じものを買い足す。このくり返しで、置いてある量が保たれます。</p>
-<p>停電やガスが止まったときのために、<a href="/hinmoku/gas/">カセットコンロとボンベ</a>もあわせて用意しておくと、温かい食事が作れます。</p>
+<p>どれの期限が近いかは、<a href="/dougu/kigen/">賞味期限のメモ</a>に書いておくと、買い足す順番がわかります。</p>
+<p>停電やガスが止まったときのために、<a href="/hinmoku/gas/">カセットコンロとボンベ</a>もあわせて用意しておくと、温かい食事が作れます。ボンベの数は、${esc(gas.example_text)}${gas.example_qty}${esc(gas.unit)}です。</p>
 <p>ひとり暮らしで置き場所がせまいときは<a href="/sonae/hitorigurashi/">ひとり暮らしの備え</a>に。</p>
 <p><a class="go" href="/dougu/keisan/">わが家の人数で計算する</a></p>
 </div>
@@ -114,15 +162,27 @@ ${sourceList(['maff-guide', 'maff-sonae', 'maff-stock'], sources)}`,
 ${h2('どれだけ要るか')}
 <p>内閣府の避難所のトイレのガイドラインでは、1人1日${t}回をめやすにしています。家の備えも同じ数で考えると、4人家族の${days.better}日分は${need(t, 4, days.better)}回分です。自治体の多くは、最低${days.min}日分、できれば${days.better}日分の備えを勧めています。</p>
 ${hayami(cc, 'keitai-toilet', '回分')}
+<p>ひとり暮らしなら、${days.min}日分で${need(t, 1, days.min)}回分、${days.better}日分で${need(t, 1, days.better)}回分です。</p>
+${
+  rei
+    ? `<p>全国の1世帯の平均は${per1(rei.z.per)}人で、この人数の${days.better}日分は約${need(t, r1(rei.z.per), days.better)}回分です。市区町村のページでは、その街の平均人数で1週間分を出しています。</p>`
+    : ''
+}
 ${h2('マンションなど集合住宅の場合')}
 <p>建物の配管が傷んでいるのに気づかずに流すと、下の階で汚水があふれるおそれがあると、神奈川県は注意をよびかけています。配管の状態がわかるまでは、携帯トイレを使います。</p>
+${
+  rei
+    ? `<p>共同住宅に住む世帯は、全国で${pct1(rei.z.pKyodo)}です。くわしく見られる${rei.n}の街のうち${rei.kyodoHalf}の街で半分をこえ、いちばん高い${link(rei.kyodo)}は${pct1(rei.kyodo.pKyodo)}です。</p>`
+    : ''
+}
 <p>エレベーターや水のポンプが止まることは<a href="/sonae/mansion/">マンション（共同住宅）の備え</a>に、家で過ごすための水や明かりの備えは<a href="/sonae/zaitaku-hinan/">在宅避難の備え</a>に。</p>
 <p><a href="/hinmoku/keitai-toilet/">携帯トイレの品目と商品</a></p>
 <p><a class="go" href="/dougu/keisan/">わが家の人数で計算する</a></p>
 </div>
 ${a8Ad('stoole')}
 ${h2('出典')}
-${sourceList(by['keitai-toilet'].sources, sources)}`,
+${sourceList(by['keitai-toilet'].sources, sources)}
+${rei ? srcKokusei(rei.munis) : ''}`,
   });
 
   out.push({

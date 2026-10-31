@@ -1,6 +1,6 @@
 // 都道府県のページ（/都道府県/）。パソコンの広い画面では、1世帯の計算と「くわしく見られる街」が右の柱（.side）。県全体の数字と、県内の市区町村の一覧（人口の多い順）
 import { esc, fmt, h2, srcKokusei, fit } from '../layout.mjs';
-import { derive, r1 } from '../stats.mjs';
+import { derive, r1, prefRangeText } from '../stats.mjs';
 import { need } from '../calc.mjs';
 
 const signed = (v) => `${v > 0 ? '+' : ''}${r1(v).toFixed(1)}%`;
@@ -20,6 +20,9 @@ export function prefPage({ pref, munis, list, z, cc, urlOf }) {
 <div class="side"><p class="s1">1世帯の平均人数（${per.toFixed(1)}人）で計算すると、1週間に 水 <b>約${need(cc.per.mizu, per, 7)}L</b>・携帯トイレ <b>約${need(cc.per.toilet, per, 7)}回分</b><br><a class="go" href="/dougu/keisan/?d=7">わが家の人数で計算</a></p>
 ${srcKokusei(munis)}
 ${withPage.length ? `${h2('くわしく見られる街')}<ul class="list cols">${withPage.map((x) => `<li><a href="${urlOf(x.code)}">${esc(x.name)}</a></li>`).join('')}</ul>` : ''}</div>
+${h2('県内の街の幅')}
+<p>${prefRangeText(list, a).map(esc).join('')}</p>
+${srcKokusei(munis)}
 ${h2('市区町村の人口（多い順）')}
 <table class="tbl"><thead><tr><th>市区町村</th><th>人口</th><th>5年の増減</th><th>1世帯</th></tr></thead><tbody>
 ${inPref.map((x) => `<tr id="m${x.code}"><td>${urlOf(x.code) ? `<a href="${urlOf(x.code)}">${esc(x.name)}</a>` : esc(x.name)}</td><td>${fmt(x.pop)}</td><td>${signed(x.rate)}</td><td>${r1(x.per).toFixed(1)}</td></tr>`).join('\n')}
