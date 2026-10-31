@@ -4,7 +4,7 @@ import { esc, h2, jpDate, fit, srcName, srcKokusei } from '../layout.mjs';
 import { calcHtml, CALC_JS, need } from '../calc.mjs';
 import { a8Ad } from '../a8.mjs';
 import { readMunis } from '../munis.mjs';
-import { resolveCities } from '../areas.mjs';
+import { resolveCities, PREFS } from '../areas.mjs';
 import { derive, r1 } from '../stats.mjs';
 
 // 備えのページに出す街の例（国勢調査の数字から。データがなければ null で、例の文を出さない）
@@ -209,10 +209,6 @@ ${sourceList([...new Set([...days.sources, ...by.mizu.sources, ...by.shushoku.so
 
 // 計算のページ（/dougu/keisan/）の下の説明（夜 #47）：しくみ・1世帯の平均人数で出した例（国勢調査）・よくある問い
 //   例の街は、ページのある市区町村のうち1世帯の平均人数がいちばん多い街と少ない街。人数は市区町村ページと同じく小数1けた
-//   （/sonae/ のページと同じファイルなので、この説明の import と部品はファイルの最後にまとめて置く）
-import { readMunis } from '../munis.mjs';
-import { resolveCities, PREFS } from '../areas.mjs';
-
 const PREF_NAME = new Map(PREFS.map((p) => [p.slug, p.name]));
 function keisanMore(cc, y) {
   const { by, days } = cc;
