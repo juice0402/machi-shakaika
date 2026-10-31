@@ -23,6 +23,7 @@
 | `data/bichiku.yml` | 自治体の備蓄の公表ページ（10/26 に57の街、10/28 に68の街）。市区町村ページの「この街の備え」に1行とリンク。ない街は行ごと出さない。年1回の公表なので題が変わることがある |
 | `scripts/check-links.mjs`・`src/lib/links.mjs`・`linkcheck.mjs` | リンクの点検の本体・集め方・開き方（同じホストは2秒あけ、HEAD→GET、1回だけやり直し） |
 | `scripts/build.mjs`・`verify-dist.mjs`・`changed.mjs` | ビルド・全ページ点検・本番とのちがい |
+| `scripts/honbun.mjs` | 本文の字数と、市区町村の「どの街も同じ文」の割合（verify-dist が使う。`node scripts/honbun.mjs dist` で一覧） |
 | `data/estat.yml` | e-Stat から取る表と項目（名前で指定）。年齢・世帯・住宅は不詳補完値の表 |
 | `scripts/fetch-estat.mjs` → `data/estat/munis.json`・`meta.json` | 表の更新日を見て、変わったときだけ全市区町村の数字を取る。照らし合わせに通らなければ書きかえない |
 | `scripts/fetch-hinan.mjs` → `data/hinan/counts.json`・`list/<コード>.json`・`meta.json` | 避難場所の全国CSV（ETagが変わったときか、ページを作る街の一覧が足りないときだけ作り直す）。数は全市区町村、一覧はページを作る街だけ。件数の見張り。点検は一覧がないと止まる（ローカルだけ `ALLOW_MISSING_HINAN_LIST=1` で注記に。Actions では効かない） |
