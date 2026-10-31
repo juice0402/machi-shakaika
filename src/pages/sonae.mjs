@@ -84,7 +84,7 @@ ${
 ${h2('人数と日数の例')}
 <p>1人1日の量は、水${w}L、携帯トイレ${t}回がめやすです。4人家族の${days.better}日分なら、水は${need(w, 4, days.better)}L、携帯トイレは${need(t, 4, days.better)}回分になります。</p>
 <p>ひとり暮らしの${days.better}日分は、水${need(w, 1, days.better)}Lと主食${need(m, 1, days.better)}食です。高齢の家族や小さな子どもがいる家は${y}日分がめやすで、2人なら水は${need(w, 2, y)}Lです。</p>
-<p>カセットコンロのボンベは、${esc(gas.example_text)}${gas.example_qty}${esc(gas.unit)}です。</p>
+<p>カセットコンロの燃料は、<a href="/hinmoku/gas/">カセットコンロとボンベ</a>に。${esc(gas.example_text)}${gas.example_qty}${esc(gas.unit)}です。</p>
 </div>
 ${h2('出典')}
 ${sourceList([...new Set([...days.sources, ...by.mizu.sources, ...by.shushoku.sources, ...by['keitai-toilet'].sources, ...items.yohairyo_sources, ...gas.sources])], sources)}
@@ -140,7 +140,7 @@ ${h2('どれだけ置いておくか')}
 ${h2('回し方')}
 <p>買ってきたものは奥に入れて、手前の古いものから使う。使ったら、次の買い物で同じものを買い足す。このくり返しで、置いてある量が保たれます。</p>
 <p>どれの期限が近いかは、<a href="/dougu/kigen/">賞味期限のメモ</a>に書いておくと、買い足す順番がわかります。</p>
-<p>停電やガスが止まったときのために、<a href="/hinmoku/gas/">カセットコンロとボンベ</a>もあわせて用意しておくと、温かい食事が作れます。ボンベの数は、${esc(gas.example_text)}${gas.example_qty}${esc(gas.unit)}です。</p>
+<p>停電やガスが止まったときのために、<a href="/hinmoku/gas/">カセットコンロとボンベ</a>もあわせて用意しておくと、温かい食事が作れます。${esc(gas.example_text)}${gas.example_qty}${esc(gas.unit)}です。</p>
 <p>ひとり暮らしで置き場所がせまいときは<a href="/sonae/hitorigurashi/">ひとり暮らしの備え</a>に。</p>
 <p><a class="go" href="/dougu/keisan/">わが家の人数で計算する</a></p>
 </div>
