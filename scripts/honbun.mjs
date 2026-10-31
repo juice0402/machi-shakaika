@@ -7,7 +7,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { PREFS } from '../src/areas.mjs';
 
 export const HONBUN_MIN = 600; // 本文の字数の下限（404 をのぞく全ページ）
-export const KATA_MAX = 0.5; // 型の割合の上限（市区町村ページ）
+export const KATA_MAX = 0.65; // 型の割合の上限（市区町村ページ）。10/31 しょーくん：1画面めと街クイズの決まった文はそのままにし、今（最大65%）より増やさない線
 const SHINGLE = 8;
 
 const ENT = { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'", nbsp: ' ' };
