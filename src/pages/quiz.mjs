@@ -1,13 +1,14 @@
 // クイズの棚（/quiz/）と、どっちが多い（/quiz/docchi/）・ドボンクイズ（/quiz/dobon/）・備えの数字クイズ（/quiz/sonae/）
+// この街はどこ？（/quiz/doko/）・ならべる（/quiz/narabe/）・ヒントで街あて（/quiz/hint/）（#43）
 // 見た目は小テスト：選択肢は「ア・イ・ウ」、正解に赤ペンの丸、まちがえた所にバツ。紙吹雪や絵文字は使わない
 // 回答はどこにも送らない。結果を送るのは「◯問中◯問」の文とURLだけ（見る人がえらんだときだけ）
 // AdSense は置かない（答えのボタンの近くに自動広告が入ると誤クリックをまねくため）
 // どっちが多い・ドボンクイズは、開いたときに /quiz/machi.json（都道府県47と全国の市区町村の数字）を読み、問題を毎回ブラウザで作る
-import { esc, h2, srcKokusei, srcName, jpDate, fmt } from '../layout.mjs';
+import { esc, h2, srcKokusei, srcName, jpDate, fmt, MINCHO } from '../layout.mjs';
 import { PREFS } from '../areas.mjs';
 import { japanMap, JMAP_CSS } from '../japan-map.mjs';
 import { sonaeData, rng } from '../quiz.mjs';
-import { CORE_JS, qFair, qFmt, qDocchi, qDobonTopics, qDobonBoard } from '../quiz-core.mjs';
+import { CORE_JS, qFair, qFmt, qDocchi, qDobonTopics, qDobonBoard, qRegion, qRegionName, qTowns, qDokoPool, qDoko, qNarabe, qHint } from '../quiz-core.mjs';
 import { kyouPool, KYOU_MIN_POP } from '../kyou.mjs';
 import { need } from '../calc.mjs';
 import { fit } from '../layout.mjs';
@@ -15,6 +16,11 @@ import { fit } from '../layout.mjs';
 // 1回の問題の数（ページのスクリプトもこの数を使う。tests/honbun-pages.test.mjs で照らし合わせる）
 export const DOCCHI_N = 10;
 export const SONAE_N = 5;
+export const DOKO_N = 10;
+export const NARABE_N = 5;
+export const HINT_N = 5;
+// ヒントで街あての点：ヒント1つで当てたら4点、2つで3点、3つで2点、4つで1点
+export const HINT_MAX = 4;
 
 // どっちが多いの組み合わせの数（都道府県どうし・人口10万人以上どうし・県の中どうし）
 function docchiPairs(D) {
@@ -82,6 +88,67 @@ const pc={};tiles.forEach(x=>{pc[x.dataset.c]=x;x.addEventListener('keydown',e=>
 $('.next',nav).addEventListener('click',()=>{topic();box.scrollIntoView()});sel.addEventListener('change',()=>{save();if(D)topic()});share($('.send',nav),()=>last);
 $('.qq',box).textContent='読み込み中';load().then(d=>{D=d;D.prefs.forEach(p=>PN[p[0]]=p);TP=qDobonTopics(D);topic()}).catch(()=>{$('.qq',box).textContent='読み込めませんでした'})})();`;
 
+// ---- この街はどこ？・ならべる・ヒントで街あて（#43）----
+// 出題の範囲（この街はどこ？・ヒントで街あて）：都道府県・県の中では答えが1つに決まらないので、かわりに地方
+const townSelect = (id) => `<p class="sc"><label for="${id}">出題の範囲</label> <select id="${id}"><option value="">おまかせ</option><option value="big">人口10万人以上の市区町村</option><option value="all">全国の市区町村</option><optgroup label="地方の市区町村">${[0, 1, 2, 3, 4, 5, 6].map((i) => `<option value="r${i}">${esc(qRegionName(i))}</option>`).join('')}</optgroup></select></p>`;
+
+// 結果の画面（3つで共通）
+const resBox = (n, links) => `<section id="res" class="qz" hidden aria-live="polite"><p class="score"><b>0</b><span>／${n}</span></p><p class="sp"></p><p><button class="go send" type="button">結果を送る</button>　<button class="go again" type="button">もう一度</button></p><p class="note" id="sent"></p>
+<p>${links}</p></section>`;
+
+// 結果を出す・範囲を変える・読みこむ（3つで共通。start と qs・score・label はページごと）
+const FINISH = `function finish(name,extra){box.hidden=true;res.hidden=false;$('.score b',res).textContent=extra?extra[0]:score;$('.score span',res).textContent='／'+(extra?extra[1]:qs.length);$('.sp',res).textContent=extra?qs.length+'問中'+score+'問正解':'';$('.sp',res).hidden=!extra;
+const s=sel.value,sc=s===''?'':'（'+sel.options[sel.selectedIndex].text+'）';res.dataset.text='まちの社会科「'+name+'」'+sc+qs.length+'問中'+score+'問正解'+(extra?'・'+extra[0]+'点':'');$('#sent').textContent='';window.scrollTo(0,0)}
+function boot(){sel.addEventListener('change',()=>{save();if(D)start()});$('.again',res).addEventListener('click',start);share($('.send',res),()=>res.dataset.text);
+qq.textContent='読み込み中';load().then(d=>{D=d;D.prefs.forEach(p=>PN[p[0]]=p);start()}).catch(()=>{qq.textContent='読み込めませんでした'})}
+const empty=()=>{if(qs.length)return false;qq.textContent='この範囲では問題が作れませんでした';return true};
+const where=r=>r[2]||'/'+PN[r[0].slice(0,2)][2]+'/#m'+r[0];`;
+
+const DOKO_JS = `(()=>{${COMMON}
+${CORE_JS}
+const box=$('#dk'),meta=$('.meta',box),qq=$('.qq',box),ex=$('.ex',box),next=$('.next',box),map=$('.t5',box),tiles=[...map.querySelectorAll('.pf')],res=$('#res'),sel=$('#sc');const save=scope(sel,'machi-doko');let D,PN={},qs=[],i,score,done=true,N=${DOKO_N};
+${FINISH}
+const pc={};tiles.forEach(x=>{pc[x.dataset.c]=x;x.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tap(x)}})});
+function show(){const q=qs[i];meta.textContent=(i+1)+'／'+qs.length;qq.textContent=q.r[1];const y=q.r[3+D.m.length];if(y){const s=document.createElement('small');s.textContent=y;qq.prepend(s)}
+ex.hidden=true;next.hidden=true;done=false;tiles.forEach(x=>{x.setAttribute('class','pf');x.removeAttribute('aria-disabled')})}
+function tap(el){if(done||!el)return;done=true;const q=qs[i],ok=el.dataset.c===q.p,p=PN[q.p];if(ok){score++;el.classList.add('hit')}else{el.classList.add('miss');pc[q.p].classList.add('ans5')}tiles.forEach(x=>x.setAttribute('aria-disabled','true'));
+ex.textContent='';const a=document.createElement('a');a.href=where(q.r);a.textContent=q.r[1];const b=document.createElement('a');b.href='/'+p[2]+'/';b.textContent=p[1];ex.append(a,'は',b,'。人口'+qFmt(D.m[0],q.r[3])+D.m[0][2]);ex.hidden=false;next.textContent=i<qs.length-1?'次の問題':'結果を見る';next.hidden=false}
+map.addEventListener('click',e=>{const g=e.target.closest('[data-c]');if(g)tap(pc[g.dataset.c])});
+function start(){qs=qDoko(D,sel.value,Math.random,N);i=0;score=0;res.hidden=true;box.hidden=false;if(!empty())show()}
+next.addEventListener('click',()=>{if(i<qs.length-1){i++;show()}else finish('この街はどこ？')});boot()})();`;
+
+const NARABE_JS = `(()=>{${COMMON}
+${CORE_JS}
+const box=$('#quiz'),meta=$('.meta',box),qq=$('.qq',box),ul=$('.ch',box),ex=$('.ex',box),next=$('.next',box),res=$('#res'),sel=$('#sc');const save=scope(sel,'machi-narabe');let D,PN={},qs=[],i,score,N=${NARABE_N};
+${FINISH}
+const sub=(r,k)=>k==='m'?PN[r[0].slice(0,2)][1]:'',url=(r,k)=>k==='p'?'/'+r[2]+'/':where(r);
+function show(){const q=qs[i],m=D.m[q.mi],vals=q.p.map(r=>r[3+q.mi]);let got=[];meta.textContent=(i+1)+'／'+qs.length+'　大きい順に1・2・3とおす';qq.textContent=m[1]+'順';ex.hidden=true;next.hidden=true;delete ul.dataset.done;ul.textContent='';
+const bs=q.p.map((r,j)=>{const li=document.createElement('li'),b=document.createElement('button');b.type='button';const k=document.createElement('span');k.className='k';k.textContent=KANA[j];const t=document.createElement('span');t.className='t';t.textContent=r[1];const sb=sub(r,q.kind);if(sb){const s=document.createElement('small');s.textContent=sb;t.append(s)}
+const v=document.createElement('span');v.className='v';v.textContent=qFmt(m,vals[j])+m[2];const o=document.createElement('span');o.className='o';b.append(k,t,v,o);li.append(b);ul.append(li);
+b.addEventListener('click',()=>{if(ul.dataset.done)return;const at=got.indexOf(j);got=at>=0?got.slice(0,at):got.concat(j);paint();if(got.length===3)judge()});return b});
+const paint=()=>bs.forEach((b,j)=>{const n=got.indexOf(j);$('.o',b).textContent=n<0?'':n+1});
+function judge(){ul.dataset.done=1;let all=true;bs.forEach((b,j)=>{b.disabled=true;if(got.indexOf(j)===q.order.indexOf(j))b.classList.add('ok');else{b.classList.add('ng');all=false}});if(all)score++;
+ex.textContent='';q.order.forEach((j,n)=>{const l=document.createElement('a');l.href=url(q.p[j],q.kind);l.textContent=q.p[j][1];ex.append((n?'　':'')+(n+1)+' ',l,' '+qFmt(m,vals[j])+m[2])});ex.hidden=false;next.textContent=i<qs.length-1?'次の問題':'結果を見る';next.hidden=false}}
+function start(){qs=qNarabe(D,sel.value,Math.random,N);i=0;score=0;res.hidden=true;box.hidden=false;if(!empty())show()}
+next.addEventListener('click',()=>{if(i<qs.length-1){i++;show()}else finish('ならべる')});boot()})();`;
+
+const HINT_JS = `(()=>{${COMMON}
+${CORE_JS}
+const box=$('#quiz'),meta=$('.meta',box),qq=$('.qq',box),hl=$('.hl',box),more=$('.more',box),ul=$('.ch',box),ex=$('.ex',box),next=$('.next',box),res=$('#res'),sel=$('#sc');const save=scope(sel,'machi-hint');let D,PN={},qs=[],i,k,score,pts,N=${HINT_N},MX=${HINT_MAX};
+${FINISH}
+function hints(got){hl.textContent='';qs[i].hints.slice(0,k).forEach(t=>{const li=document.createElement('li');li.textContent=t;hl.append(li)});meta.textContent=(i+1)+'／'+qs.length+'　'+(got==null?'当てたら'+(MX+1-k):got)+'点';more.hidden=got!=null||k>=MX}
+function show(){const q=qs[i];k=1;qq.textContent='ヒントに合う街は？';ex.hidden=true;next.hidden=true;delete ul.dataset.done;
+choices(ul,q.ch.map(r=>r[1]),null,null,q.a,ok=>{const r=q.ch[q.a],p=PN[r[0].slice(0,2)],got=ok?MX+1-k:0;if(ok){score++;pts+=got}k=MX;hints(got);
+ex.textContent='';const a=document.createElement('a');a.href=where(r);a.textContent=r[1];ex.append('答えは',a,'（'+p[1]+'）');ex.hidden=false;next.textContent=i<qs.length-1?'次の問題':'結果を見る';next.hidden=false});hints()}
+more.addEventListener('click',()=>{if(k<MX&&!ul.dataset.done){k++;hints()}});
+function start(){qs=qHint(D,sel.value,Math.random,N);i=0;score=0;pts=0;res.hidden=true;box.hidden=false;if(!empty())show()}
+next.addEventListener('click',()=>{if(i<qs.length-1){i++;show()}else finish('ヒントで街あて',[pts,qs.length*MX])});boot()})();`;
+
+// 3つのページの見た目（今のクイズの小テストの形に足すところだけ）
+const DOKO_CSS = `#dk .qq{font-size:24px;margin:2px 0 4px}#dk .qq small{display:block;font-size:12px;font-weight:400;color:var(--sub);letter-spacing:.08em}#dk .dkx{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 14px;min-height:36px}#dk .dkx .ex{margin:2px 0 0}`;
+const NARABE_CSS = `.qz .ch .o{flex:none;width:30px;height:30px;margin-left:10px;border:1.5px solid var(--ink);font:700 17px/27px ${MINCHO};text-align:center;box-sizing:border-box;color:var(--ink)}`;
+const HINT_CSS = `.hl{margin:4px 0 2px;padding-left:1.8em;font-size:15px;line-height:1.5}.hl li{padding:3px 0;border-bottom:1px dotted var(--line)}`;
+
 // 備えの数字クイズのひな形（1つが1種類の問題。人数と日数は毎回えらぶ）
 const SONAE_T = `[()=>calc(D.w,'L','水','mizu','飲み水と調理に使う水の量です'),()=>calc(D.m,'食','主食','shoku','1人1日'+D.m+'食で数えます'),()=>calc(D.t,'回分','携帯トイレ','toilet','断水や停電で水洗トイレが使えないときの量です'),
 ()=>{const [n,d]=nd(),l=D.w*n*d,c=Math.ceil(l/2);return{q:n+'人家族の'+d+'日分の水を、2Lのペットボトルでそろえると何本？',...three(c,'本'),ex:D.w+'L×'+n+'人×'+d+'日＝'+f(l)+'L。2Lずつで'+f(c)+'本です',src:'bottle',link:['/hinmoku/mizu/','備蓄の水']}},
@@ -120,12 +187,15 @@ ${h2('問題の数')}
 <tr><td>今日の1問</td><td>1日1問</td><td>人口${fmt(KYOU_MIN_POP / 10000)}万人以上の${fmt(nPool)}市区町村</td></tr>
 <tr><td>どっちが多い？</td><td>${DOCCHI_N}問</td><td>組み合わせ${fmt(docchiMan)}万通り以上</td></tr>
 <tr><td>ドボンクイズ</td><td>お題1つ</td><td>お題${fmt(dobonN)}</td></tr>
+<tr><td>この街はどこ？</td><td>${DOKO_N}問</td><td>おまかせで${fmt(qDokoPool(machi, '').length)}市区町村</td></tr>
+<tr><td>ならべる</td><td>${NARABE_N}問</td><td>お題${machi.m.length}種類</td></tr>
+<tr><td>ヒントで街あて</td><td>${HINT_N}問</td><td>ヒント${HINT_MAX}つ</td></tr>
 <tr><td>備えの数字クイズ</td><td>${SONAE_N}問</td><td>${SONAE_KINDS}種類の問題の型</td></tr>
 </tbody></table>
 <div class="prose">
 ${h2('よくある問い')}
 ${qa('「結果を送る」で何が送られますか', '点数の文と、そのクイズのページのURLです。送る相手は、おした人が自分でえらびます。おさなければ、何も送られません。')}
-${qa('同じ問題ばかり出ませんか', 'どっちが多い？とドボンクイズは、開くたびに問題を作り直します。今日の1問は日付で決まるので、同じ日ならだれが開いても同じ問題です。')}
+${qa('同じ問題ばかり出ませんか', '今日の1問をのぞく街の数字クイズは、開くたびに問題を作り直します。今日の1問は日付で決まるので、同じ日ならだれが開いても同じ問題です。')}
 ${qa('出ない数字はありますか', '人口の減り方と、65歳以上の人の割合は、クイズの題にしていません。住んでいる人が気にする数字だからです。')}
 ${qa('広告は出ますか', 'このページと、上にならんだクイズのページには、広告を置いていません。答えのボタンの近くに広告があると、まちがえておしてしまうことがあるためです。市区町村のページの中のクイズは、その街のページの一部なので、広告が出ることがあります。')}
 </div>`;
@@ -230,6 +300,137 @@ ${h2('出典')}
 <ul class="notes">${ids.map((id) => `<li>${srcName(src.get(id))}（${jpDate(src.get(id).checked)}確認）</li>`).join('')}</ul>`;
 }
 
+// ---- この街はどこ？・ならべる・ヒントで街あての下の説明（#43）：数字はデータとページの定数から ----
+const seed = (munis) => rng(Number(String(munis.published).replace(/-/g, '')));
+const nmCount = (machi) => {
+  const cnt = {};
+  for (const r of machi.munis) cnt[r[1]] = (cnt[r[1]] || 0) + 1;
+  return cnt;
+};
+const scopeRows = (f) =>
+  [['', 'おまかせ（人口5万人以上）'], ['big', '人口10万人以上'], ['all', '全国の市区町村'], ...[0, 1, 2, 3, 4, 5, 6].map((i) => [`r${i}`, `${qRegionName(i)}（人口5万人以上）`])]
+    .map(([s, t]) => `<tr><td>${esc(t)}</td><td>${fmt(f(s))}</td></tr>`)
+    .join('');
+const noSend = (n) => qa('答えは送られますか', `送りません。${n}問の丸とバツは、いま開いている画面の中でつけています。点数を人に見せたいときだけ、「結果を送る」で相手を自分でえらべます。`);
+
+function dokoMore({ munis, machi }) {
+  const cnt = nmCount(machi);
+  const dupTowns = machi.munis.filter((r) => cnt[r[1]] > 1).length;
+  const dup = Object.keys(cnt)
+    .filter((n) => cnt[n] > 1)
+    .map((n) => machi.munis.filter((r) => r[1] === n))
+    .find((rs) => rs.some((r) => r[3] >= 100000));
+  const okCodes = new Set(qDokoPool(machi, '').map((r) => r[0]));
+  const same = qTowns(machi, '').filter((r) => !okCodes.has(r[0]));
+  const nPref = new Set(qDokoPool(machi, '').map((r) => r[0].slice(0, 2))).size;
+  const cap = Math.max(1, Math.ceil(DOKO_N / nPref));
+  const q = qDoko(machi, '', seed(munis), 1)[0];
+  const ex = q
+    ? `${h2('1問の例')}
+<p>たとえば「${esc(q.r[1])}」と出たら、答えは${esc(prefName(q.r))}です。</p>
+<p>${esc(prefName(q.r))}の名前をおすと、赤い丸がつきます。答えのあとには、${esc(q.r[1])}の人口が出ます。</p>
+<p>人口は総務省の「${esc(munis.statName)}」の数字です。${jpDate(munis.survey)}の時点の数字です。</p>`
+    : '';
+  return `<div class="prose">
+${h2('しくみ')}
+<p>市区町村の名前が1つ出ます。その街がある都道府県を、地図でおして答えます。1回${DOKO_N}問で、開くたびに新しく作ります。</p>
+<p>名前の上には、読みがなを小さく出します。読みがなは、日本郵便の郵便番号データから作っています。</p>
+<p>正しい県をおすと、県の名前に赤い丸がつきます。ちがう県をおすとバツがつき、正しい県に点線の丸がつきます。</p>
+</div>
+${h2('出題の範囲')}
+<table class="tbl"><thead><tr><th>範囲</th><th>出る市区町村</th></tr></thead><tbody>${scopeRows((s) => qDokoPool(machi, s).length)}</tbody></table>
+<div class="prose">
+<p>おまかせは、人口5万人以上の街から出します。知らない街ばかりにならないようにするためです。全国の市区町村をえらぶと、町や村も出ます。</p>
+<p>1回の中で、同じ街は出しません。おまかせでは、1つの県から出るのは${cap}問までです。</p>
+${h2('出さない街')}
+<p>同じ名前の市区町村がほかの県にもある街は出しません。全国で${fmt(dupTowns)}の市区町村が、これにあたります。</p>
+${dup ? `<p>たとえば${esc(dup[0][1])}は、${dup.map((r) => esc(prefName(r))).join('と')}にあります。名前だけでは答えが1つに決まりません。</p>` : ''}
+${same.length ? `<p>県と同じ名前の市も出しません。${esc(same[0][1])}のように、名前がそのまま答えになるからです。</p>` : ''}
+${ex}
+${h2('よくある問い')}
+${qa('県が小さくておしにくいときは', '県の名前のまわりも、おせる場所にしています。県の形の中をおしても答えになります。')}
+${qa('読みがなが出ない街はありますか', '郵便番号データで読みがなが見つからない街は、名前だけを出します。')}
+${noSend(DOKO_N)}
+</div>`;
+}
+
+function narabeMore({ munis, machi }) {
+  const rows = machi.m
+    .map((m) => `<tr><td>${esc(m[1])}順</td><td>${m[4] ? `${m[4]}${esc(m[2])}未満` : `大きいほうの${Math.round(m[5] * 100)}%未満`}</td></tr>`)
+    .join('');
+  const q = qNarabe(machi, 'big', seed(munis), 1)[0];
+  let ex = '';
+  if (q) {
+    const m = machi.m[q.mi];
+    const v = (r) => `${esc(r[1])}が${qFmt(m, r[3 + q.mi])}${esc(m[2])}`;
+    ex = `${h2('1問の例')}
+<p>たとえば「${esc(m[1])}順」で、${q.p.map((r, j) => `${KANA[j]}に${esc(r[1])}`).join('、')}が出たとします。</p>
+<p>数字は、${q.p.map(v).join('、')}です。</p>
+<p>大きい順は${q.order.map((j) => KANA[j]).join('・')}なので、この順におせば正解です。</p>`;
+  }
+  return `<div class="prose">
+${h2('しくみ')}
+<p>3つの街や都道府県が出ます。お題の数字が大きい順に、1・2・3とおしてならべます。1回${NARABE_N}問です。</p>
+<p>3つめをおすと答え合わせです。順番が合っている所に赤い丸、ちがう所にバツがつきます。3つとも合っていたら1問正解です。</p>
+<p>おしまちがえたときは、同じ所をもう一度おします。そこから後の番号が消えるので、おし直せます。</p>
+${h2('お題と出さない組')}
+<p>お題は${machi.m.length}種類です。3つのうちどの2つをくらべても、差が下の表より大きい組だけを出します。</p>
+<p>表示した数字が同じになる組も出しません。人口や面積のように数の大きい数字では、3倍より開いた組も外します。</p>
+</div>
+<table class="tbl"><thead><tr><th>お題</th><th>出さない組の差</th></tr></thead><tbody>${rows}</tbody></table>
+<div class="prose">
+${ex}
+<p>数字は、総務省が${jpDate(munis.published)}に発表した「${esc(munis.statName)}」から取っています。</p>
+${h2('よくある問い')}
+${qa('どっちが多い？とのちがいは', 'どっちが多い？は、2つから1つをえらびます。ならべるは3つの順番を全部当てるので、1問が少しむずかしくなります。')}
+${qa('出題の範囲は変えられますか', '都道府県だけ、人口10万人以上の市区町村だけ、1つの県の中だけ、にしぼれます。えらんだ範囲は、この端末におぼえておきます。')}
+${noSend(NARABE_N)}
+</div>`;
+}
+
+function hintMore({ munis, machi }) {
+  const q = qHint(machi, '', seed(munis), 1)[0];
+  const regions = [0, 1, 2, 3, 4, 5, 6]
+    .map((i) => `<tr><td>${esc(qRegionName(i))}</td><td>${PREFS.filter((p) => qRegion(p.code) === i).map((p) => esc(p.name)).join('・')}</td></tr>`)
+    .join('');
+  let ex = '';
+  if (q) {
+    const a = q.ch[q.a];
+    const others = q.ch.filter((r) => r !== a);
+    ex = `${h2('1問の例')}
+<p>たとえば答えが${esc(a[1])}なら、ヒントは次の4つです。</p>
+<ol>${q.hints.map((t) => `<li>${esc(t)}</li>`).join('')}</ol>
+<p>ほかの2つは${others.map((r) => esc(r[1])).join('と')}です。どれも${esc(qRegionName(qRegion(a[0])))}地方の街なので、1つめのヒントでは決まりません。</p>`;
+  }
+  return `<div class="prose">
+${h2('しくみ')}
+<p>ア・イ・ウの3つの街から、ヒントに合う街を1つえらびます。ヒントは1つずつ出て、「次のヒント」でふやせます。1回${HINT_N}問です。</p>
+</div>
+<table class="tbl"><thead><tr><th>ヒント</th><th>中身</th><th>そこで当てたら</th></tr></thead><tbody>
+<tr><td>1つめ</td><td>地方</td><td>${HINT_MAX}点</td></tr>
+<tr><td>2つめ</td><td>人口の大きさ</td><td>${HINT_MAX - 1}点</td></tr>
+<tr><td>3つめ</td><td>数字の特徴</td><td>${HINT_MAX - 2}点</td></tr>
+<tr><td>4つめ</td><td>県の名前</td><td>${HINT_MAX - 3}点</td></tr>
+</tbody></table>
+<div class="prose">
+<p>まちがえたら、その問題は0点です。${HINT_N}問とも1つめのヒントで当てると、${HINT_N * HINT_MAX}点になります。</p>
+${h2('3つの街の決め方')}
+<p>3つの街は、同じ地方の、県がちがう街です。4つめのヒントで県の名前が出ると、答えは必ず1つに決まります。</p>
+<p>数字の特徴は、面積や人口密度など${machi.m.length - 2}種類の数字から1つです。その街が全国でいちばん上のほうにある数字をえらびます。</p>
+<p>人口と世帯の数は、2つめのヒントと重なるので使いません。</p>
+${ex}
+${h2('地方の分け方')}
+<p>地方は7つに分けています。北海道と東北、九州と沖縄はいっしょです。どの地方にも、県が3つ以上あるようにするためです。</p>
+</div>
+<table class="tbl"><thead><tr><th>地方</th><th>都道府県</th></tr></thead><tbody>${regions}</tbody></table>
+<div class="prose">
+${h2('よくある問い')}
+${qa('ヒントの数字はどこから', `総務省の「${esc(munis.statName)}」の、${jpDate(munis.survey)}の数字です。上から何%かは、全国${fmt(machi.munis.length)}の市区町村の中の順位から出しています。`)}
+${qa('人口の減り方のヒントは出ますか', '出ません。人口の減り方や、65歳以上の人の割合は、ヒントにも使っていません。')}
+${noSend(HINT_N)}
+</div>`;
+}
+
 export function quizPages({ munis, items, sources, machi }) {
   const nMunis = machi.munis.length;
   const docchiMan = Math.floor(docchiPairs(machi) / 10000);
@@ -248,7 +449,7 @@ export function quizPages({ munis, items, sources, machi }) {
     body: `<p class="crumb"><a href="/">トップ</a></p>
 <h1 class="city">クイズ</h1>
 ${h2('街の数字クイズ')}
-<ul class="list"><li><a href="/quiz/kyou/">今日の1問</a><small class="sub">日本時間の0時に入れかわる2択。答えた県が地図にたまる</small></li><li><a href="/quiz/docchi/">どっちが多い？</a><small class="sub">都道府県・全国の市区町村・県の中から、2択を10問</small></li><li><a href="/quiz/dobon/">ドボンクイズ</a><small class="sub">トップ10を1つずつ当てる。外れたらドボン</small></li></ul>
+<ul class="list"><li><a href="/quiz/kyou/">今日の1問</a><small class="sub">日本時間の0時に入れかわる2択。答えた県が地図にたまる</small></li><li><a href="/quiz/docchi/">どっちが多い？</a><small class="sub">都道府県・全国の市区町村・県の中から、2択を10問</small></li><li><a href="/quiz/dobon/">ドボンクイズ</a><small class="sub">トップ10を1つずつ当てる。外れたらドボン</small></li><li><a href="/quiz/doko/">この街はどこ？</a><small class="sub">市区町村の名前から、県を地図でおす10問</small></li><li><a href="/quiz/narabe/">ならべる</a><small class="sub">3つの街を、数字の大きい順に5問</small></li><li><a href="/quiz/hint/">ヒントで街あて</a><small class="sub">少ないヒントで当てるほど高い点。5問</small></li></ul>
 <p class="note">市区町村のページの中にも、その街のクイズがあります（例：<a href="/osaka/sakai/">堺市</a>）。</p>
 ${h2('備えの数字クイズ')}
 <ul class="list"><li><a href="/quiz/sonae/">備えの数字クイズ</a><small class="sub">水・食事・携帯トイレの量のめやす5問</small></li></ul>
@@ -297,6 +498,71 @@ ${scopeSelect('sc', false)}
 ${src}
 ${dobonMore({ munis, machi })}`,
     script: DOBON_JS,
+  });
+
+  // この街はどこ？・ならべる・ヒントで街あて（#43）
+  const yr = `${munis.survey.slice(0, 4)}年国勢調査の数字です。`;
+  const crumb = '<p class="crumb"><a href="/">トップ</a> / <a href="/quiz/">クイズ</a></p>';
+  const noJs = '<noscript><p>このクイズはスクリプトで動きます。</p></noscript>';
+  out.push({
+    path: '/quiz/doko/',
+    title: 'この街はどこ？ 市区町村の都道府県を地図で当てるクイズ',
+    description: fit(
+      [`市区町村の名前と読みがなを見て、その街がある都道府県を日本地図でおす${DOKO_N}問のクイズ。おまかせは人口5万人以上の${fmt(qDokoPool(machi, '').length)}市区町村から出し、同じ名前の街は出しません。`],
+      [yr],
+    ),
+    noAds: true,
+    head: `<style>${JMAP_CSS}${DOKO_CSS}</style>`,
+    body: `${crumb}
+<h1 class="city">この街はどこ？</h1>
+${townSelect('sc')}
+<section id="dk" class="qz"><p class="meta"></p><p class="qq"></p><div class="dkx"><p class="ex" hidden></p><button class="go next" type="button" hidden>次の問題</button></div>
+<div class="t5">${japanMap({ quiz: true })}</div></section>
+${resBox(DOKO_N, '<a href="/quiz/hint/">ヒントで街あて</a>・<a href="/quiz/dobon/">ドボンクイズ</a>')}
+${noJs}
+${src}
+${dokoMore({ munis, machi })}`,
+    script: DOKO_JS,
+  });
+
+  out.push({
+    path: '/quiz/narabe/',
+    title: 'ならべる 3つの街を数字の大きい順にならべるクイズ',
+    description: fit(
+      [`3つの街や都道府県を、人口・面積・一戸建ての割合など${machi.m.length}種類のお題で大きい順にならべる${NARABE_N}問のクイズ。都道府県・人口10万人以上・県の中から、毎回ちがう組を作ります。`],
+      [yr],
+    ),
+    noAds: true,
+    head: `<style>${NARABE_CSS}</style>`,
+    body: `${crumb}
+<h1 class="city">ならべる</h1>
+${scopeSelect('sc', true)}
+<section id="quiz" class="qz"><p class="meta"></p><p class="qq"></p><ul class="ch"></ul><p class="ex" hidden></p><p><button class="go next" type="button" hidden>次の問題</button></p></section>
+${resBox(NARABE_N, '<a href="/quiz/docchi/">どっちが多い？</a>・<a href="/quiz/dobon/">ドボンクイズ</a>')}
+${noJs}
+${src}
+${narabeMore({ munis, machi })}`,
+    script: NARABE_JS,
+  });
+
+  out.push({
+    path: '/quiz/hint/',
+    title: 'ヒントで街あて 地方・人口・数字のヒントで市区町村を当てるクイズ',
+    description: fit(
+      [`地方・人口の大きさ・数字の特徴・県の名前の4つのヒントで、ア・イ・ウから街を当てる${HINT_N}問のクイズ。少ないヒントで当てるほど点が高く、満点は${HINT_N * HINT_MAX}点です。`],
+      [yr],
+    ),
+    noAds: true,
+    head: `<style>${HINT_CSS}</style>`,
+    body: `${crumb}
+<h1 class="city">ヒントで街あて</h1>
+${townSelect('sc')}
+<section id="quiz" class="qz"><p class="meta"></p><p class="qq"></p><ol class="hl"></ol><p><button class="go more" type="button" hidden>次のヒント</button></p><ul class="ch"></ul><p class="ex" hidden></p><p><button class="go next" type="button" hidden>次の問題</button></p></section>
+${resBox(HINT_N * HINT_MAX, '<a href="/quiz/doko/">この街はどこ？</a>・<a href="/quiz/narabe/">ならべる</a>')}
+${noJs}
+${src}
+${hintMore({ munis, machi })}`,
+    script: HINT_JS,
   });
 
   // 備えの数字クイズ（items.yml の数字だけ。人数と日数は毎回えらぶ）

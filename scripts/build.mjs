@@ -99,7 +99,8 @@ for (const p of rankingPages({ munis, list, urlOf })) add(p);
 for (const p of toolPages({ munis, kazu })) add(p);
 for (const p of manabiPages({ munis, list, nat: nationalRates(list), kazu, sources })) add(p);
 for (const p of hinmokuPages({ items, sources, products })) add(p);
-const machi = machiData(munis.areas, urlOf);
+const yomi = readYomi();
+const machi = machiData(munis.areas, urlOf, yomi);
 for (const p of quizPages({ munis, items, sources, machi })) add(p);
 // 今日の1問：ビルドの日（日本時間）から14日分の問題をページに入れる（毎朝のビルドで入れかわる）
 add(kyouPage({ munis, machi, start: jstDate(), urlOfRow: (r) => r[2] || `/${PREFS.find((p) => p.code === r[0].slice(0, 2)).slug}/#m${r[0]}` }));
@@ -132,7 +133,6 @@ for (const c of cities) {
 
 // 市区町村さがし（トップで入力したときだけ読み込む）：[名前, 都道府県, URL, 読みがな]
 //   読みがなは data/yomi.json（日本郵便の郵便番号データから。src/yomi.mjs）。ないときは漢字だけでさがす
-const yomi = readYomi();
 const search = [
   ...PREFS.map((p) => [p.name, '', `/${p.slug}/`, yomi?.prefs?.[p.code] ?? '']),
   ...[...list]
