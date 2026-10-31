@@ -1,7 +1,7 @@
 // 街の道具のページ（10/27 #17）：似てる街さがし /niteru/・2つの街をくらべる /kurabe/
 //   数字は /kurabe/kazu.json を、街をえらぶ欄にさわったときだけ読む。えらんだ街は送らない（URL の ?a= だけ）
 //   街のえらび方はトップの市区町村さがしと同じ部品（.find）
-import { h2, srcKokusei, fmt, fit } from '../layout.mjs';
+import { h2, srcKokusei, fmt, fit, esc, jpDate } from '../layout.mjs';
 import { createHash } from 'node:crypto';
 import { mtVec, mtCand, mtNear, mtDiff, mtEsc, mtDiffHtml, mtNearHtml } from '../machi-core.mjs';
 import { mcRegion, mcMan, mcEsc, mcWidth, mcCard, mcPaper, mcStyle, mcCardSvg, mcShareSvg } from '../card-core.mjs';
@@ -81,6 +81,74 @@ export function cardScript({ munis }) {
   return { js, v: createHash('sha256').update(js).digest('hex').slice(0, 10) };
 }
 
+// ---- ページの下の説明（夜 #47）：しくみ・本物の街での例（kazu.json と同じ行から、ビルドのときに作る）・よくある問い ----
+//   例の街：くらべるは入力欄の例と同じ堺市と岡山市（なければ人口の多い2つ）。似ているは、ページのある街のうち人口がまん中の街
+const qa = (q, a) => `<h3>${q}</h3>\n<p>${a}</p>`;
+const p1 = (v) => `${(v / 10).toFixed(1)}%`;
+const sg1 = (v) => `${v > 0 ? '+' : ''}${(v / 10).toFixed(1)}%`;
+// kazu.json の行の数字（6つ。似ているの計算と、くらべるのちがいに使うもの）
+const ROWS = [
+  ['人口', (r) => `${fmt(r[3])}人`, 'pop'],
+  ['15歳未満の割合', (r) => p1(r[4]), 'p014'],
+  ['65歳以上の割合', (r) => p1(r[5]), 'p65'],
+  ['5年の人口の増減', (r) => sg1(r[6]), 'rate'],
+  ['ひとり暮らしの世帯', (r) => p1(r[7]), 'pSingle'],
+  ['共同住宅に住む世帯', (r) => p1(r[8]), 'pKyodo'],
+];
+const prefN = (kazu, r) => esc(kazu.p[r[0].slice(0, 2)]);
+const link = (r) => (r[2] ? `<a href="${r[2]}">${esc(r[1])}</a>` : esc(r[1]));
+
+function kurabeMore({ munis, kazu }) {
+  const by = (n) => kazu.r.find((r) => r[1] === n && mtCand(r));
+  let [a, b] = [by('堺市'), by('岡山市')];
+  if (!a || !b) [a, b] = kazu.r.slice(0, 2);
+  const d = mtDiff(a, b);
+  const shown = new Map(d.map((x) => [x.k, x.text]));
+  const tr = ROWS.map(([t, f, k]) => `<tr><td>${t}</td><td>${f(a)}</td><td>${f(b)}</td><td>${shown.get(k) ?? '-'}</td></tr>`).join('');
+  const hit = d.map((x) => x.label);
+  return `<div class="prose">
+${h2('しくみ')}
+<p>くらべる数字は${ROWS.length}つです。人口、15歳未満と65歳以上の人の割合、5年の人口の増減、ひとり暮らしの世帯と共同住宅に住む世帯の割合です。</p>
+<p>数字は、総務省「${esc(munis.statName)}」の${jpDate(munis.survey)}の数字です。全国${fmt(kazu.r.length)}の市区町村からえらべます。</p>
+${h2('例')}
+<p>今の街に${prefN(kazu, a)}の${link(a)}、引っ越し先に${prefN(kazu, b)}の${link(b)}を入れたときの数字です。右の列が、ページに出るちがいです。</p>
+</div>
+<table class="tbl"><thead><tr><th>数字</th><th>${esc(a[1])}</th><th>${esc(b[1])}</th><th>ちがい</th></tr></thead><tbody>${tr}</tbody></table>
+<div class="prose">
+<p>${hit.length ? `この2つの街で、決まりの幅をこえるのは${hit.join('と')}${hit.length > 1 ? 'です' : 'だけです'}。そのほかの数字は、表の上では差があっても出しません。` : 'この2つの街は、どの数字も決まりの幅に入らないので、ちがいは出ません。'}</p>
+<p>2つの街は、全国の値の印がついた2枚のカードにもなります。カードは画像にして送れます。</p>
+${h2('よくある問い')}
+${qa('住みやすさのくらべですか', 'ちがいます。国勢調査の数字のちがいを出すだけで、どちらがよいかは決めていません。家賃や避難場所の数は、くらべていません。')}
+${qa('えらんだ街はどこに入りますか', 'えらんだ2つの街は、ページのURLの「?」の後ろに、市区町村の番号で入ります。そのURLを人に送ると、相手にも同じ2つの街が出ます。ページを開き直すときは、この番号も当サイトに届きます。')}
+${qa('2つの街でプリントを作れますか', 'えらんだあとに出る「この2つの街でプリントを作る」から、<a href="/dougu/manabi/">まなびプリント</a>を作れます。')}
+</div>`;
+}
+
+function niteruMore({ munis, kazu }) {
+  const cand = kazu.r.filter(mtCand);
+  const withPage = cand.filter((r) => r[2]);
+  const pool = withPage.length ? withPage : cand;
+  const me = pool[pool.length >> 1];
+  const near = mtNear(kazu.r, kazu.s, me[0], 3);
+  const cols = [me, ...near];
+  const tr = ROWS.map(([t, f]) => `<tr><td>${t}</td>${cols.map((r) => `<td>${f(r)}</td>`).join('')}</tr>`).join('');
+  return `<div class="prose">
+${h2('しくみ')}
+<p>上に書いた${ROWS.length}つの数字を、数字ごとに全国の市区町村の散らばりで割ってならします。そのうえで同じ重みで合わせ、近い順に${near.length}つえらびます。</p>
+<p>人口は、差ではなく何倍ちがうかで近さを見ます。人口の大きい街どうしで、差が大きく見えすぎないようにするためです。</p>
+<p>政令市は区に分けず、市でまとめています。使うのは${jpDate(munis.survey)}時点の国勢調査で、${jpDate(munis.published)}に発表された数字です。</p>
+${h2('例')}
+<p>${prefN(kazu, me)}の${link(me)}を入れると、${near.map((r) => `${prefN(kazu, r)}の${link(r)}`).join('、')}が出ます。</p>
+</div>
+<table class="tbl"><thead><tr><th>数字</th>${cols.map((r) => `<th>${esc(r[1])}</th>`).join('')}</tr></thead><tbody>${tr}</tbody></table>
+<div class="prose">
+${h2('よくある問い')}
+${qa('住みやすさが似ているのですか', 'ちがいます。国勢調査の数字が近いというだけです。家賃や気候は入っていません。')}
+${qa('小さな町村は出ませんか', `人口の少ない町村は、似ている街の候補に入れていません。候補になるのは、上に書いた${fmt(cand.length)}市区町村です。`)}
+${qa('2つの街をくらべるには', '出てきた街の下の「ほかの街とくらべる」から、<a href="/kurabe/">2つの街をくらべる</a>に進めます。')}
+</div>`;
+}
+
 export function toolPages({ munis, kazu }) {
   const card = cardScript({ munis });
   const year = munis.survey.slice(0, 4);
@@ -92,6 +160,7 @@ ${findForm('qn', '市区町村', '例 堺市・さかい')}
 <div id="nr" aria-live="polite"></div>
 <p class="note">人口・子どもと65歳以上の割合・5年の人口の増減・ひとり暮らしと共同住宅の世帯の割合の近さで、人口1万人以上の${fmt(nCand)}市区町村からえらびます。住みやすさの近さではありません。</p>
 ${srcKokusei(munis)}
+${niteruMore({ munis, kazu })}
 ${h2('ほかの道具')}<ul class="list"><li><a href="/kurabe/">2つの街の数字をくらべる</a></li><li><a href="/ranking/jinko/">人口が増えた市区町村</a></li></ul>`;
 
   const kurabe = `<p class="crumb"><a href="/">トップ</a></p>
@@ -102,6 +171,7 @@ ${findForm('qb', '引っ越し先', '例 岡山市・おかやま')}
 <div id="kr" aria-live="polite" data-card="/kurabe/card.js?v=${card.v}"></div>
 <p class="note">割合は5%以上か1.3倍以上、人口の増減は2%以上、人口は1.3倍以上のちがいだけを出します。</p>
 ${srcKokusei(munis)}
+${kurabeMore({ munis, kazu })}
 ${h2('ほかの道具')}<ul class="list"><li><a href="/niteru/">数字が似ている街をさがす</a></li><li><a href="/ranking/jinko/">人口が増えた市区町村</a></li></ul>`;
 
   const head = `<style>${TOOLS_CSS}</style>`;
