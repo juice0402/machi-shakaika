@@ -4,6 +4,7 @@ import { esc, h2, fit } from '../layout.mjs';
 import { calcHtml, CALC_JS, need } from '../calc.mjs';
 import { checkEntries } from '../data.mjs';
 import { sourceList } from './sonae.mjs';
+import { a8Ad } from '../a8.mjs';
 
 const CHECK_JS = `(()=>{const K='machi-check-v1';let s={};try{s=JSON.parse(localStorage.getItem(K)||'{}')||{}}catch(e){}
 const bx=[...document.querySelectorAll('.ckl input[data-k]')];
@@ -44,6 +45,7 @@ ${calcHtml(cc, { n, d, q: '人数と日数', ans: false })}
 ${lists.map(section).join('\n')}
 <p><button class="clr" type="button" data-reset>チェックをすべて消す</button></p>
 <p><a class="go" href="/hinmoku/">品目ごとのめやす</a><br><a class="go" href="/dougu/keisan/">備蓄の量を計算する</a><br><a class="go" href="/dougu/kigen/">賞味期限をメモする</a><br><a class="go" href="/dougu/print/">冷蔵庫に貼る紙（A4）</a><br><a class="go" href="/dougu/karte/">わが家の防災カルテ（A4）</a><br><a class="go" href="/dougu/manabi/">まなびプリント（街の数字を読む・A4）</a></p>
+${a8Ad('bousaiset')}
 ${h2('出典')}
 ${sourceList(allSources, sources)}`,
       script: CALC_JS + CHECK_JS,

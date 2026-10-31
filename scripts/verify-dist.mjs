@@ -25,6 +25,14 @@ for (const f of html) {
   const s = readFileSync(f, 'utf8');
   // 楽天の商品を出すページ（クレジットがある）。商品名は楽天のものなので、言葉と絵文字の点検からは外す
   const rakuten = s.includes(RAKUTEN_CREDIT);
+  // A8.net の広告（連絡 C-014）：1ページ1つまで・「広告」の表示つき・子どもも使うページと印刷のページには置かない
+  const a8 = (s.match(/href="https:\/\/px\.a8\.net\//g) ?? []).length;
+  if (a8) {
+    const p = f.slice(DIST.length).replace(/index\.html$/, '');
+    if (a8 > 1) fail(f, 'A8 の広告が1ページに2つ以上ある');
+    if (!s.includes('<p class="pr"><b>広告</b>')) fail(f, 'A8 の広告に「広告」の表示がない');
+    if (rakuten || /^\/(quiz|dougu\/karte|dougu\/manabi|dougu\/print|hinmoku)\//.test(p)) fail(f, 'A8 の広告を置かないページにある');
+  }
   const shown = s
     .replace(/<ul class="shop"[\s\S]*?<\/ul>/g, '')
     // 出典の題（相手のページの題そのまま）は点検から外す
@@ -63,6 +71,8 @@ for (const f of html) {
     // 楽天の商品画像（APIのURLのまま）は、楽天のページだけ
     if (rakuten && /^<img src="https:\/\/thumbnail\.image\.rakuten\.co\.jp\//.test(m[0])) continue;
     if (SITE.adsense && SITE.launched && m[0] === adsTag.replace('</script>', '')) continue;
+    // A8.net の広告リンクの数え用の1px の画像（A8 のコードのまま。src/a8.mjs）
+    if (!rakuten && /^<img border="0" width="1" height="1" src="https:\/\/www\d*\.a8\.net\/0\.gif\?a8mat=[0-9A-Z+]+" alt="">$/.test(m[0])) continue;
     // 楽天の商品を出すページは、楽天から取った情報（画像のURLなど）をログに出さない（楽天ウェブサービス規約 第10条9号。公開リポジトリのログは誰でも見られる）
     fail(f, rakuten ? '外のファイルを読み込んでいる（楽天のページなので中身はログに出さない）' : `外のファイルを読み込んでいる：${m[0].slice(0, 80)}`);
   }

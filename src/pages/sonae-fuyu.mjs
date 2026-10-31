@@ -3,6 +3,7 @@
 // 数字はすべて data/items.yml から（days・gas の例・mizu・fuyu）。出典は data/sources.yml の id で書き、ページの下に確認日つきで出す
 import { esc, h2, fit } from '../layout.mjs';
 import { sourceList } from './sonae.mjs';
+import { a8Ad } from '../a8.mjs';
 
 // items.yml の fuyu と、そこから指す出典の形を確かめる（問題があれば文のリスト。空なら OK）
 export function checkFuyu(items, src) {
@@ -100,6 +101,7 @@ ${h2('火と発電機の注意')}
 ${h2('計算と品目')}
 <p><a class="go" href="/dougu/keisan/">わが家の人数で量を計算する</a></p>
 <ul class="list">${hinmoku.map((it) => `<li><a href="/hinmoku/${it.id}/">${esc(it.name)}</a></li>`).join('')}<li><a href="/dougu/check/">チェックリスト</a></li></ul>
+${a8Ad('jackery')}
 <p><a href="/sonae/zaitaku-hinan/">在宅避難の備え</a>・<a href="/sonae/jishin/">地震の前に足すもの</a>・<a href="/sonae/kuruma-taisetsu/">車の大雪の備え</a></p>
 <p class="why">大雪や寒波は<a href="https://www.jma.go.jp/bosai/">気象庁</a>、停電は<a href="${esc(lifeline.url)}" rel="noopener">電力会社の停電情報（国土交通省のまとめ）</a>と市区町村の発表で確かめます。</p>
 ${h2('出典')}

@@ -48,6 +48,8 @@ ${h2('広告について')}
 <p>Googleによる広告でのCookieの使い方は「<a href="https://policies.google.com/technologies/ads?hl=ja" rel="noopener">広告 – ポリシーと規約 – Google</a>」をご覧ください。パーソナライズ広告は、Googleの「<a href="https://adssettings.google.com/" rel="noopener">広告設定</a>」で無効にできます。</p>
 ${h2('楽天アフィリエイト')}
 <p>当サイトは楽天アフィリエイトに参加しています。品目のページの商品のリンクを押すと楽天市場のページが開き、楽天がCookieなどで紹介元を記録します。楽天市場での情報の扱いは、楽天グループのプライバシーポリシーによります。</p>
+${h2('A8.net の広告')}
+<p>当サイトは、株式会社ファンコミュニケーションズの A8.net に参加しています。「広告」と書いたリンクを押すと広告主のページが開き、A8.net がCookieなどで紹介元を記録します。リンクの横の小さな画像で、広告が表示された回数も数えます。</p>
 ${h2('外部のサイトへのリンク')}
 <p>当サイトからリンクしている国・自治体などのサイトでの情報の扱いは、それぞれのサイトの方針によります。</p>
 ${h2('変更')}
@@ -59,6 +61,6 @@ ${h2('変更')}
         [`${SITE.name}で使っている国勢調査の統計表${Object.keys(estatMeta.tables).length}つ（${jpDate(munis.published)}公表）と避難場所データ、備えの量のめやすの出典、計算のしかた、運営者について。`],
         [[`毎週月曜に更新を確かめていて、避難場所データの確認は${jpDate(hinanMeta.checked)}。`, '毎週月曜に更新を確かめています。']],
       ), body: about, gsi: true },
-    { path: '/privacy/', title: 'プライバシーポリシー', description: `${SITE.name}のプライバシーポリシー。計算や市区町村さがし、チェックリストに入れた内容は送らないこと、アクセス解析、Google AdSense の広告とCookie、楽天アフィリエイトの扱いについて。`, body: privacy },
+    { path: '/privacy/', title: 'プライバシーポリシー', description: `${SITE.name}のプライバシーポリシー。計算や市区町村さがし、チェックリストに入れた内容は送らないこと、アクセス解析、Google AdSense の広告とCookie、楽天アフィリエイトとA8.netの扱いについて。`, body: privacy },
   ];
 }
