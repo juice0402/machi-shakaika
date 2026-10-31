@@ -2,10 +2,12 @@
 // 答える前：地図で2つの街の県をぬり分ける（緑と青）。答えたあと：地図に数字と正解の赤ペンの丸、その下に2本の棒と目盛り・差
 // 連続正解は朱のはんこ・7日の丸とバツ・いままでの最高。わたしの地図（答えた県がたまる）・あしたの題・結果を送る
 // 問題はビルドの日から14日分をページに入れる（machi.json は読まない）。記録はこの端末の localStorage だけ。回答は送らない。AdSense なし
-import { esc, fit, srcKokusei, h2 } from '../layout.mjs';
+import { esc, fit, srcKokusei, h2, jpDate, fmt } from '../layout.mjs';
 import { PREFS } from '../areas.mjs';
 import { JMAP } from '../japan-map-data.mjs';
-import { kyouDays, kyouPool, KYOU_JS } from '../kyou.mjs';
+import { kyouDays, kyouPool, kyouQ, addDays, KYOU_JS, KYOU_DAYS, KYOU_MIN_POP, KYOU_ORDER } from '../kyou.mjs';
+import { DOCCHI_N } from './quiz.mjs';
+import { qFmt } from '../quiz-core.mjs';
 
 const PN = Object.fromEntries(PREFS.map((p) => [p.code, p]));
 const KA = '#b5cfbb'; // アの県（緑）
@@ -94,6 +96,41 @@ const got=new Set();Object.values(R).forEach(x=>{if(x[2])got.add(x[2]);if(x[3])g
 bs.forEach((b,i)=>b.addEventListener('click',()=>{if(ul.dataset.done)return;R[today]=[i,i===ans?1:0,q.p[0][2],q.p[1][2]];save();shown(i)}));
 const kp=kyouKeep(R,today,q);if(kp.changed)save();if(kp.done)shown(R[today][0]);else{if(Object.keys(R).length)record(),['.wk','.best','.han2','.nx','.ntt'].forEach(c=>$(c,box).hidden=true)}})();`;
 
+// ページの下の説明（夜 #47）：数字のもと・題の順番・1問の読み方（ページを作った日の1問から）・よくある問い
+const qa = (q, a) => `<h3>${q}</h3>\n<p>${a}</p>`;
+function more({ munis, machi, start, nPool }) {
+  const lab = (mi) => esc(machi.m[mi][0].replace(/(が多い|が高い|が広い)のは？$/, '').replace(/（[^）]*）/g, ''));
+  const order = KYOU_ORDER.filter((i) => i < machi.m.length);
+  // 読み方の例は、きのうの1問（今日の答えをページの下に書かないため）
+  const q = kyouQ(machi, addDays(start, -1));
+  const yomi = q ? (() => {
+    const m = machi.m[q.mi];
+    const v = q.p.map((r) => r[3 + q.mi]);
+    const ans = v[0] > v[1] ? 0 : 1;
+    const show = (x) => `${qFmt(m, x)}${esc(m[2])}`;
+    const pn = (r) => esc(PN[r[0].slice(0, 2)].name);
+    const dif = Math.abs(Number(Number(v[0]).toFixed(m[3])) - Number(Number(v[1]).toFixed(m[3])));
+    return `${h2('1問の読み方')}
+<p>${md(q.d)}の問題は、${lab(q.mi)}をくらべました。アは${pn(q.p[0])}の${esc(q.p[0][1])}、イは${pn(q.p[1])}の${esc(q.p[1][1])}です。</p>
+<p>${esc(q.p[0][1])}は${show(v[0])}、${esc(q.p[1][1])}は${show(v[1])}なので、正解は${'アイ'[ans]}でした。差は${qFmt(m, dif)}${esc(m[2])}です。</p>
+<p>答えると、地図の上に2つの数字が出て、その下に2本の棒と目盛りが出ます。棒の長さで、どれだけちがうかを見られます。</p>`;
+  })() : '';
+  return `<div class="prose">
+${h2('数字のもと')}
+<p>毎日の問題の数字は、総務省の「${esc(munis.statName)}」から取っています。${jpDate(munis.survey)}の時点の数字で、発表は${jpDate(munis.published)}です。</p>
+<p>出てくる街は、人口${fmt(KYOU_MIN_POP / 10000)}万人以上の${fmt(nPool)}市区町村です。2つの街は、いつもちがう県からえらびます。差が小さすぎる組と、表示した数字が同じになる組は出しません。</p>
+${h2('題の順番')}
+<p>くらべる数字は${order.length}種類で、日ごとに次の順で入れかわります。</p>
+<ol>${order.map((i) => `<li>${lab(i)}</li>`).join('')}</ol>
+<p>人口と世帯の数のように、似た題が続かない順にしています。</p>
+${yomi}
+${h2('よくある問い')}
+${qa('問題はいつ変わりますか', `日本時間の0時に変わります。ページには、その日から${KYOU_DAYS}日分の問題が入っています。`)}
+${qa('記録はどこに残りますか', '連続正解の日数や答えた県の地図は、あなたのスマホやパソコンの中にだけ残ります。答えはどこにも送りません。べつのスマホで開くと、記録は0から始まります。')}
+${qa('ほかの問題も解きたいときは', `<a href="/quiz/docchi/">どっちが多い？</a>は、同じ形の問題を1回${DOCCHI_N}問で出します。都道府県や1つの県の中にしぼることもできます。`)}
+</div>`;
+}
+
 export function kyouPage({ munis, machi, start, urlOfRow }) {
   const days = kyouDays(machi, start, urlOfRow);
   if (!days.length) throw new Error('今日の1問：問題が作れません');
@@ -125,7 +162,8 @@ ${today}
 </section>
 <noscript><p>このクイズはスクリプトで動きます。</p></noscript>
 <section id="mymap" class="side" hidden>${h2('わたしの地図')}<p class="mmc">答えた県<b>0</b>／47</p>${mine}</section>
-${srcKokusei(munis)}`,
+${srcKokusei(munis)}
+${more({ munis, machi, start, nPool })}`,
     script: JS,
   };
 }

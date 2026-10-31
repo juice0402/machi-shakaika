@@ -113,6 +113,26 @@ a.href=URL.createObjectURL(b);a.download='kigen-memo.ics';document.body.append(a
 $('#ktext').addEventListener('click',()=>copy(kText(L,T,link()),'コピーしました'));
 $('#kclr').addEventListener('click',()=>{if(asking||!L.length)return;const g=L;L=[];save();draw();say('すべて消しました',['もとに戻す',()=>{L=g;save();draw();say('')}])})})();`;
 
+// ページの下の説明（夜 #47）：しくみ・えらべる品目・よくある問い。日数は KIGEN_NOTICE_DAYS、品目は items.yml の checklists から
+const qa = (q, a) => `<h3>${q}</h3>\n<p>${a}</p>`;
+function more(C, n) {
+  const withPage = C.filter((c) => c[2]);
+  return `<div class="prose">
+${h2('しくみ')}
+<p>入れた期限は、近い順に並びます。横の目盛りは今日から1年先までで、短いほど期限が近いことを表します。</p>
+<p>期限まで${n}日以内になると、残りの日数に朱のはんこがつきます。日を入れずに月までにしたときは、その月の終わりの日を期限として数えます。</p>
+${h2('えらべる品目')}
+<p>品目の欄の下には、${C.map((c) => esc(c[1])).join('・')}の${C.length}つが並んでいます。チェックリストの家に置く備えのうち、期限があるものです。</p>
+${withPage.length ? `<p>${withPage.map((c) => `<a href="${c[2]}">${esc(c[1])}</a>`).join('・')}は、品目のページに量のめやすがあります。</p>` : ''}
+<p>薬やミルクなど、並んでいないものは名前を書いて入れられます。</p>
+${h2('よくある問い')}
+${qa('メモはどこに残りますか', 'この端末のブラウザの中と、「URLを送る」で作ったURLの中です。当サイトには送りません。しばらく開かないと、ブラウザの中のメモが消えることがあります。送ったURLを開けば、同じメモに戻せます。')}
+${qa('カレンダーや文字にも残せますか', '「カレンダーに入れる」と「文字で書き出す」は、おしたときだけ動きます。どちらも、カレンダーのファイルや書き出した文字を、使う人がえらんだ所に残すだけです。')}
+${qa('カレンダーには何が入りますか', `期限の日に、品目の名前を入れた1日の予定が入ります。通知は、期限の${n}日前の朝です。`)}
+${qa('入れかえの時期のめやすは', `公的な資料にめやすが見つからないので、このページでは書いていません。${n}日前の通知は、買い足しを思い出すためのものです。期限の近いものから使って買い足す<a href="/sonae/rolling-stock/">ローリングストック</a>もあります。`)}
+</div>`;
+}
+
 export function kigenPages({ items }) {
   const C = kigenChoices(items);
   const names = C.map((c) => c[1]);
@@ -155,6 +175,7 @@ ${h2('このメモを残す')}
 <p class="note">メモはこの端末と、送ったURLの中だけに入り、当サイトには送りません</p>
 <p><button class="clr" type="button" id="kclr">すべて消す</button></p>
 </section>
+${more(C, n)}
 ${h2('あわせて')}
 <ul class="list"><li><a href="/dougu/keisan/">備蓄の量を計算する</a></li><li><a href="/dougu/check/">チェックリスト</a></li><li><a href="/dougu/print/">冷蔵庫に貼る紙（A4）</a></li><li><a href="/sonae/rolling-stock/">ローリングストック</a></li><li><a href="/hinmoku/">品目ごとのめやす</a></li></ul>`,
       script: kigenJs(C, n),

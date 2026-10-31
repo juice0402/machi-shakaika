@@ -3,6 +3,7 @@ import { readdirSync, readFileSync, statSync, existsSync } from 'node:fs';
 import { SITE, ESTAT_CREDIT } from '../src/site.mjs';
 import { RAKUTEN_CREDIT } from '../src/layout.mjs';
 import { SAIGAI, SAIGAI_BAR } from '../src/mode.mjs';
+import { measure, HONBUN_MIN, KATA_MAX } from './honbun.mjs';
 
 const DIST = 'dist';
 const walk = (d) => readdirSync(d).flatMap((x) => (statSync(`${d}/${x}`).isDirectory() ? walk(`${d}/${x}`) : [`${d}/${x}`]));
@@ -132,6 +133,19 @@ if (SITE.launched) {
   if (/Disallow: \/\n/.test(robots)) fail(`${DIST}/robots.txt`, '公開したのに全部おことわり');
   if (!existsSync(`${DIST}/sitemap.xml`)) fail(`${DIST}/sitemap.xml`, 'ない');
   if (SITE.adsense && !existsSync(`${DIST}/ads.txt`)) fail(`${DIST}/ads.txt`, 'ない');
+}
+
+// 本文の字数と、市区町村ページの「型の割合」（連絡 C-019・夜 #47。AdSense の「有用性の低いコンテンツ」を避ける。測り方は scripts/honbun.mjs）
+//   水増しせずに届かないページだけ、理由つきでここに足す（5ページまで）
+const HONBUN_EXCEPT = {};
+{
+  const { pages, kata } = measure(DIST);
+  for (const p of pages) {
+    if (p.path === '/404.html' || p.path in HONBUN_EXCEPT) continue;
+    if (p.n < HONBUN_MIN) fail(`${DIST}${p.path}`, `本文が${p.n}字（${HONBUN_MIN}字以上にする）`);
+  }
+  for (const [p, v] of kata) if (v > KATA_MAX && !(p in HONBUN_EXCEPT)) fail(`${DIST}${p}`, `どの街も同じ文の割合が${Math.round(v * 100)}%（${Math.round(KATA_MAX * 100)}%以下にする）`);
+  if (Object.keys(HONBUN_EXCEPT).length > 5) fail(`${DIST}/`, '本文の例外が5ページをこえている');
 }
 
 if (missingHinan.length) console.log(`注記：避難場所の一覧がない ${missingHinan.length}（ALLOW_MISSING_HINAN_LIST=1・ローカルなので止めない。公開の前に update.yml で作る）`);

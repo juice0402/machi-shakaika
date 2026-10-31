@@ -1,6 +1,6 @@
 // 都道府県のページ（/都道府県/）。パソコンの広い画面では、1世帯の計算と「くわしく見られる街」が右の柱（.side）。県全体の数字と、県内の市区町村の一覧（人口の多い順）
 import { esc, fmt, h2, srcKokusei, fit } from '../layout.mjs';
-import { derive, r1 } from '../stats.mjs';
+import { derive, r1, prefRangeText } from '../stats.mjs';
 import { need } from '../calc.mjs';
 
 const signed = (v) => `${v > 0 ? '+' : ''}${r1(v).toFixed(1)}%`;
@@ -11,6 +11,7 @@ export function prefPage({ pref, munis, list, z, cc, urlOf }) {
   const up = inPref.filter((x) => x.rate > 0).length;
   const per = r1(a.per);
   const withPage = inPref.filter((x) => urlOf(x.code));
+  const haba = prefRangeText(list, a);
   const body = `<p class="crumb"><a href="/">トップ</a></p>
 <h1 class="city">${esc(pref.name)}</h1>
 <p class="big"><b>${fmt(a.pop)}</b>人</p>
@@ -26,7 +27,11 @@ ${inPref.map((x) => `<tr id="m${x.code}"><td>${urlOf(x.code) ? `<a href="${urlOf
 </tbody></table>
 <p class="note">5年の増減は2020年から2025年。1世帯は一般世帯の平均人数（人）。</p>
 <p><a href="/ranking/jinko/">全国で人口が増えた市区町村</a>・<a href="/quiz/dobon/">都道府県ドボンクイズ</a></p>
-${srcKokusei(munis)}`;
+${srcKokusei(munis)}
+${haba.length ? `${h2('県内の街の幅')}
+<p>${haba.map(esc).join('')}</p>
+<p class="note"><a href="/about/#keisan-ken">幅の見方</a></p>
+${srcKokusei(munis)}` : ''}`;
   return {
     path: `/${pref.slug}/`,
     title: `${pref.name}の市区町村の人口と備え`,
