@@ -2,6 +2,7 @@
 // 数字はすべて data/items.yml から。出典は data/sources.yml の id で書き、ページの下に確認日つきで出す
 import { esc, h2, jpDate, fit, srcName } from '../layout.mjs';
 import { calcHtml, CALC_JS, need } from '../calc.mjs';
+import { a8Ad } from '../a8.mjs';
 
 export function sourceList(ids, sources) {
   const by = new Map(sources.sources.map((s) => [s.id, s]));
@@ -119,6 +120,7 @@ ${h2('マンションなど集合住宅の場合')}
 <p><a href="/hinmoku/keitai-toilet/">携帯トイレの品目と商品</a></p>
 <p><a class="go" href="/dougu/keisan/">わが家の人数で計算する</a></p>
 </div>
+${a8Ad('stoole')}
 ${h2('出典')}
 ${sourceList(by['keitai-toilet'].sources, sources)}`,
   });

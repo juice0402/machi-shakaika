@@ -14,6 +14,7 @@ const SKIP_HOSTS = [
   /(^|\.)machi-shakaika\.com$/,
   /(^|\.)pages\.dev$/,
   /(^|\.)rakuten\.(co\.jp|com|net)$/,
+  /(^|\.)a8\.net$/, // A8.net の広告リンク：開くとクリックに数えられるので点検しない
   /(^|\.)googlesyndication\.com$/,
   /(^|\.)doubleclick\.net$/,
   /^api\.e-stat\.go\.jp$/,
