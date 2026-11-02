@@ -28,6 +28,7 @@
 - 流れ：ブランチ `claude/...` → PR → CI が緑・プレビューで確認 → しょーくんに知らせてから Merge。修正はまとめて少ない push で
 - Claude の予約タスクは使わない。毎週の更新は Actions の `update.yml`（月曜0:07）
 - 災害時モード（`saigai.yml` → `data/mode.yml`）はしょーくんが切りかえる。災害を見て自動で切りかえない
+- 見張り：`mihari.yml`（`scripts/mihari.mjs`）が main の公開・データの更新・災害時モードの切りかえの失敗で Issue（ラベル `mihari`。知らせるだけ）、次の成功で閉じる。workflow の name を変えたら `WATCH` もそろえる。くわしくは docs/shikumi.md の「見張り」
 - リンクの点検：`check-links.yml`（毎週水曜と PR）。対象は `node scripts/check-links.mjs --list`。消えたリンクは同じ発行元の新しいページに差しかえる。403・429 は消えたとは限らない
 - このクラウドの作業場からは e-Stat と国土地理院につながらない。データは Actions が取って data/ にコミットしたものを使う
 
