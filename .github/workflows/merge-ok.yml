@@ -1,0 +1,77 @@
+name: マージの印
+
+# しょーくんの OK のあと、司令塔が PR にラベル merge-ok を付ける → 点検が通ったら GitHub がマージする（scripts/merge-ok.mjs）
+#   印の付いた開いている PR を番号の小さい順に1つずつ：base が main・draft でない → 本文の順番の指定（「PR #12 のあとにマージ」など）
+#   → 点検（check-runs と commit statuses）→ ぶつかり → squash でマージ
+#   点検が通らない・main とぶつかった → コメントして merge-ok を外し、merge-blocked を付ける（司令塔が見る）
+#   マージしたら公開（deploy.yml）を main で1回だけ動かす（GITHUB_TOKEN のマージの push では公開が動かないため）。公開の失敗は見張り（mihari.yml）が知らせる
+# 試すとき：Actions の「マージの印」を dry_run で動かす（マージせず、するはずのことをログに出す）。pr を入れるとその PR だけ見る
+# schedule は使わない。GITHUB_TOKEN だけ。くわしくは CLAUDE.md の「マージの印」
+
+on:
+  pull_request:
+    types: [labeled]
+  workflow_run:
+    # PR の点検の workflow（PR の回が終わったときだけ見る）
+    workflows: [ビルドと公開, 出典とリンクの点検, データの更新]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'true のときはマージせず、するはずのことをログに出す'
+        type: boolean
+        default: true
+      pr:
+        description: 'この番号の PR だけを見る（空なら印の付いた PR をぜんぶ。印がない PR は見ない）'
+        type: number
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  actions: write
+  checks: read
+  statuses: read
+
+jobs:
+  merge-ok:
+    # 印が付いたとき・PR の点検が終わったとき・手で（ほかのときは動かない）
+    if: >-
+      (github.event_name == 'pull_request' && github.event.label.name == 'merge-ok') ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.event == 'pull_request') ||
+      github.event_name == 'workflow_dispatch'
+    # 同時に2つ動かさない（job で決めるので、動かない回は順番待ちに入らない）
+    concurrency:
+      group: merge-ok
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: 印の付いた PR があるか
+        id: marked
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          n=$(gh api "repos/$GITHUB_REPOSITORY/issues?state=open&labels=merge-ok&per_page=100" --jq '[.[] | select(.pull_request)] | length')
+          echo "印の付いた開いている PR：$n"
+          echo "count=$n" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v5
+        if: steps.marked.outputs.count != '0'
+        with:
+          sparse-checkout: scripts
+
+      - uses: actions/setup-node@v5
+        if: steps.marked.outputs.count != '0'
+        with:
+          node-version: 22
+
+      - name: 点検を見てマージ
+        if: steps.marked.outputs.count != '0'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+          PR_NUMBER: ${{ inputs.pr }}
+          PUBLISH_WORKFLOW: deploy.yml
+        run: node scripts/merge-ok.mjs
