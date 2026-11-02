@@ -106,6 +106,7 @@ export function machiQuiz(a0, list, near, cityList) {
       ch: ch.map(label),
       a: ch.indexOf(nearest),
       ex: `${label(nearest)}の${yen(nearest.pop)}人。${a.name}は${yen(a.pop)}人`,
+      c: [a.code, ...ch.map((x) => x.code)],
     });
   }
 
@@ -145,9 +146,11 @@ export function machiQuiz(a0, list, near, cityList) {
       ch: ch.map((x) => x.name),
       a: ch.indexOf(right),
       ex: `${right.name}の${yen(right.pop)}人。${a.name}は${yen(a.pop)}人`,
+      c: [a.code, ...ch.map((x) => x.code)],
     });
   }
-  return qs;
+  // 街あつめ帳：問題に出た街（この街と、選択肢に出た街）のコード
+  return qs.map((q) => ({ ...q, c: q.c ?? [a.code] }));
 }
 
 // 備えの数字クイズ：items.yml の数字だけで作る。人数と日数はブラウザの中で毎回えらぶ
