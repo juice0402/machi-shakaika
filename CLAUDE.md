@@ -32,6 +32,11 @@
 - リンクの点検：`check-links.yml`（毎週水曜と PR）。対象は `node scripts/check-links.mjs --list`。消えたリンクは同じ発行元の新しいページに差しかえる。403・429 は消えたとは限らない
 - このクラウドの作業場からは e-Stat と国土地理院につながらない。データは Actions が取って data/ にコミットしたものを使う
 
+## マージの印（merge-ok.yml）
+- しょーくんが司令塔で「マージして」と言ったら、司令塔は PR にラベル `merge-ok` を付けるだけ。`merge-ok.yml`・`scripts/merge-ok.mjs`（テストは `tests/merge-ok.test.mjs`）が点検（ビルドと公開・出典とリンクの点検・データの更新）の合格を待って squash でマージし、公開（`deploy.yml`）を main で1回動かす。夜の作業はこのラベルを付けない
+- 本文の「#12 の PR #34 のあとにマージ」などの順番を守る。点検が通らない・main とぶつかった → コメントして `merge-blocked`（司令塔が見る）。check-runs が1つもない PR は印から10分でマージ
+- 試すときは Actions の「マージの印」を `dry_run` で。main とぶつかっている PR は印を付けても動かない（GitHub の決まり）ので、ほかの PR の点検が終わったときか手で動かしたときに見る。PR の点検の workflow の name を変えたら `workflows` もそろえる
+
 ## データの決まり
 - 出典はすべて `data/sources.yml`。ページでは `srcName()` で 発行元<cite>「題」</cite>。title はページの題そのもの（確かめていないものは null）。checked は開いて確かめた日。計算に使う出典は90日を過ぎるとテストが止まる
 - 備えの数字は `data/items.yml` の1か所だけ。本文・計算・チェックリスト・クイズはここから読む（数字を本文に直接書かない）
