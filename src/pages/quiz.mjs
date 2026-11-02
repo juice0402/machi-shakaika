@@ -8,7 +8,7 @@ import { esc, h2, srcKokusei, srcName, jpDate, fmt, MINCHO } from '../layout.mjs
 import { PREFS } from '../areas.mjs';
 import { japanMap, JMAP_CSS } from '../japan-map.mjs';
 import { sonaeData, rng } from '../quiz.mjs';
-import { CORE_JS, qFair, qFmt, qDocchi, qDobonTopics, qDobonBoard, qRegion, qRegionName, qTowns, qDokoPool, qDoko, qNarabe, qHint } from '../quiz-core.mjs';
+import { CORE_JS, qFair, qFmt, qDocchi, qDobonTopics, qDobonBoard, qRegion, qRegionName, qChiho, qChihoName, qDai, qTowns, qDokoPool, qDoko, qNarabe, qHint } from '../quiz-core.mjs';
 import { kyouPool, KYOU_MIN_POP } from '../kyou.mjs';
 import { need } from '../calc.mjs';
 import { fit } from '../layout.mjs';
@@ -22,18 +22,42 @@ export const HINT_N = 5;
 // ヒントで街あての点：ヒント1つで当てたら4点、2つで3点、3つで2点、4つで1点
 export const HINT_MAX = 4;
 
-// どっちが多いの組み合わせの数（都道府県どうし・人口10万人以上どうし・県の中どうし）
+// どっちが多いの組み合わせの数（題ごとに数える。都道府県どうし・地方の中どうし・人口10万人以上どうし。県の中は地方の中にふくまれる）
+//   同じ組を2回数えないように、人口10万人以上どうしは地方がちがう組だけ足す
 function docchiPairs(D) {
-  const groups = [D.prefs, D.munis.filter((r) => r[3] >= 100000), ...D.prefs.map((p) => D.munis.filter((r) => r[0].slice(0, 2) === p[0]))];
+  const big = D.munis.filter((r) => r[3] >= 100000);
+  const groups = [[D.prefs, () => true], [big, (a, b) => qChiho(a[0]) !== qChiho(b[0])], ...[0, 1, 2, 3, 4, 5, 6, 7].map((c) => [D.munis.filter((r) => qChiho(r[0]) === c), () => true])];
   let n = 0;
-  for (const g of groups) D.m.forEach((m, mi) => {
-    for (let i = 0; i < g.length; i++) for (let j = i + 1; j < g.length; j++) if (qFair(m, g[i][3 + mi], g[j][3 + mi])) n++;
+  for (const [g, ok] of groups) D.m.forEach((m, mi) => {
+    const w = m[6] ? 2 : 1;
+    for (let i = 0; i < g.length; i++) for (let j = i + 1; j < g.length; j++) if (ok(g[i], g[j]) && qFair(m, g[i][3 + mi], g[j][3 + mi])) n += w;
   });
   return n;
 }
 
+// えらべない範囲（#44）：その範囲（とむずかしさ）で、3つの乱数のどれでも1回分の問題が作れないものは <option disabled>
+const SEEDS = [1, 2, 3];
+const offOf = (scopes, make) => scopes.filter((s) => !SEEDS.every((k) => make(s, rng(k))));
+const CH = [0, 1, 2, 3, 4, 5, 6, 7];
+const SCOPES_FULL = ['', 'p', 'big', 'all', ...CH.map((c) => `c${c}`), ...PREFS.map((p) => p.code)];
+const SCOPES_DOBON = ['', 'p', 'all', ...CH.map((c) => `c${c}`), ...PREFS.map((p) => p.code)];
+const SCOPES_TOWN = ['', 'big', 'all', ...CH.map((c) => `c${c}`)];
+export function quizOff(machi) {
+  const lvOff = (gen, n) => Object.fromEntries(['', 'h'].map((lv) => [lv, offOf(SCOPES_FULL, (s, r) => gen(machi, s, r, n, lv).length === n)]));
+  const T = qDobonTopics(machi);
+  return {
+    docchi: lvOff(qDocchi, DOCCHI_N),
+    narabe: lvOff(qNarabe, NARABE_N),
+    dobon: SCOPES_DOBON.filter((s) => s && !T.some((t) => t.scope === s)),
+    doko: offOf(SCOPES_TOWN, (s, r) => qDoko(machi, s, r, DOKO_N).length === DOKO_N),
+    hint: offOf(SCOPES_TOWN, (s, r) => qHint(machi, s, r, HINT_N).length === HINT_N),
+  };
+}
+export const QUIZ_SCOPES = { full: SCOPES_FULL, dobon: SCOPES_DOBON, town: SCOPES_TOWN };
+
 const KANA = 'アイウ';
-const data = (obj) => `<script type="application/json" id="qd">${JSON.stringify(obj).replace(/</g, '\\u003c')}</script>`;
+const data2 = (id, obj) => `<script type="application/json" id="${id}">${JSON.stringify(obj).replace(/</g, '\\u003c')}</script>`;
+const data = (obj) => data2('qd', obj);
 
 // 共通：選択肢を作る・答える・結果を送る・データを読む・範囲をおぼえる（この端末の中だけ）
 const COMMON = `const KANA='${KANA}';const $=(s,e=document)=>e.querySelector(s);const R=n=>Math.floor(Math.random()*n);
@@ -46,22 +70,28 @@ b.addEventListener('click',()=>{if(ul.dataset.done)return;ul.dataset.done=1;ul.q
 function share(btn,get){btn.addEventListener('click',async()=>{const url=location.origin+location.pathname,text=get(),msg=document.getElementById('sent');
 try{if(navigator.share){await navigator.share({text,url});return}await navigator.clipboard.writeText(text+' '+url);msg.textContent='コピーしました'}catch(e){if(e&&e.name==='AbortError')return;msg.textContent=text+' '+url}})}
 const load=()=>fetch('/quiz/machi.json').then(r=>{if(!r.ok)throw 0;return r.json()});
-function scope(sel,key){try{const v=localStorage.getItem(key);if(v!=null&&[...sel.options].some(o=>o.value===v))sel.value=v}catch(e){}return()=>{try{localStorage.setItem(key,sel.value)}catch(e){}}}`;
+function scope(sel,key){try{const v=localStorage.getItem(key);if(v!=null&&[...sel.options].some(o=>o.value===v&&!o.disabled))sel.value=v}catch(e){}return()=>{try{localStorage.setItem(key,sel.value)}catch(e){}}}
+function level(sel,lv,key,OFF){const sv=scope(lv,key),gate=()=>{const o=OFF[lv.value]||[];[...sel.options].forEach(x=>{x.disabled=o.includes(x.value)});if(sel.options[sel.selectedIndex].disabled)sel.value=''};gate();return()=>{sv();gate()}}
+const tag=sel=>{const l=$('#lv'),t=[sel.value?sel.options[sel.selectedIndex].text:'',l&&l.value?l.options[l.selectedIndex].text:''].filter(Boolean).join('・');return t?'（'+t+'）':''};`;
 
-// 出題の範囲（<select>）
-const scopeSelect = (id, withBig) => `<p class="sc"><label for="${id}">出題の範囲</label> <select id="${id}"><option value="">おまかせ</option><option value="p">都道府県</option>${withBig ? '<option value="big">人口10万人以上の市区町村</option>' : ''}<option value="all">全国の市区町村</option><optgroup label="県の中の市区町村">${PREFS.map((p) => `<option value="${p.code}">${esc(p.name)}</option>`).join('')}</optgroup></select></p>`;
+// 出題の範囲（<select>）。地方は8つ（#44）。off はえらべない範囲、lv があればむずかしさの <select> も
+const LV = '<span class="lvw"><label for="lv">むずかしさ</label> <select id="lv"><option value="">ふつう</option><option value="h">むずかしい</option></select></span>';
+const scopeSelect = (id, { p = true, big = true, pref = true, off = [], lv = false } = {}) => {
+  const o = (v, t) => `<option value="${v}"${off.includes(v) ? ' disabled' : ''}>${esc(t)}</option>`;
+  return `<p class="sc"><label for="${id}">出題の範囲</label> <select id="${id}">${o('', 'おまかせ')}${p ? o('p', '都道府県') : ''}${big ? o('big', '人口10万人以上の市区町村') : ''}${o('all', '全国の市区町村')}<optgroup label="地方の市区町村">${CH.map((c) => o(`c${c}`, qChihoName(c))).join('')}</optgroup>${pref ? `<optgroup label="県の中の市区町村">${PREFS.map((x) => o(x.code, x.name)).join('')}</optgroup>` : ''}</select>${lv ? LV : ''}</p>`;
+};
 
 const DOCCHI_JS = `(()=>{${COMMON}
 ${CORE_JS}
-const box=$('#quiz'),meta=$('.meta',box),qq=$('.qq',box),ul=$('.ch',box),ex=$('.ex',box),next=$('.next',box),res=$('#res'),sel=$('#sc');const save=scope(sel,'machi-docchi');let D,PN={},qs,i,score,N=${DOCCHI_N};
+const box=$('#quiz'),meta=$('.meta',box),qq=$('.qq',box),ul=$('.ch',box),ex=$('.ex',box),next=$('.next',box),res=$('#res'),sel=$('#sc'),lv=$('#lv'),OFF=JSON.parse($('#qoff').textContent);const saveLv=level(sel,lv,'machi-docchi-lv',OFF),save=scope(sel,'machi-docchi');let D,PN={},qs,i,score,N=${DOCCHI_N};
 const sub=(r,k)=>k==='m'?PN[r[0].slice(0,2)][1]:'',url=(r,k)=>k==='p'?'/'+r[2]+'/':(r[2]||'/'+PN[r[0].slice(0,2)][2]+'/#m'+r[0]);
-function show(){const q=qs[i],m=D.m[q.mi];meta.textContent=(i+1)+'／'+qs.length;qq.textContent=m[0];ex.hidden=true;next.hidden=true;delete ul.dataset.done;
-const vals=q.p.map(r=>r[3+q.mi]),ans=vals[0]>vals[1]?0:1;choices(ul,q.p.map(r=>r[1]),q.p.map(r=>sub(r,q.kind)),vals.map(v=>qFmt(m,v)+m[2]),ans,ok=>{if(ok)score++;
+function show(){const q=qs[i],m=D.m[q.mi];meta.textContent=(i+1)+'／'+qs.length;qq.textContent=q.lo?m[6]:m[0];ex.hidden=true;next.hidden=true;delete ul.dataset.done;
+const vals=q.p.map(r=>r[3+q.mi]),ans=(vals[0]>vals[1])!==!!q.lo?0:1;choices(ul,q.p.map(r=>r[1]),q.p.map(r=>sub(r,q.kind)),vals.map(v=>qFmt(m,v)+m[2]),ans,ok=>{if(ok)score++;
 ex.textContent='';q.p.forEach((r,j)=>{const l=document.createElement('a');l.href=url(r,q.kind);l.textContent=r[1];ex.append(l,' '+qFmt(m,vals[j])+m[2]+(j?'':'　'))});ex.hidden=false;next.textContent=i<qs.length-1?'次の問題':'結果を見る';next.hidden=false})}
-function start(){qs=qDocchi(D,sel.value,Math.random,N);i=0;score=0;res.hidden=true;box.hidden=false;if(!qs.length){qq.textContent='この範囲では問題が作れませんでした';return}show()}
+function start(){qs=qDocchi(D,sel.value,Math.random,N,lv.value);i=0;score=0;res.hidden=true;box.hidden=false;if(!qs.length){qq.textContent='この範囲では問題が作れませんでした';return}show()}
 next.addEventListener('click',()=>{if(i<qs.length-1){i++;show()}else{box.hidden=true;res.hidden=false;$('.score b',res).textContent=score;$('.score span',res).textContent='／'+qs.length;
-const s=sel.value,where=s===''?'':'（'+sel.options[sel.selectedIndex].text+'）';res.dataset.text='まちの社会科「どっちが多い？」'+where+qs.length+'問中'+score+'問正解';$('#sent').textContent='';window.scrollTo(0,0)}});
-sel.addEventListener('change',()=>{save();if(D)start()});$('.again',res).addEventListener('click',start);share($('.send',res),()=>res.dataset.text);
+res.dataset.text='まちの社会科「どっちが多い？」'+tag(sel)+qs.length+'問中'+score+'問正解';$('#sent').textContent='';window.scrollTo(0,0)}});
+sel.addEventListener('change',()=>{save();if(D)start()});lv.addEventListener('change',()=>{saveLv();save();if(D)start()});$('.again',res).addEventListener('click',start);share($('.send',res),()=>res.dataset.text);
 qq.textContent='読み込み中';load().then(d=>{D=d;D.prefs.forEach(p=>PN[p[0]]=p);start()}).catch(()=>{qq.textContent='読み込めませんでした'})})();`;
 
 const DOBON_JS = `(()=>{${COMMON}
@@ -70,12 +100,12 @@ const box=$('#db'),map=$('.t5',box),words=$('.gogun',box),tiles=[...map.querySel
 let D,PN={},TP,t,order,found,over,last='',btns=[];
 const url=r=>t.scope==='p'?'/'+r[2]+'/':(r[2]||'/'+PN[r[0].slice(0,2)][2]+'/#m'+r[0]);
 const fm=v=>{const m=D.m[t.mi];return qFmt([m[0],m[1],m[2],t.digits],v)+m[2]};
-function pick(){const s=sel.value;let list=TP.filter(x=>s===''||x.scope===s);if(s===''){const r=Math.random(),k=r<.3?'p':r<.5?'all':'pref';list=TP.filter(x=>k==='pref'?x.scope.length===2&&x.scope!=='p':x.scope===k)}return list[R(list.length)]}
+function pick(){const s=sel.value;let list=TP.filter(x=>s===''||x.scope===s);if(s===''){const r=Math.random(),k=r<.3?'p':r<.45?'all':r<.6?'c':'pref';list=TP.filter(x=>k==='pref'?/^\d/.test(x.scope):k==='c'?x.scope[0]==='c':x.scope===k)}return list[R(list.length)]}
 function slot(i,r,cls){const li=ol.children[i];li.textContent='';const a=document.createElement('a');a.href=url(r);a.textContent=r[1];li.append(a,'　'+fm(r[3+t.mi]));li.className=cls}
-function topic(){t=pick();if(!t)return;const b=qDobonBoard(D,t,Math.random);order=b.order;found=new Set();over=false;const m=D.m[t.mi],N=t.N;
-$('.qq',box).textContent=t.scope==='p'?m[1]+'都道府県トップ'+N:(t.scope==='all'?'全国で':PN[t.scope][1]+'で')+m[1]+'市区町村トップ'+N;
+function topic(){t=pick();if(!t)return;const b=qDobonBoard(D,t,Math.random);order=b.order;found=new Set();over=false;const m=D.m[t.mi],N=t.N,ti=t.lo?m[7]:m[1];
+$('.qq',box).textContent=t.scope==='p'?ti+'都道府県トップ'+N:(t.scope==='all'?'全国で':t.scope[0]==='c'?qChihoName(+t.scope.slice(1))+'地方で':PN[t.scope][1]+'で')+ti+'市区町村トップ'+N;
 map.hidden=t.board!=='map';words.hidden=t.board!=='words';tiles.forEach(x=>{x.setAttribute('class','pf');x.removeAttribute('aria-disabled')});words.textContent='';btns=[];
-if(t.board==='words')b.board.forEach(r=>{const w=document.createElement('button');w.type='button';w.className='w';w.dataset.c=r[0];w.textContent=r[1];if(t.scope==='all'){const s=document.createElement('small');s.textContent=PN[r[0].slice(0,2)][1];w.append(s)}w.addEventListener('click',()=>tap(w));words.append(w);btns.push(w)});
+if(t.board==='words')b.board.forEach(r=>{const w=document.createElement('button');w.type='button';w.className='w';w.dataset.c=r[0];w.textContent=r[1];if(t.scope==='all'||t.scope[0]==='c'){const s=document.createElement('small');s.textContent=PN[r[0].slice(0,2)][1];w.append(s)}w.addEventListener('click',()=>tap(w));words.append(w);btns.push(w)});
 ol.textContent='';for(let i=0;i<N;i++){const li=document.createElement('li');li.className='blank';li.textContent='　';ol.append(li)}res.hidden=true;nav.hidden=true;$('#sent').textContent='';info()}
 const all=()=>t.board==='map'?tiles:btns;
 function info(){$('.meta',box).textContent=over?'':found.size?'見つけた '+found.size+'／'+t.N:'トップ'+t.N+'に入る'+(t.scope==='p'?'都道府県':'市区町村')+'を1つずつ。'+(t.N+1)+'位より下はドボン'}
@@ -89,8 +119,8 @@ $('.next',nav).addEventListener('click',()=>{topic();box.scrollIntoView()});sel.
 $('.qq',box).textContent='読み込み中';load().then(d=>{D=d;D.prefs.forEach(p=>PN[p[0]]=p);TP=qDobonTopics(D);topic()}).catch(()=>{$('.qq',box).textContent='読み込めませんでした'})})();`;
 
 // ---- この街はどこ？・ならべる・ヒントで街あて（#43）----
-// 出題の範囲（この街はどこ？・ヒントで街あて）：都道府県・県の中では答えが1つに決まらないので、かわりに地方
-const townSelect = (id) => `<p class="sc"><label for="${id}">出題の範囲</label> <select id="${id}"><option value="">おまかせ</option><option value="big">人口10万人以上の市区町村</option><option value="all">全国の市区町村</option><optgroup label="地方の市区町村">${[0, 1, 2, 3, 4, 5, 6].map((i) => `<option value="r${i}">${esc(qRegionName(i))}</option>`).join('')}</optgroup></select></p>`;
+// 出題の範囲（この街はどこ？・ヒントで街あて）：都道府県・県の中では答えが1つに決まらないので、地方まで
+const townSelect = (id, off) => scopeSelect(id, { p: false, pref: false, off });
 
 // 結果の画面（3つで共通）
 const resBox = (n, links) => `<section id="res" class="qz" hidden aria-live="polite"><p class="score"><b>0</b><span>／${n}</span></p><p class="sp"></p><p><button class="go send" type="button">結果を送る</button>　<button class="go again" type="button">もう一度</button></p><p class="note" id="sent"></p>
@@ -98,7 +128,7 @@ const resBox = (n, links) => `<section id="res" class="qz" hidden aria-live="pol
 
 // 結果を出す・範囲を変える・読みこむ（3つで共通。start と qs・score・label はページごと）
 const FINISH = `function finish(name,extra){box.hidden=true;res.hidden=false;$('.score b',res).textContent=extra?extra[0]:score;$('.score span',res).textContent='／'+(extra?extra[1]:qs.length);$('.sp',res).textContent=extra?qs.length+'問中'+score+'問正解':'';$('.sp',res).hidden=!extra;
-const s=sel.value,sc=s===''?'':'（'+sel.options[sel.selectedIndex].text+'）';res.dataset.text='まちの社会科「'+name+'」'+sc+qs.length+'問中'+score+'問正解'+(extra?'・'+extra[0]+'点':'');$('#sent').textContent='';window.scrollTo(0,0)}
+res.dataset.text='まちの社会科「'+name+'」'+tag(sel)+qs.length+'問中'+score+'問正解'+(extra?'・'+extra[0]+'点':'');$('#sent').textContent='';window.scrollTo(0,0)}
 function boot(){sel.addEventListener('change',()=>{save();if(D)start()});$('.again',res).addEventListener('click',start);share($('.send',res),()=>res.dataset.text);
 qq.textContent='読み込み中';load().then(d=>{D=d;D.prefs.forEach(p=>PN[p[0]]=p);start()}).catch(()=>{qq.textContent='読み込めませんでした'})}
 const empty=()=>{if(qs.length)return false;qq.textContent='この範囲では問題が作れませんでした';return true};
@@ -119,18 +149,18 @@ next.addEventListener('click',()=>{if(i<qs.length-1){i++;show()}else finish('こ
 
 const NARABE_JS = `(()=>{${COMMON}
 ${CORE_JS}
-const box=$('#quiz'),meta=$('.meta',box),qq=$('.qq',box),ul=$('.ch',box),ex=$('.ex',box),next=$('.next',box),res=$('#res'),sel=$('#sc');const save=scope(sel,'machi-narabe');let D,PN={},qs=[],i,score,N=${NARABE_N};
+const box=$('#quiz'),meta=$('.meta',box),qq=$('.qq',box),ul=$('.ch',box),ex=$('.ex',box),next=$('.next',box),res=$('#res'),sel=$('#sc'),lv=$('#lv'),OFF=JSON.parse($('#qoff').textContent);const saveLv=level(sel,lv,'machi-narabe-lv',OFF),save=scope(sel,'machi-narabe');let D,PN={},qs=[],i,score,N=${NARABE_N};
 ${FINISH}
 const sub=(r,k)=>k==='m'?PN[r[0].slice(0,2)][1]:'',url=(r,k)=>k==='p'?'/'+r[2]+'/':where(r);
-function show(){const q=qs[i],m=D.m[q.mi],vals=q.p.map(r=>r[3+q.mi]);let got=[];meta.textContent=(i+1)+'／'+qs.length+'　大きい順に1・2・3とおす';qq.textContent=m[1]+'順';ex.hidden=true;next.hidden=true;delete ul.dataset.done;ul.textContent='';
+function show(){const q=qs[i],m=D.m[q.mi],vals=q.p.map(r=>r[3+q.mi]);let got=[];meta.textContent=(i+1)+'／'+qs.length+'　'+(q.lo?'小さい':'大きい')+'順に1・2・3とおす';qq.textContent=(q.lo?m[7]:m[1])+'順';ex.hidden=true;next.hidden=true;delete ul.dataset.done;ul.textContent='';
 const bs=q.p.map((r,j)=>{const li=document.createElement('li'),b=document.createElement('button');b.type='button';const k=document.createElement('span');k.className='k';k.textContent=KANA[j];const t=document.createElement('span');t.className='t';t.textContent=r[1];const sb=sub(r,q.kind);if(sb){const s=document.createElement('small');s.textContent=sb;t.append(s)}
 const v=document.createElement('span');v.className='v';v.textContent=qFmt(m,vals[j])+m[2];const o=document.createElement('span');o.className='o';b.append(k,t,v,o);li.append(b);ul.append(li);
 b.addEventListener('click',()=>{if(ul.dataset.done)return;const at=got.indexOf(j);got=at>=0?got.slice(0,at):got.concat(j);paint();if(got.length===3)judge()});return b});
 const paint=()=>bs.forEach((b,j)=>{const n=got.indexOf(j);$('.o',b).textContent=n<0?'':n+1});
 function judge(){ul.dataset.done=1;let all=true;bs.forEach((b,j)=>{b.disabled=true;if(got.indexOf(j)===q.order.indexOf(j))b.classList.add('ok');else{b.classList.add('ng');all=false}});if(all)score++;
 ex.textContent='';q.order.forEach((j,n)=>{const l=document.createElement('a');l.href=url(q.p[j],q.kind);l.textContent=q.p[j][1];ex.append((n?'　':'')+(n+1)+' ',l,' '+qFmt(m,vals[j])+m[2])});ex.hidden=false;next.textContent=i<qs.length-1?'次の問題':'結果を見る';next.hidden=false}}
-function start(){qs=qNarabe(D,sel.value,Math.random,N);i=0;score=0;res.hidden=true;box.hidden=false;if(!empty())show()}
-next.addEventListener('click',()=>{if(i<qs.length-1){i++;show()}else finish('ならべる')});boot()})();`;
+function start(){qs=qNarabe(D,sel.value,Math.random,N,lv.value);i=0;score=0;res.hidden=true;box.hidden=false;if(!empty())show()}
+next.addEventListener('click',()=>{if(i<qs.length-1){i++;show()}else finish('ならべる')});lv.addEventListener('change',()=>{saveLv();save();if(D)start()});boot()})();`;
 
 const HINT_JS = `(()=>{${COMMON}
 ${CORE_JS}
@@ -179,7 +209,7 @@ function shelfMore({ munis, machi, docchiMan, dobonN, sd }) {
   return `<div class="prose">
 ${h2('数字のもと')}
 <p>街の数字クイズの数字は、総務省の「${esc(munis.statName)}」です。${jpDate(munis.survey)}の数字で、${jpDate(munis.published)}に発表されました。</p>
-<p>くらべる数字は、人口や面積など${machi.m.length}種類です。全国${fmt(machi.munis.length)}の市区町村と、${machi.prefs.length}都道府県の数字を使います。</p>
+<p>くらべる数字は、人口や面積など${machi.m.length}種類です。面積がせまいほうのような小さいほうの向きもあわせて、題は${qDai(machi).length}あります。全国${fmt(machi.munis.length)}の市区町村と、${machi.prefs.length}都道府県の数字を使います。</p>
 <p>備えの数字クイズは、農林水産省などが出している備えのめやすから作っています。水は1人1日${sd.w}L、携帯トイレは1人1日${sd.t}回といった数字です。</p>
 </div>
 ${h2('問題の数')}
@@ -188,7 +218,7 @@ ${h2('問題の数')}
 <tr><td>どっちが多い？</td><td>${DOCCHI_N}問</td><td>組み合わせ${fmt(docchiMan)}万通り以上</td></tr>
 <tr><td>ドボンクイズ</td><td>お題1つ</td><td>お題${fmt(dobonN)}</td></tr>
 <tr><td>この街はどこ？</td><td>${DOKO_N}問</td><td>おまかせで${fmt(qDokoPool(machi, '').length)}市区町村</td></tr>
-<tr><td>ならべる</td><td>${NARABE_N}問</td><td>お題${machi.m.length}種類</td></tr>
+<tr><td>ならべる</td><td>${NARABE_N}問</td><td>お題${qDai(machi).length}</td></tr>
 <tr><td>ヒントで街あて</td><td>${HINT_N}問</td><td>ヒント${HINT_MAX}つ</td></tr>
 <tr><td>備えの数字クイズ</td><td>${SONAE_N}問</td><td>${SONAE_KINDS}種類の問題の型</td></tr>
 </tbody></table>
@@ -196,7 +226,7 @@ ${h2('問題の数')}
 ${h2('よくある問い')}
 ${qa('「結果を送る」で何が送られますか', '点数の文と、そのクイズのページのURLです。送る相手は、おした人が自分でえらびます。おさなければ、何も送られません。')}
 ${qa('同じ問題ばかり出ませんか', '今日の1問をのぞく街の数字クイズは、開くたびに問題を作り直します。今日の1問は日付で決まるので、同じ日ならだれが開いても同じ問題です。')}
-${qa('出ない数字はありますか', '人口の減り方と、65歳以上の人の割合は、クイズの題にしていません。住んでいる人が気にする数字だからです。')}
+${qa('出ない数字はありますか', '人口の減り方と、65歳以上の人の割合は、クイズの題にしていません。住んでいる人が気にする数字だからです。人口と子どもの割合は、少ないほう・低いほうの向きの題もありません。')}
 ${qa('広告は出ますか', 'このページと、上にならんだクイズのページには、広告を置いていません。答えのボタンの近くに広告があると、まちがえておしてしまうことがあるためです。市区町村のページの中のクイズは、その街のページの一部なので、広告が出ることがあります。')}
 </div>`;
 }
@@ -211,25 +241,27 @@ function docchiMore({ munis, machi, docchiMan }) {
   if (ex) {
     const m = machi.m[ex.mi];
     const v = ex.p.map((r) => r[3 + ex.mi]);
-    const ans = v[0] > v[1] ? 0 : 1;
+    const ans = (v[0] > v[1]) !== !!ex.lo ? 0 : 1;
     const nm = (r) => `${esc(prefName(r))}の${esc(r[1])}`;
     exText = `${h2('1問の例')}
-<p>たとえば${esc(label(m).replace(/（[^）]*）/g, ''))}をくらべる問題で、アに${nm(ex.p[0])}、イに${nm(ex.p[1])}が出たとします。</p>
+<p>たとえば「${esc((ex.lo ? m[6] : m[0]).replace(/（[^）]*）/g, ''))}」という問題で、アに${nm(ex.p[0])}、イに${nm(ex.p[1])}が出たとします。</p>
 <p>答えをえらぶと、2つの数字が出ます。${esc(ex.p[0][1])}は${qFmt(m, v[0])}${esc(m[2])}、${esc(ex.p[1][1])}は${qFmt(m, v[1])}${esc(m[2])}なので、正解は${'アイ'[ans]}です。</p>
 <p>正解には赤い丸がつき、まちがえたときは、えらんだ所にバツがつきます。</p>
 <p>答えのあとに出る名前をおすと、その街や県のページが開きます。街のページがない市区町村は、県のページの中の、その街の行が開きます。</p>`;
   }
   return `<div class="prose">
 ${h2('しくみ')}
-<p>2つの街や都道府県から、数字が大きいほうをえらびます。問題は1回${DOCCHI_N}問で、ページを開くたびに新しく作ります。</p>
+<p>2つの街や都道府県から、題に合うほうをえらびます。問題は1回${DOCCHI_N}問で、ページを開くたびに新しく作ります。</p>
+<p>題は${qDai(machi).length}です。${machi.m.length}の数字の大きいほうをえらぶ題と、面積がせまいほうのように小さいほうをえらぶ題があります。</p>
 <p>数字は、総務省が${jpDate(munis.published)}に発表した「${esc(munis.statName)}」から取っています。${jpDate(munis.survey)}の時点の数字です。</p>
 <p>差が小さすぎる組は出しません。差が下の表より小さい組と、表示した数字が同じになる組は外します。人口や面積のように数の大きい数字では、開きすぎている組も外します。</p>
 </div>
 <table class="tbl"><thead><tr><th>くらべる数字</th><th>出さない組の差</th></tr></thead><tbody>${rows}</tbody></table>
 <div class="prose">
+<p>むずかしさを「むずかしい」にすると、差がこの表の3倍より小さい組だけを出します。答えが1つに決まる組の中から、数字の近い組をえらびます。</p>
 ${exText}
 ${h2('よくある問い')}
-${qa('出題の範囲は変えられますか', '上の「出題の範囲」で、都道府県だけや、1つの県の中の市区町村だけにしぼれます。えらんだ範囲はあなたのスマホやパソコンにおぼえておくので、次に開いたときも同じ範囲で始まります。')}
+${qa('出題の範囲は変えられますか', '上の「出題の範囲」で、都道府県だけや、関東のような地方の中、1つの県の中の市区町村だけにしぼれます。問題が作れない範囲は、えらべないようにしています。えらんだ範囲とむずかしさはあなたのスマホやパソコンにおぼえておくので、次に開いたときも同じ形で始まります。')}
 ${qa('問題は何通りありますか', `出せる組み合わせは${fmt(docchiMan)}万通り以上あります。1回の${DOCCHI_N}問は、その中から毎回えらび直します。`)}
 ${qa(`${DOCCHI_N}問の答えは送られますか`, `送りません。${DOCCHI_N}問の答え合わせは、いま開いている画面の中で終わります。点数を人に見せたいときだけ、「結果を送る」で相手を自分でえらべます。`)}
 </div>`;
@@ -239,11 +271,12 @@ function dobonMore({ munis, machi }) {
   const T = qDobonTopics(machi);
   const nP = T.filter((t) => t.scope === 'p').length;
   const nAll = T.filter((t) => t.scope === 'all').length;
-  const nPref = T.length - nP - nAll;
+  const nChiho = T.filter((t) => t.scope[0] === 'c').length;
+  const nPref = T.length - nP - nAll - nChiho;
   const big = Math.max(...T.map((t) => t.N));
   const small = Math.min(...T.map((t) => t.N));
   // 例：県ごとのお題で、トップ5になる人口のお題のうち最初のもの
-  const t5 = T.find((t) => t.scope !== 'p' && t.scope !== 'all' && t.N < big && t.mi === 0);
+  const t5 = T.find((t) => /^\d/.test(t.scope) && t.N < big && t.mi === 0 && !t.lo);
   let exText = '';
   if (t5) {
     const m = machi.m[t5.mi];
@@ -257,8 +290,9 @@ function dobonMore({ munis, machi }) {
   }
   return `<div class="prose">
 ${h2('しくみ')}
-<p>お題の数字が大きい順に、トップ${big}に入る都道府県や市区町村を1つずつえらびます。トップ${big}の外をえらぶとドボンで、そこでおしまいです。</p>
-<p>お題は全部で${fmt(T.length)}あります。都道府県が${nP}、全国の市区町村が${nAll}、県ごとの市区町村が${fmt(nPref)}です。</p>
+<p>お題の順位で、トップ${big}に入る都道府県や市区町村を1つずつえらびます。トップ${big}の外をえらぶとドボンで、そこでおしまいです。</p>
+<p>お題には、人口が多い順のような大きいほうからの順位と、面積がせまい順のような小さいほうからの順位があります。</p>
+<p>お題は全部で${fmt(T.length)}あります。都道府県が${nP}、全国の市区町村が${nAll}、地方ごとの市区町村が${nChiho}、県ごとの市区町村が${fmt(nPref)}です。</p>
 <p>都道府県は地図から、市区町村は名前がならんだ一覧からえらびます。一覧には、トップの街と、その下の順位の街がまざっています。市区町村の数が少ない県では、トップ${small}を当てます。</p>
 <p>どのお題も、総務省の「${esc(munis.statName)}」の数字で順位をつけています。${jpDate(munis.published)}に発表された、${jpDate(munis.survey)}の数字です。</p>
 ${exText}
@@ -308,7 +342,7 @@ const nmCount = (machi) => {
   return cnt;
 };
 const scopeRows = (f) =>
-  [['', 'おまかせ（人口5万人以上）'], ['big', '人口10万人以上'], ['all', '全国の市区町村'], ...[0, 1, 2, 3, 4, 5, 6].map((i) => [`r${i}`, `${qRegionName(i)}（人口5万人以上）`])]
+  [['', 'おまかせ（人口5万人以上）'], ['big', '人口10万人以上'], ['all', '全国の市区町村'], ...CH.map((c) => [`c${c}`, `${qChihoName(c)}（人口5万人以上）`])]
     .map(([s, t]) => `<tr><td>${esc(t)}</td><td>${fmt(f(s))}</td></tr>`)
     .join('');
 const noSend = (n) => qa('答えは送られますか', `送りません。${n}問の丸とバツは、いま開いている画面の中でつけています。点数を人に見せたいときだけ、「結果を送る」で相手を自分でえらべます。`);
@@ -341,7 +375,7 @@ ${h2('出題の範囲')}
 <table class="tbl"><thead><tr><th>範囲</th><th>出る市区町村</th></tr></thead><tbody>${scopeRows((s) => qDokoPool(machi, s).length)}</tbody></table>
 <div class="prose">
 <p>おまかせは、人口5万人以上の街から出します。知らない街ばかりにならないようにするためです。全国の市区町村をえらぶと、町や村も出ます。</p>
-<p>1回の中で、同じ街は出しません。おまかせでは、1つの県から出るのは${cap}問までです。</p>
+<p>1回の中で、同じ街は出しません。おまかせでは、1つの県から出るのは${cap}問までです。北海道は県が1つで答えがいつも同じになるので、範囲にはえらべません。</p>
 ${h2('出さない街')}
 <p>同じ名前の市区町村がほかの県にもある街は出しません。全国で${fmt(dupTowns)}の市区町村が、これにあたります。</p>
 ${dup ? `<p>たとえば${esc(dup[0][1])}は、${dup.map((r) => esc(prefName(r))).join('と')}にあります。名前だけでは答えが1つに決まりません。</p>` : ''}
@@ -355,8 +389,11 @@ ${noSend(DOKO_N)}
 }
 
 function narabeMore({ munis, machi }) {
-  const rows = machi.m
-    .map((m) => `<tr><td>${esc(m[1])}順</td><td>${m[4] ? `${m[4]}${esc(m[2])}未満` : `大きいほうの${Math.round(m[5] * 100)}%未満`}</td></tr>`)
+  const rows = qDai(machi)
+    .map(([mi, lo]) => {
+      const m = machi.m[mi];
+      return `<tr><td>${esc(lo ? m[7] : m[1])}順</td><td>${m[4] ? `${m[4]}${esc(m[2])}未満` : `大きいほうの${Math.round(m[5] * 100)}%未満`}</td></tr>`;
+    })
     .join('');
   const q = qNarabe(machi, 'big', seed(munis), 1)[0];
   let ex = '';
@@ -364,17 +401,17 @@ function narabeMore({ munis, machi }) {
     const m = machi.m[q.mi];
     const v = (r) => `${esc(r[1])}が${qFmt(m, r[3 + q.mi])}${esc(m[2])}`;
     ex = `${h2('1問の例')}
-<p>たとえば「${esc(m[1])}順」で、${q.p.map((r, j) => `${KANA[j]}に${esc(r[1])}`).join('、')}が出たとします。</p>
+<p>たとえば「${esc(q.lo ? m[7] : m[1])}順」で、${q.p.map((r, j) => `${KANA[j]}に${esc(r[1])}`).join('、')}が出たとします。</p>
 <p>数字は、${q.p.map(v).join('、')}です。</p>
-<p>大きい順は${q.order.map((j) => KANA[j]).join('・')}なので、この順におせば正解です。</p>`;
+<p>${q.lo ? '小さい' : '大きい'}順は${q.order.map((j) => KANA[j]).join('・')}なので、この順におせば正解です。</p>`;
   }
   return `<div class="prose">
 ${h2('しくみ')}
-<p>3つの街や都道府県が出ます。お題の数字が大きい順に、1・2・3とおしてならべます。1回${NARABE_N}問です。</p>
+<p>3つの街や都道府県が出ます。お題の順に、1・2・3とおしてならべます。人口が多い順なら大きい順、面積がせまい順なら小さい順です。1回${NARABE_N}問です。</p>
 <p>3つめをおすと答え合わせです。順番が合っている所に赤い丸、ちがう所にバツがつきます。3つとも合っていたら1問正解です。</p>
 <p>おしまちがえたときは、同じ所をもう一度おします。そこから後の番号が消えるので、おし直せます。</p>
 ${h2('お題と出さない組')}
-<p>お題は${machi.m.length}種類です。3つのうちどの2つをくらべても、差が下の表より大きい組だけを出します。</p>
+<p>お題は${qDai(machi).length}です。3つのうちどの2つをくらべても、差が下の表より大きい組だけを出します。むずかしいでは、となり合う2つの差が、表の3倍より小さい組だけにします。</p>
 <p>表示した数字が同じになる組も出しません。人口や面積のように数の大きい数字では、3倍より開いた組も外します。</p>
 </div>
 <table class="tbl"><thead><tr><th>お題</th><th>出さない組の差</th></tr></thead><tbody>${rows}</tbody></table>
@@ -383,7 +420,7 @@ ${ex}
 <p>数字は、総務省が${jpDate(munis.published)}に発表した「${esc(munis.statName)}」から取っています。</p>
 ${h2('よくある問い')}
 ${qa('どっちが多い？とのちがいは', 'どっちが多い？は、2つから1つをえらびます。ならべるは3つの順番を全部当てるので、1問が少しむずかしくなります。')}
-${qa('出題の範囲は変えられますか', '都道府県だけ、人口10万人以上の市区町村だけ、1つの県の中だけ、にしぼれます。えらんだ範囲は、この端末におぼえておきます。')}
+${qa('出題の範囲は変えられますか', '都道府県だけ、人口10万人以上の市区町村だけ、地方の中だけ、1つの県の中だけ、にしぼれます。問題が作れない範囲はえらべません。えらんだ範囲とむずかしさは、この端末におぼえておきます。')}
 ${noSend(NARABE_N)}
 </div>`;
 }
@@ -416,11 +453,12 @@ ${h2('しくみ')}
 <p>まちがえたら、その問題は0点です。${HINT_N}問とも1つめのヒントで当てると、${HINT_N * HINT_MAX}点になります。</p>
 ${h2('3つの街の決め方')}
 <p>3つの街は、同じ地方の、県がちがう街です。4つめのヒントで県の名前が出ると、答えは必ず1つに決まります。</p>
-<p>数字の特徴は、面積や人口密度など${machi.m.length - 2}種類の数字から1つです。その街が全国でいちばん上のほうにある数字をえらびます。</p>
+<p>数字の特徴は、面積が広い・面積がせまいなど${qDai(machi).filter(([mi]) => mi >= 2).length}の題から1つです。その街が全国でいちばん上か下のほうにある題をえらびます。小さいほうの題なら「下から」と出します。</p>
 <p>人口と世帯の数は、2つめのヒントと重なるので使いません。</p>
 ${ex}
 ${h2('地方の分け方')}
-<p>地方は7つに分けています。北海道と東北、九州と沖縄はいっしょです。どの地方にも、県が3つ以上あるようにするためです。</p>
+<p>ヒントの地方は7つに分けています。北海道と東北、九州と沖縄はいっしょです。どの地方にも、県が3つ以上あるようにするためです。</p>
+<p>出題の範囲の地方は、北海道と東北を分けた8つです。北海道だけでは県のちがう3つの街がそろわないので、えらべません。</p>
 </div>
 <table class="tbl"><thead><tr><th>地方</th><th>都道府県</th></tr></thead><tbody>${regions}</tbody></table>
 <div class="prose">
@@ -435,6 +473,8 @@ export function quizPages({ munis, items, sources, machi }) {
   const nMunis = machi.munis.length;
   const docchiMan = Math.floor(docchiPairs(machi) / 10000);
   const dobonN = qDobonTopics(machi).length;
+  const nDai = qDai(machi).length;
+  const off = quizOff(machi);
   const out = [];
   const src = srcKokusei(munis);
 
@@ -461,13 +501,14 @@ ${shelfMore({ munis, machi, docchiMan, dobonN, sd: sonaeData(items, sources) })}
     path: '/quiz/docchi/',
     title: 'どっちが多い？ 街と都道府県の数字クイズ',
     description: fit(
-      [`全国${nMunis.toLocaleString('ja-JP')}市区町村と47都道府県の人口・面積・一戸建ての割合など${machi.m.length}の数字をくらべる2択クイズ。都道府県・人口10万人以上・県の中から毎回ちがう10問で、組み合わせは${docchiMan}万通り以上。`],
+      [`全国${nMunis.toLocaleString('ja-JP')}市区町村と47都道府県の人口・面積など${machi.m.length}の数字で、${nDai}の題をくらべる2択クイズ。都道府県・地方・県の中から毎回ちがう10問、むずかしさは2つで、組み合わせは${docchiMan}万通り以上。`],
       [`${munis.survey.slice(0, 4)}年国勢調査の数字です。`],
     ),
     noAds: true,
     body: `<p class="crumb"><a href="/">トップ</a> / <a href="/quiz/">クイズ</a></p>
 <h1 class="city">どっちが多い？</h1>
-${scopeSelect('sc', true)}
+${scopeSelect('sc', { off: off.docchi[''], lv: true })}
+${data2('qoff', off.docchi)}
 <section id="quiz" class="qz"><p class="meta"></p><p class="qq"></p><ul class="ch"></ul><p class="ex" hidden></p><p><button class="go next" type="button" hidden>次の問題</button></p></section>
 <section id="res" class="qz" hidden aria-live="polite"><p class="score"><b>0</b><span>／10</span></p><p><button class="go send" type="button">結果を送る</button>　<button class="go again" type="button">もう一度</button></p><p class="note" id="sent"></p>
 <p><a href="/ranking/jinko/">人口が増えた市区町村</a>・<a href="/quiz/dobon/">ドボンクイズ</a></p></section>
@@ -481,14 +522,14 @@ ${docchiMore({ munis, machi, docchiMan })}`,
     path: '/quiz/dobon/',
     title: 'ドボンクイズ（都道府県・市区町村のトップ10を当てる）',
     description: fit(
-      [`人口・面積・一戸建ての割合など${machi.m.length}の数字で、トップ10に入る都道府県や市区町村を1つずつ当てるクイズ。全国と47都道府県それぞれのお題が${dobonN}あり、11位より下をえらぶとドボン。`],
+      [`人口・面積・一戸建ての割合など${machi.m.length}の数字で、トップ10に入る都道府県や市区町村を1つずつ当てるクイズ。全国・8つの地方・47都道府県のお題が${dobonN}あり、11位より下をえらぶとドボン。`],
       [`${munis.survey.slice(0, 4)}年国勢調査の数字です。`],
     ),
     noAds: true,
     head: `<style>${JMAP_CSS}</style>`,
     body: `<p class="crumb"><a href="/">トップ</a> / <a href="/quiz/">クイズ</a></p>
 <h1 class="city">ドボンクイズ</h1>
-${scopeSelect('sc', false)}
+${scopeSelect('sc', { big: false, off: off.dobon })}
 <section id="db" class="qz"><p class="qq"></p><p class="meta"></p>
 <div class="t5">${japanMap({ quiz: true })}</div><div class="gogun" hidden></div>
 <div class="dbr" hidden aria-live="polite"><p class="score"><b>0</b><span>／10</span></p><p class="dbm"></p></div>
@@ -515,7 +556,7 @@ ${dobonMore({ munis, machi })}`,
     head: `<style>${JMAP_CSS}${DOKO_CSS}</style>`,
     body: `${crumb}
 <h1 class="city">この街はどこ？</h1>
-${townSelect('sc')}
+${townSelect('sc', off.doko)}
 <section id="dk" class="qz"><p class="meta"></p><p class="qq"></p><div class="dkx"><p class="ex" hidden></p><button class="go next" type="button" hidden>次の問題</button></div>
 <div class="t5">${japanMap({ quiz: true })}</div></section>
 ${resBox(DOKO_N, '<a href="/quiz/hint/">ヒントで街あて</a>・<a href="/quiz/dobon/">ドボンクイズ</a>')}
@@ -529,14 +570,15 @@ ${dokoMore({ munis, machi })}`,
     path: '/quiz/narabe/',
     title: 'ならべる 3つの街を数字の大きい順にならべるクイズ',
     description: fit(
-      [`3つの街や都道府県を、人口・面積・一戸建ての割合など${machi.m.length}種類のお題で大きい順にならべる${NARABE_N}問のクイズ。都道府県・人口10万人以上・県の中から、毎回ちがう組を作ります。`],
+      [`3つの街や都道府県を、人口が多い順・面積がせまい順など${nDai}のお題の順にならべる${NARABE_N}問のクイズ。都道府県・人口10万人以上・地方・県の中から、むずかしさもえらべます。`],
       [yr],
     ),
     noAds: true,
     head: `<style>${NARABE_CSS}</style>`,
     body: `${crumb}
 <h1 class="city">ならべる</h1>
-${scopeSelect('sc', true)}
+${scopeSelect('sc', { off: off.narabe[''], lv: true })}
+${data2('qoff', off.narabe)}
 <section id="quiz" class="qz"><p class="meta"></p><p class="qq"></p><ul class="ch"></ul><p class="ex" hidden></p><p><button class="go next" type="button" hidden>次の問題</button></p></section>
 ${resBox(NARABE_N, '<a href="/quiz/docchi/">どっちが多い？</a>・<a href="/quiz/dobon/">ドボンクイズ</a>')}
 ${noJs}
@@ -556,7 +598,7 @@ ${narabeMore({ munis, machi })}`,
     head: `<style>${HINT_CSS}</style>`,
     body: `${crumb}
 <h1 class="city">ヒントで街あて</h1>
-${townSelect('sc')}
+${townSelect('sc', off.hint)}
 <section id="quiz" class="qz"><p class="meta"></p><p class="qq"></p><ol class="hl"></ol><p><button class="go more" type="button" hidden>次のヒント</button></p><ul class="ch"></ul><p class="ex" hidden></p><p><button class="go next" type="button" hidden>次の問題</button></p></section>
 ${resBox(HINT_N * HINT_MAX, '<a href="/quiz/doko/">この街はどこ？</a>・<a href="/quiz/narabe/">ならべる</a>')}
 ${noJs}

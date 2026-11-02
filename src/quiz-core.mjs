@@ -18,56 +18,114 @@ export function qFair(m, x, y) {
   return qFmt(m, x) !== qFmt(m, y);
 }
 
-// どっちが多いの範囲：'' おまかせ・'p' 都道府県・'big' 人口10万人以上・'all' 全国の市区町村・'13' など 県の中
-export function qPool(D, scope, rand) {
-  const big = D.munis.filter((r) => r[3] >= 100000);
-  if (scope === 'p') return { kind: 'p', rows: D.prefs };
-  if (scope === 'big') return { kind: 'm', rows: big };
-  if (scope === 'all') return { kind: 'm', rows: D.munis };
-  if (scope) return { kind: 'm', rows: D.munis.filter((r) => r[0].slice(0, 2) === scope) };
-  const x = rand();
-  if (x < 0.25) return { kind: 'p', rows: D.prefs };
-  if (x < 0.65) return { kind: 'm', rows: big };
-  const p = D.prefs[Math.floor(rand() * D.prefs.length)][0];
-  return { kind: 'm', rows: D.munis.filter((r) => r[0].slice(0, 2) === p) };
+// 出題の範囲（#44）：'' おまかせ・'p' 都道府県・'big' 人口10万人以上・'all' 全国の市区町村・'c0'〜'c7' 地方の市区町村・'13' など えらんだ県の中
+// 地方は8つ（北海道・東北・関東・中部・近畿・中国・四国・九州と沖縄）
+export function qChiho(code) {
+  const n = Number(String(code).slice(0, 2));
+  return n === 1 ? 0 : n <= 7 ? 1 : n <= 14 ? 2 : n <= 23 ? 3 : n <= 30 ? 4 : n <= 35 ? 5 : n <= 39 ? 6 : 7;
+}
+export function qChihoName(i) {
+  return ['北海道', '東北', '関東', '中部', '近畿', '中国', '四国', '九州・沖縄'][i];
+}
+export function qRows(D, scope) {
+  if (scope === 'p') return D.prefs;
+  if (scope === 'big') return D.munis.filter((r) => r[3] >= 100000);
+  if (scope === 'all') return D.munis;
+  if (scope[0] === 'c') return D.munis.filter((r) => qChiho(r[0]) === Number(scope.slice(1)));
+  return D.munis.filter((r) => r[0].slice(0, 2) === scope);
 }
 
-export function qDocchi(D, scope, rand, n) {
+// 範囲から、今回の問題の行（おまかせは 都道府県・人口10万人以上・どこかの県の中 をまぜる）。key は並べかえのおぼえ用
+export function qPool(D, scope, rand) {
+  if (scope) return { kind: scope === 'p' ? 'p' : 'm', rows: qRows(D, scope), key: scope };
+  const x = rand();
+  if (x < 0.25) return { kind: 'p', rows: D.prefs, key: 'p' };
+  if (x < 0.65) return { kind: 'm', rows: qRows(D, 'big'), key: 'big' };
+  const p = D.prefs[Math.floor(rand() * D.prefs.length)][0];
+  return { kind: 'm', rows: qRows(D, p), key: p };
+}
+
+// 題（#44）：[数字の番号, 向き]。向き 1 は「少ない・せまい・低い」（m[6] がある数字だけ。人口と子どもの割合などは作らない）
+export function qDai(D) {
   const out = [];
-  const seen = {};
-  for (let tries = 0; out.length < n && tries < 5000; tries++) {
-    const pool = qPool(D, scope, rand);
-    const rows = pool.rows;
-    if (rows.length < 2) continue;
-    const mi = Math.floor(rand() * D.m.length);
-    const a = rows[Math.floor(rand() * rows.length)];
-    const b = rows[Math.floor(rand() * rows.length)];
-    const key = [a[0], b[0]].sort().join('-') + ':' + mi;
-    if (a === b || seen[key] || !qFair(D.m[mi], a[3 + mi], b[3 + mi])) continue;
-    seen[key] = 1;
-    out.push({ mi, kind: pool.kind, p: [a, b] });
+  D.m.forEach((m, mi) => {
+    out.push([mi, 0]);
+    if (m[6]) out.push([mi, 1]);
+  });
+  return out;
+}
+
+// むずかしい（#44）：qFair の中で、差が「出さない組の差」の3倍より小さい組
+export function qClose(m, x, y) {
+  if (!qFair(m, x, y)) return false;
+  return m[4] ? Math.abs(x - y) < m[4] * 3 : Math.abs(x - y) / Math.max(x, y) < m[5] * 3;
+}
+
+// k個の行をえらぶ。ふつうはでたらめに、むずかしいは数字の近い行から（並べた順で近くの行）
+export function qPick(pool, mi, k, rand, lv, cache) {
+  const rows = pool.rows;
+  if (!lv) return Array.from({ length: k }, () => rows[Math.floor(rand() * rows.length)]);
+  const ck = pool.key + ':' + mi;
+  const s = cache[ck] || (cache[ck] = rows.filter((r) => r[3 + mi] != null).sort((x, y) => x[3 + mi] - y[3 + mi]));
+  const w = Math.max(4, Math.ceil(s.length / 10));
+  let j = Math.floor(rand() * s.length);
+  const out = [s[j]];
+  for (let t = 1; t < k; t++) {
+    j += 1 + Math.floor(rand() * w);
+    if (j >= s.length) return null;
+    out.push(s[j]);
+  }
+  for (let i = out.length - 1; i > 0; i--) {
+    const r = Math.floor(rand() * (i + 1));
+    [out[i], out[r]] = [out[r], out[i]];
   }
   return out;
 }
 
-// ドボンクイズのお題の一覧：都道府県の地図（トップ10）・全国の市区町村（トップ10）・県ごとの市区町村（25以上ならトップ10、少なければトップ5）
+// どっちが多い：lv 'h' でむずかしい。答えは lo のときは小さいほう
+export function qDocchi(D, scope, rand, n, lv) {
+  const out = [];
+  const seen = {};
+  const T = qDai(D);
+  const cache = {};
+  const fixed = scope ? qPool(D, scope, rand) : null;
+  for (let tries = 0; out.length < n && tries < 5000; tries++) {
+    const pool = fixed || qPool(D, scope, rand);
+    if (pool.rows.length < 2) continue;
+    const [mi, lo] = T[Math.floor(rand() * T.length)];
+    const p = qPick(pool, mi, 2, rand, lv, cache);
+    if (!p) continue;
+    const [a, b] = p;
+    const key = [a[0], b[0]].sort().join('-') + ':' + mi + ':' + lo;
+    if (a === b || seen[key] || !(lv ? qClose : qFair)(D.m[mi], a[3 + mi], b[3 + mi])) continue;
+    seen[key] = 1;
+    out.push({ mi, lo, kind: pool.kind, p: [a, b] });
+  }
+  return out;
+}
+
+// ドボンクイズのお題の一覧：都道府県の地図（トップ10）・全国の市区町村（トップ10）・地方の市区町村（トップ10）・
+//   県ごとの市区町村（25以上ならトップ10、少なければトップ5）。lo は「少ない・せまい・低い」の向き（小さい順のトップ。#44）
 // N位と N+1位が表示で同じになるお題は、割合だけ1けた細かく出す。それでも同じなら出さない
 export function qDobonTopics(D) {
   const out = [];
   const add = (scope, rows, N, board) => {
     D.m.forEach((m0, mi) => {
-      if (!m0[1]) return;
-      const s = rows.filter((r) => r[3 + mi] != null).sort((x, y) => y[3 + mi] - x[3 + mi]);
-      if (s.length <= N) return;
-      const tries = m0[2] === '%' ? [m0, [m0[0], m0[1], m0[2], m0[3] + 1, m0[4], m0[5]]] : [m0];
-      const m = tries.find((t) => qFmt(t, s[N - 1][3 + mi]) !== qFmt(t, s[N][3 + mi]));
-      if (m) out.push({ scope, mi, N, board, digits: m[3] });
+      [0, 1].forEach((lo) => {
+        if (!m0[lo ? 7 : 1]) return;
+        const s = rows.filter((r) => r[3 + mi] != null).sort((x, y) => (lo ? x[3 + mi] - y[3 + mi] : y[3 + mi] - x[3 + mi]));
+        if (s.length <= N) return;
+        const tries = m0[2] === '%' ? [m0, [m0[0], m0[1], m0[2], m0[3] + 1, m0[4], m0[5]]] : [m0];
+        const m = tries.find((t) => qFmt(t, s[N - 1][3 + mi]) !== qFmt(t, s[N][3 + mi]));
+        if (m) out.push({ scope, mi, lo, N, board, digits: m[3] });
+      });
     });
   };
   add('p', D.prefs, 10, 'map');
   add('all', D.munis, 10, 'words');
+  for (let c = 0; c < 8; c++) add('c' + c, qRows(D, 'c' + c), 10, 'words');
   for (const p of D.prefs) {
-    const rows = D.munis.filter((r) => r[0].slice(0, 2) === p[0]);
+    const rows = qRows(D, p[0]);
     add(p[0], rows, rows.length >= 25 ? 10 : 5, 'words');
   }
   return out;
@@ -75,8 +133,7 @@ export function qDobonTopics(D) {
 
 // お題の順位と、えらぶ語群（地図のときは47すべて。語群はトップN＋そのすぐ下からまぜて30まで）
 export function qDobonBoard(D, t, rand) {
-  const rows = t.scope === 'p' ? D.prefs : t.scope === 'all' ? D.munis : D.munis.filter((r) => r[0].slice(0, 2) === t.scope);
-  const order = rows.filter((r) => r[3 + t.mi] != null).sort((x, y) => y[3 + t.mi] - x[3 + t.mi]);
+  const order = qRows(D, t.scope).filter((r) => r[3 + t.mi] != null).sort((x, y) => (t.lo ? x[3 + t.mi] - y[3 + t.mi] : y[3 + t.mi] - x[3 + t.mi]));
   let board = order;
   if (t.board === 'words' && order.length > 30) {
     const near = order.slice(t.N, t.N + 40);
@@ -108,7 +165,7 @@ export function qRegionName(i) {
   return ['北海道・東北', '関東', '中部', '近畿', '中国', '四国', '九州・沖縄'][i];
 }
 
-// この街はどこ？・ヒントで街あての街：'' おまかせ（人口5万人以上）・'big' 人口10万人以上・'all' 全国・'r0'〜'r6' 地方の中の人口5万人以上
+// この街はどこ？・ヒントで街あての街：'' おまかせ（人口5万人以上）・'big' 人口10万人以上・'all' 全国・'c0'〜'c7' 地方の中の人口5万人以上（#44 で8つの地方に）
 //   名前が全国で1つの街だけ（同じ名前の街があると答えが1つに決まらない）
 export function qTowns(D, scope) {
   const cnt = {};
@@ -117,7 +174,7 @@ export function qTowns(D, scope) {
   if (scope === 'all') return rows;
   if (scope === 'big') return rows.filter((r) => r[3] >= 100000);
   const base = rows.filter((r) => r[3] >= 50000);
-  return scope && scope[0] === 'r' ? base.filter((r) => qRegion(r[0]) === Number(scope.slice(1))) : base;
+  return scope && scope[0] === 'c' ? base.filter((r) => qChiho(r[0]) === Number(scope.slice(1))) : base;
 }
 
 // この街はどこ？で出す街：県と同じ名前の市（静岡市など）は名前が答えになるので出さない
@@ -132,6 +189,8 @@ export function qDoko(D, scope, rand, n) {
   const a = qDokoPool(D, scope).slice();
   const prefs = {};
   for (const r of a) prefs[r[0].slice(0, 2)] = 1;
+  // 県が1つだけの範囲（北海道）は、答えがいつも同じになるので作らない
+  if (Object.keys(prefs).length < 2) return [];
   const cap = Math.max(1, Math.ceil(n / Object.keys(prefs).length));
   const per = {};
   const out = [];
@@ -148,24 +207,29 @@ export function qDoko(D, scope, rand, n) {
   return out;
 }
 
-// ならべる：範囲はどっちが多いと同じ。3つのどの2つも qFair をみたす組だけ（順番が1つに決まる）。order は大きい順の番号
-export function qNarabe(D, scope, rand, n) {
+// ならべる：3つのどの2つも qFair をみたす組だけ（順番が1つに決まる）。order は題の向きの順（ふつうは大きい順、lo は小さい順）の番号
+//   むずかしい（lv 'h'）は、となり合う2つの差がどちらも qClose
+export function qNarabe(D, scope, rand, n, lv) {
   const out = [];
   const seen = {};
+  const T = qDai(D);
+  const cache = {};
+  const fixed = scope ? qPool(D, scope, rand) : null;
   for (let tries = 0; out.length < n && tries < 8000; tries++) {
-    const pool = qPool(D, scope, rand);
-    const rows = pool.rows;
-    if (rows.length < 3) continue;
-    const mi = Math.floor(rand() * D.m.length);
+    const pool = fixed || qPool(D, scope, rand);
+    if (pool.rows.length < 3) continue;
+    const [mi, lo] = T[Math.floor(rand() * T.length)];
     const m = D.m[mi];
-    const p = [0, 1, 2].map(() => rows[Math.floor(rand() * rows.length)]);
-    if (p[0] === p[1] || p[0] === p[2] || p[1] === p[2]) continue;
+    const p = qPick(pool, mi, 3, rand, lv, cache);
+    if (!p || p[0] === p[1] || p[0] === p[2] || p[1] === p[2]) continue;
     const v = p.map((r) => r[3 + mi]);
     if (!qFair(m, v[0], v[1]) || !qFair(m, v[0], v[2]) || !qFair(m, v[1], v[2])) continue;
-    const key = p.map((r) => r[0]).sort().join('-') + ':' + mi;
+    const order = [0, 1, 2].sort((x, y) => (lo ? v[x] - v[y] : v[y] - v[x]));
+    if (lv && (!qClose(m, v[order[0]], v[order[1]]) || !qClose(m, v[order[1]], v[order[2]]))) continue;
+    const key = p.map((r) => r[0]).sort().join('-') + ':' + mi + ':' + lo;
     if (seen[key]) continue;
     seen[key] = 1;
-    out.push({ mi, kind: pool.kind, p, order: [0, 1, 2].sort((x, y) => v[y] - v[x]) });
+    out.push({ mi, lo, kind: pool.kind, p, order });
   }
   return out;
 }
@@ -174,14 +238,14 @@ export function qNarabe(D, scope, rand, n) {
 //   ヒントは 地方 → 人口の大きさ → 数字の特徴（全国でいちばん上のほうにある数字。人口と世帯の数はのぞく）→ 県の名前
 export function qHint(D, scope, rand, n) {
   const towns = qTowns(D, scope);
-  const L = D.m.length;
-  const rank = {};
-  for (let mi = 2; mi < L; mi++) {
-    const s = D.munis.filter((r) => r[3 + mi] != null).sort((x, y) => y[3 + mi] - x[3 + mi]);
+  // 数字の特徴の候補：題（qDai）のうち人口と世帯の数をのぞくもの。lo は小さい順の順位（#44）
+  const F = qDai(D).filter(([mi]) => mi >= 2);
+  const rank = F.map(([mi, lo]) => {
+    const s = D.munis.filter((r) => r[3 + mi] != null).sort((x, y) => (lo ? x[3 + mi] - y[3 + mi] : y[3 + mi] - x[3 + mi]));
     const o = {};
     s.forEach((r, i) => (o[r[0]] = i));
-    rank[mi] = { o, len: s.length };
-  }
+    return { o, len: s.length };
+  });
   const PN = {};
   for (const p of D.prefs) PN[p[0]] = p[1];
   const B = [[1e4, '1万人未満'], [3e4, '1万〜3万人'], [5e4, '3万〜5万人'], [1e5, '5万〜10万人'], [2e5, '10万〜20万人'], [5e5, '20万〜50万人'], [1e6, '50万〜100万人'], [Infinity, '100万人以上']];
@@ -198,10 +262,11 @@ export function qHint(D, scope, rand, n) {
     const c = pick(others.filter((r) => r[0].slice(0, 2) !== b[0].slice(0, 2)));
     if (!c) continue;
     let best = -1;
-    for (let mi = 2; mi < L; mi++) if (a[3 + mi] != null && rank[mi].o[a[0]] != null && (best < 0 || rank[mi].o[a[0]] / rank[mi].len < rank[best].o[a[0]] / rank[best].len)) best = mi;
+    for (let f = 0; f < F.length; f++) if (rank[f].o[a[0]] != null && (best < 0 || rank[f].o[a[0]] / rank[f].len < rank[best].o[a[0]] / rank[best].len)) best = f;
     if (best < 0) continue;
     used[a[0]] = 1;
-    const m = D.m[best];
+    const [mi, lo] = F[best];
+    const m = D.m[mi];
     const pct = Math.max(1, Math.ceil(((rank[best].o[a[0]] + 1) / rank[best].len) * 100));
     const ch = [a, b, c];
     for (let i = 2; i > 0; i--) {
@@ -211,12 +276,13 @@ export function qHint(D, scope, rand, n) {
     out.push({
       ch,
       a: ch.indexOf(a),
-      mi: best,
-      hints: [qRegionName(g) + '地方の市区町村', '人口は' + B.find((x) => a[3] < x[0])[1], m[1] + '。全国の市区町村で上から' + pct + '%、' + qFmt(m, a[3 + best]) + m[2], PN[a[0].slice(0, 2)] + 'の市区町村'],
+      mi,
+      lo,
+      hints: [qRegionName(g) + '地方の市区町村', '人口は' + B.find((x) => a[3] < x[0])[1], m[lo ? 7 : 1] + '。全国の市区町村で' + (lo ? '下' : '上') + 'から' + pct + '%、' + qFmt(m, a[3 + mi]) + m[2], PN[a[0].slice(0, 2)] + 'の市区町村'],
     });
   }
   return out;
 }
 
-export const CORE_FUNCS = [qFmt, qFair, qPool, qDocchi, qDobonTopics, qDobonBoard, qRegion, qRegionName, qTowns, qDokoPool, qDoko, qNarabe, qHint];
+export const CORE_FUNCS = [qFmt, qFair, qChiho, qChihoName, qRows, qPool, qDai, qClose, qPick, qDocchi, qDobonTopics, qDobonBoard, qRegion, qRegionName, qTowns, qDokoPool, qDoko, qNarabe, qHint];
 export const CORE_JS = CORE_FUNCS.map((f) => f.toString()).join('\n');

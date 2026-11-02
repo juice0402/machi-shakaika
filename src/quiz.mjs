@@ -9,17 +9,18 @@ import { srcTitle } from './layout.mjs';
 
 // くらべる数字（どっちが多い・ドボンクイズで使う）
 // digits：表示の小数のけた。store：machi.json に入れるけた。diff：どっちが多いで出す最小の差。rel：数の大きいものの最小の割合の差
+// lowQ・lowTop：「少ない・せまい・低い」の向きの題（#44）。人口・世帯の数・子どもと15〜64歳の割合は作らない（住む人を傷つけないため）
 export const METRICS = [
   { key: 'pop', q: '人口が多いのは？', top: '人口が多い', unit: '人', digits: 0, store: 0, rel: 0.03 },
   { key: 'hh', q: '世帯の数が多いのは？', top: '世帯の数が多い', unit: '世帯', digits: 0, store: 0, rel: 0.03 },
-  { key: 'menseki', q: '面積が広いのは？', top: '面積が広い', unit: 'km²', digits: 0, store: 1, rel: 0.05 },
-  { key: 'density', q: '人口密度（1km²あたりの人口）が高いのは？', top: '人口密度が高い', unit: '人/km²', digits: 0, store: 1, rel: 0.05 },
-  { key: 'per', q: '1世帯の平均人数が多いのは？', top: '1世帯の平均人数が多い', unit: '人', digits: 2, store: 3, diff: 0.05 },
+  { key: 'menseki', q: '面積が広いのは？', top: '面積が広い', unit: 'km²', digits: 0, store: 1, rel: 0.05, lowQ: '面積がせまいのは？', lowTop: '面積がせまい' },
+  { key: 'density', q: '人口密度（1km²あたりの人口）が高いのは？', top: '人口密度が高い', unit: '人/km²', digits: 0, store: 1, rel: 0.05, lowQ: '人口密度（1km²あたりの人口）が低いのは？', lowTop: '人口密度が低い' },
+  { key: 'per', q: '1世帯の平均人数が多いのは？', top: '1世帯の平均人数が多い', unit: '人', digits: 2, store: 3, diff: 0.05, lowQ: '1世帯の平均人数が少ないのは？', lowTop: '1世帯の平均人数が少ない' },
   { key: 'p014', q: '子ども（15歳未満）の割合が高いのは？', top: '子ども（15歳未満）の割合が高い', unit: '%', digits: 1, store: 2, diff: 0.5 },
   { key: 'p1564', q: '15〜64歳の人の割合が高いのは？', top: '15〜64歳の人の割合が高い', unit: '%', digits: 1, store: 2, diff: 0.5 },
-  { key: 'pSingle', q: 'ひとり暮らしの世帯の割合が高いのは？', top: 'ひとり暮らしの世帯の割合が高い', unit: '%', digits: 1, store: 2, diff: 1 },
-  { key: 'pKyodo', q: '共同住宅（マンション・アパートなど）に住む世帯の割合が高いのは？', top: '共同住宅に住む世帯の割合が高い', unit: '%', digits: 1, store: 2, diff: 2 },
-  { key: 'pIkko', q: '一戸建てに住む世帯の割合が高いのは？', top: '一戸建てに住む世帯の割合が高い', unit: '%', digits: 1, store: 2, diff: 2 },
+  { key: 'pSingle', q: 'ひとり暮らしの世帯の割合が高いのは？', top: 'ひとり暮らしの世帯の割合が高い', unit: '%', digits: 1, store: 2, diff: 1, lowQ: 'ひとり暮らしの世帯の割合が低いのは？', lowTop: 'ひとり暮らしの世帯の割合が低い' },
+  { key: 'pKyodo', q: '共同住宅（マンション・アパートなど）に住む世帯の割合が高いのは？', top: '共同住宅に住む世帯の割合が高い', unit: '%', digits: 1, store: 2, diff: 2, lowQ: '共同住宅（マンション・アパートなど）に住む世帯の割合が低いのは？', lowTop: '共同住宅に住む世帯の割合が低い' },
+  { key: 'pIkko', q: '一戸建てに住む世帯の割合が高いのは？', top: '一戸建てに住む世帯の割合が高い', unit: '%', digits: 1, store: 2, diff: 2, lowQ: '一戸建てに住む世帯の割合が低いのは？', lowTop: '一戸建てに住む世帯の割合が低い' },
 ];
 
 export const show = (m, v) => (m.digits ? Number(v).toFixed(m.digits) : Math.round(v).toLocaleString('ja-JP'));
@@ -49,7 +50,7 @@ export function machiData(areas, urlOf, yomi = null) {
     .map(plus)
     .sort((x, y) => (x.code < y.code ? -1 : 1))
     .map((a) => [a.code, a.name, urlOf(a.code) ?? 0, ...vals(a), yomi?.munis?.[a.code] ?? '']);
-  return { m: METRICS.map((m) => [m.q, m.top, m.unit, m.digits, m.diff ?? 0, m.rel ?? 0]), prefs, munis };
+  return { m: METRICS.map((m) => [m.q, m.top, m.unit, m.digits, m.diff ?? 0, m.rel ?? 0, ...(m.lowQ ? [m.lowQ, m.lowTop] : [])]), prefs, munis };
 }
 
 const yen = (n) => n.toLocaleString('ja-JP');
