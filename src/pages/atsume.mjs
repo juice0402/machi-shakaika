@@ -2,7 +2,7 @@
 // 上：集めた街 ◯／全国の市区町村・県のはんこ ◯／47・続けた日数の朱のはんこ（今日の1問の .han2 と同じ形）
 // 地図：県ごとに集めた割合で6段の森の緑。県を押すと輪郭が朱になり、下にその県の街を丸いはんこで（集めた街は朱の二重の丸と日付）
 // 記録は localStorage の machi-atsume だけ（src/atsume-core.mjs）。今日の1問の記録 machi-kyou は、開いたときに引きつぐ
-// AdSense なし。動くのは、今日押したはんこが小さく押される所だけ
+// AdSense なし。動くのは、帳面で見ていない新しいはんこが小さく押される所だけ（開いたら n を空にするので1回だけ）
 import { esc, h2, fit, fmt, MINCHO } from '../layout.mjs';
 import { PREFS } from '../areas.mjs';
 import { JMAP } from '../japan-map-data.mjs';
@@ -67,7 +67,7 @@ const JS = `(()=>{${ATSUME_JS}
 const $=(s,e=document)=>e.querySelector(s),D=JSON.parse($('#ad').textContent),P=D.p,ST=D.s;
 const A=atsumeLoad(),L=A.l;let ch=false;
 try{const R=JSON.parse(localStorage.getItem('machi-kyou')||'{}')||{};Object.keys(R).forEach(d=>{const k=D.k[d],r=R[d];if(k&&r&&r[2]===k[2]&&r[3]===k[3]){const m=A.m||{},had=m[k[0]]&&m[k[1]]&&(A.d||[]).includes(d);if(!had){atsumeAdd(A,[k[0],k[1]],d);ch=true}}})}catch(e){}
-if(ch){if(L)A.l=L;try{localStorage.setItem('machi-atsume',JSON.stringify(A))}catch(e){}}
+if(L)A.l=L;const NW=new Set(A.n||[]);if(ch||NW.size){delete A.n;try{localStorage.setItem('machi-atsume',JSON.stringify(A))}catch(e){}}
 const M=A.m||{},K=A.p||{},today=new Date(Date.now()+9*3600e3).toISOString().slice(0,10);
 let got=0;const per={};Object.keys(P).forEach(c=>{const g=P[c][1].filter(t=>M[c+t[0]]).length;per[c]=g;got+=g});
 const kn=Object.keys(P).filter(c=>K[c]).length,s=atsumeStreak(A.d,today),tot=D.n;
@@ -79,7 +79,7 @@ svg.querySelectorAll('.pf').forEach(e=>{const c=e.dataset.c;e.setAttribute('aria
 const md=d=>+d.slice(5,7)+'/'+ +d.slice(8);
 const show=c=>{const [n,tw]=P[c];$('.selo').setAttribute('d',$('path[data-c="'+c+'"]',svg).getAttribute('d'));svg.querySelectorAll('.pf').forEach(e=>e.classList.toggle('on',e.dataset.c===c));
 $('#pl h2').lastChild.textContent=n+'の街';const pt=$('#pl .pt');pt.textContent='集めた';const b1=document.createElement('b');b1.textContent=per[c];const b2=document.createElement('b');b2.textContent=K[c]?'あり':'まだ';pt.append(b1,'／'+tw.length+'　県のはんこ',b2);
-const ul=$('#pl .tw');ul.textContent='';tw.forEach(([t,a])=>{const d=M[c+t],li=document.createElement('li'),st=document.createElement('span'),sm=document.createElement('small');st.className='st';st.textContent=a;if(d){li.className=d===today?'g n':'g';sm.textContent=md(d)}li.append(st,sm);ul.append(li)})};
+const ul=$('#pl .tw');ul.textContent='';tw.forEach(([t,a])=>{const d=M[c+t],li=document.createElement('li'),st=document.createElement('span'),sm=document.createElement('small');st.className='st';st.textContent=a;if(d){li.className=NW.delete(c+t)?'g n':'g';sm.textContent=md(d)}li.append(st,sm);ul.append(li)})};
 svg.addEventListener('click',e=>{const g=e.target.closest('[data-c]');if(g)show(g.dataset.c)});
 svg.querySelectorAll('.pf').forEach(e=>e.addEventListener('keydown',k=>{if(k.key==='Enter'||k.key===' '){k.preventDefault();show(e.dataset.c)}}));
 show(P[A.l]?A.l:'13')})();`;

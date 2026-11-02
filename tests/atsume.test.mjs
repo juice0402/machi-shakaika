@@ -12,6 +12,8 @@ test('はんこ：5けたは街、2けたは県。はじめて押した日を残
   assert.deepEqual(A.m, { 13101: '2026-11-02', 27100: '2026-11-02' });
   assert.deepEqual(A.p, { 13: '2026-11-02' });
   assert.equal(A.l, '13');
+  // 帳面で見ていない新しいはんこ（街だけ。押す動きはここだけ）
+  assert.deepEqual(A.n, ['13101', '27100']);
   assert.equal(atsumeAdd(A, ['13101'], '2026-11-03'), 0);
   assert.equal(A.m['13101'], '2026-11-02');
   // 前の日の記録（今日の1問の引きつぎ）は、日付を早いほうにする
@@ -45,7 +47,14 @@ test('保存：localStorage の machi-atsume だけ。こわれた記録は空�
   try {
     assert.equal(ATSUME_KEY, 'machi-atsume');
     store['machi-atsume'] = '[1,2';
-    assert.deepEqual(atsumeLoad(), {});
+    assert.deepEqual(atsumeLoad(), { m: {}, p: {}, d: [] });
+    // 形のちがう所は捨てる（日付でない値・けたのちがうキー・日付でない遊んだ日・2けたでない県）
+    store['machi-atsume'] = JSON.stringify({ m: { 13101: 5, 27100: '2026-11-01', 131: '2026-11-01', 40130: '11/1' }, p: { 13: '2026-11-01', 135: '2026-11-01', 27: null }, d: ['2026-11-01', 3, 'x', '2026-13-45', '2026-10-31'], l: 13, n: ['27100', 5, '13'] });
+    assert.deepEqual(atsumeLoad(), { m: { 27100: '2026-11-01' }, p: { 13: '2026-11-01' }, d: ['2026-10-31', '2026-11-01'], n: ['27100'] });
+    store['machi-atsume'] = JSON.stringify({ m: [], p: 'x', d: 'x', l: '13' });
+    assert.deepEqual(atsumeLoad(), { m: {}, p: {}, d: [], l: '13' });
+    assert.equal(atsumeStreak(atsumeLoad().d, '2026-11-02'), 0);
+    store['machi-atsume'] = '{}';
     assert.equal(atsume(['01100', '47201']), 2);
     assert.deepEqual(Object.keys(store), ['machi-atsume']);
     assert.deepEqual(Object.keys(JSON.parse(store['machi-atsume']).m).sort(), ['01100', '47201']);
