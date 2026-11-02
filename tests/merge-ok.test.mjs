@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { orderDeps, waitingOn, evaluateChecks, mergeableAction, mergeTitle, hasLabel, MSG, GRACE_MS, SELF_JOB } from '../scripts/merge-ok.mjs';
+import { orderDeps, waitingOn, evaluateChecks, mergeableAction, mergeTitle, mergeMessage, hasLabel, pickTargets, MSG, GRACE_MS, SELF_JOB } from '../scripts/merge-ok.mjs';
 
 const pr = (number, extra = {}) => ({ number, head: { ref: `claude/x-${number}` }, body: '', ...extra });
 
@@ -97,6 +97,16 @@ test('ぶつかり・マージの題・ラベル', () => {
   assert.equal(mergeableAction(false), 'conflict');
   assert.equal(mergeableAction(null), 'retry');
   assert.equal(mergeTitle({ title: '【夜】#107 パソコンの見開き [CI Skip]', number: 114 }), '【夜】#107 パソコンの見開き [CI Skip] (#114)');
+  assert.equal(mergeMessage({ number: 114 }), 'マージの印（merge-ok）で #114 をマージ');
   assert.equal(hasLabel({ labels: [{ name: 'night' }, { name: 'merge-ok' }] }), true);
   assert.equal(hasLabel({ labels: [{ name: 'merge-blocked' }] }), false);
+});
+
+test('見る PR：印の付いたものだけを番号の小さい順に。pr があればその PR だけ', () => {
+  const ok = [{ name: 'merge-ok' }];
+  const open = [pr(30, { labels: ok }), pr(12, { labels: ok }), pr(20, { labels: [{ name: 'night' }] }), pr(25, { labels: [{ name: 'merge-blocked' }] })];
+  assert.deepEqual(pickTargets(open).map((p) => p.number), [12, 30]);
+  assert.deepEqual(pickTargets(open, 30).map((p) => p.number), [30]);
+  assert.deepEqual(pickTargets(open, 20), []); // 印がない PR は、番号を入れても見ない
+  assert.deepEqual(pickTargets([]), []);
 });

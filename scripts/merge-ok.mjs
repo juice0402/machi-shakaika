@@ -3,7 +3,7 @@
 //   base が main・draft でない → 本文の順番の指定 → 点検（check-runs と commit statuses）→ ぶつかり → squash でマージ
 //   点検が通らない・main とぶつかった → コメントして merge-ok を外し、merge-blocked を付ける
 // マージしたら公開の workflow（PUBLISH_WORKFLOW）を main で1回だけ動かす（結果は待たない。失敗は見張りが知らせる）
-// Node 標準だけ。GITHUB_TOKEN だけ。DRY_RUN=true ならマージせず、するはずのことをログに出す
+// Node 標準だけ。GITHUB_TOKEN だけ。DRY_RUN=true ならマージせず、するはずのことをログに出す。PR_NUMBER があればその PR だけ見る
 import { pathToFileURL } from 'node:url';
 
 export const LABEL = 'merge-ok';
@@ -94,12 +94,17 @@ export function evaluateChecks({ checkRuns = [], statuses = [], labeledAt = null
 // mergeable：true→マージ、false→ぶつかり、null→もう一度見る
 export const mergeableAction = (v) => (v === true ? 'merge' : v === false ? 'conflict' : 'retry');
 export const mergeTitle = (p) => `${p.title} (#${p.number})`;
+// squash の本文は空にしない（空だと GitHub がブランチのコミットの一覧を入れることがある）
+export const mergeMessage = (p) => `マージの印（merge-ok）で #${p.number} をマージ`;
 export const hasLabel = (p, name = LABEL) => (p.labels || []).some((l) => (l.name ?? l) === name);
+// 見る PR：印の付いた開いている PR を番号の小さい順に（only があればその PR だけ。印がなければ見ない）
+export const pickTargets = (open, only = null) => open.filter((p) => hasLabel(p) && (!only || p.number === only)).sort((a, b) => a.number - b.number);
 
 // ---------- GitHub API（GITHUB_TOKEN だけ） ----------
 const API = process.env.GITHUB_API_URL || 'https://api.github.com';
 const REPO = process.env.GITHUB_REPOSITORY || 'juice0402/machi-shakaika';
 const DRY = process.env.DRY_RUN === 'true';
+const ONLY = Number(process.env.PR_NUMBER) || null; // 手で動かすときの pr（空ならぜんぶ）
 const PUBLISH = process.env.PUBLISH_WORKFLOW || '';
 const RUN_URL = `${process.env.GITHUB_SERVER_URL || 'https://github.com'}/${REPO}/actions/runs/${process.env.GITHUB_RUN_ID || ''}`;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -198,7 +203,7 @@ async function consider(p, open, merged) {
     return { say: `squash でマージするはず（${title}・sha ${sha.slice(0, 7)}）` };
   }
   try {
-    await gh(`pulls/${p.number}/merge`, { method: 'PUT', body: { merge_method: 'squash', sha, commit_title: title, commit_message: '' } });
+    await gh(`pulls/${p.number}/merge`, { method: 'PUT', body: { merge_method: 'squash', sha, commit_title: title, commit_message: mergeMessage(fresh) } });
   } catch (e) {
     if (e.status === 409) return { say: 'head が変わったので、次の点検の終わりで見直す' };
     if (!e.status) throw e;
@@ -211,9 +216,9 @@ async function consider(p, open, merged) {
 
 async function pass(merged) {
   const open = await pages('pulls?state=open', (x) => x, 3);
-  const marked = open.filter((p) => hasLabel(p)).sort((a, b) => a.number - b.number);
+  const marked = pickTargets(open, ONLY);
   if (!marked.length) {
-    log('印の付いた開いている PR はない');
+    log(ONLY ? `#${ONLY} は印の付いた開いている PR ではない` : '印の付いた開いている PR はない');
     return null;
   }
   let retry = null;

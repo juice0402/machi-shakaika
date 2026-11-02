@@ -5,7 +5,7 @@ name: マージの印
 #   → 点検（check-runs と commit statuses）→ ぶつかり → squash でマージ
 #   点検が通らない・main とぶつかった → コメントして merge-ok を外し、merge-blocked を付ける（司令塔が見る）
 #   マージしたら公開（deploy.yml）を main で1回だけ動かす（GITHUB_TOKEN のマージの push では公開が動かないため）。公開の失敗は見張り（mihari.yml）が知らせる
-# 試すとき：Actions の「マージの印」を dry_run で動かす（マージせず、するはずのことをログに出す）
+# 試すとき：Actions の「マージの印」を dry_run で動かす（マージせず、するはずのことをログに出す）。pr を入れるとその PR だけ見る
 # schedule は使わない。GITHUB_TOKEN だけ。くわしくは CLAUDE.md の「マージの印」
 
 on:
@@ -21,6 +21,10 @@ on:
         description: 'true のときはマージせず、するはずのことをログに出す'
         type: boolean
         default: true
+      pr:
+        description: 'この番号の PR だけを見る（空なら印の付いた PR をぜんぶ。印がない PR は見ない）'
+        type: number
+        required: false
 
 permissions:
   contents: write
@@ -68,5 +72,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+          PR_NUMBER: ${{ inputs.pr }}
           PUBLISH_WORKFLOW: deploy.yml
         run: node scripts/merge-ok.mjs
