@@ -6,10 +6,11 @@
 - 検索結果での見え方（10/26 連絡 C-003）：トップの title はサイト名だけ・WebSite の構造化データ（name・url・alternateName）・全ページに og:site_name。説明文はページのデータから `fit()`（src/layout.mjs）で作り、全角80〜120文字・そのページだけの数字・値段は `priceBand()` の幅・同じ説明文を作らない（verify-dist.mjs が見張る）
 
 ## 公開と運用
-  - PR → プレビュー（PRにURLのコメント）／ main → 本番。毎朝6:17にも動く（楽天の商品をとりなおす）。本番は `dist/fingerprint.json` を本番の `/fingerprint.json` とくらべ、同じなら公開しない。毎朝の分が止まったら Issue
+  - PR → プレビュー（PRにURLのコメント）／ main → 本番。毎朝6:17にも動く（楽天の商品をとりなおす）。本番は `dist/fingerprint.json` を本番の `/fingerprint.json` とくらべ、同じなら公開しない。main で止まったら見張り（mihari.yml）が Issue
   - `SITE.launched`（`src/site.mjs`）が false のあいだは全ページ noindex・robots.txt は全部おことわり（AdSense の審査もこの間はできない）。pages.dev はいつも noindex
 - AdSense：`SITE.adsense` に運営者ID（ca-pub-）を入れると、公開後の全ページの head にスクリプト、/ads.txt を置く。審査に向けて、空のリンク・「準備中」のページ・中身のない棚の入口を作らない。運営者情報・プライバシーポリシー（広告の Cookie の説明）・ナビを全ページに
 - 災害時モード（10/26）：しょーくんが Actions の「災害時モードの切りかえ」（`saigai.yml`）でオン／オフ → `data/mode.yml` をコミットして公開。オンのあいだは全ページの上に灰色の帯で気象庁と市区町村への案内1行（`src/mode.mjs`）、楽天の商品（取りもしない）と AdSense を外す。避難場所の数・注記はそのまま。災害を見て自動で切りかえることはしない
+- 見張り（11/02。`mihari.yml`・`scripts/mihari.mjs`）：main の「ビルドと公開」「データの更新」「災害時モードの切りかえ」が failure・timed_out なら Issue（題「【見張り】公開が失敗した」など・ラベル `mihari`＝しょーくんに知らせるだけ。毎朝の Claude の「朝の確認」が知らせる）。同じ題が開いていれば1日1回だけ「まだ続いている」、次の成功で「直った」と閉じる。cancelled・PR は見ない。前の deploy.yml の「毎朝の公開が止まった」の Issue はこれに置きかえた（update.yml の「データの更新が止まった」は残してある。update.yml を変える PR はデータを取ってコミットするため）。workflow の name を変えたら mihari.yml の `workflows:` と `WATCH` もそろえる（tests/mihari.test.mjs が見る）。試すのは Actions の「見張り」→ Run workflow（dry_run）
 - リンクの点検（10/26 連絡 C-005）：`check-links.yml` が毎週水曜10:41と、データ・ページのコードを変えた PR で、sources.yml・bichiku.yml・ページの外部リンクを GitHub から開く。消えた（404・410・名前が引けない・トップに飛ばされた）は PR の注記と Issue「リンクの点検」→ 同じ発行元の新しいページに差しかえる。403・429 などは消えたとは限らない。PR は止めない。対象は `node scripts/check-links.mjs --list`
 
 ## データ
