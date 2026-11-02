@@ -138,7 +138,7 @@ summary{padding:10px 0;cursor:pointer}.hl{margin:0 0 10px;padding:0;list-style:n
 .qz .ex{font-size:14px;margin:6px 0 4px}.qz .ex p{margin:0 0 4px}
 .qz .score{margin:14px 0 6px;font:700 20px/1 ${MINCHO};color:var(--accent)}.qz .score b{font-size:56px;margin-right:4px}
 button.go{font:inherit;font-size:15px;font-weight:700;background:none;border:0;padding:6px 0;color:var(--ink);text-decoration:underline;cursor:pointer}button.go:disabled{color:var(--sub);text-decoration:none;cursor:default}
-.sc{margin:6px 0 4px;font-size:13px;color:var(--sub)}.sc select{font:inherit;font-size:15px;color:var(--ink);background:none;border:0;border-bottom:1.5px solid var(--ink);padding:4px 2px;border-radius:0;max-width:70%}
+.sc{margin:6px 0 4px;font-size:13px;color:var(--sub)}.sc select{font:inherit;font-size:15px;color:var(--ink);background:none;border:0;border-bottom:1.5px solid var(--ink);padding:4px 2px;border-radius:0;max-width:70%}.sc .lvw{display:block}
 .gogun{border:1px solid var(--line);padding:8px 6px;margin:6px 0;line-height:1.2}
 .gogun .w{position:relative;display:inline-block;margin:3px 2px;padding:8px 9px;min-height:40px;background:none;border:0;font:inherit;font-size:15px;color:var(--ink);cursor:pointer;text-decoration:underline dotted var(--sub);text-underline-offset:4px}
 .gogun .w small{display:block;font-size:10px;color:var(--sub);text-decoration:none}.gogun .w:disabled{cursor:default;color:var(--ink)}
