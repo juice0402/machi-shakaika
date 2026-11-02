@@ -90,3 +90,74 @@ test('備えの数字クイズ：数字は items.yml から、出典の名前と
   for (const s of Object.values(d.src)) assert.match(s, /\d{4}年\d{1,2}月\d{1,2}日確認/);
   for (let n = 1; n <= 6; n++) for (const day of [3, 7]) for (const per of [3, 5]) assert.ok(calcChoices(per, n, day), `${per} ${n} ${day}`);
 });
+
+// ---- この街はどこ？・ならべる・ヒントで街あて（#43）：どの問題も答えが1つに決まる ----
+import { qRegion, qTowns, qDokoPool, qDoko, qNarabe, qHint } from '../src/quiz-core.mjs';
+import { readYomi } from '../src/yomi.mjs';
+const SCOPES_T = ['', 'big', 'all', 'r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6'];
+const DY = munis ? machiData(munis.areas, () => null, readYomi()) : null;
+
+test('地方：7つ、どの地方にも県が3つ以上', () => {
+  const n = [0, 0, 0, 0, 0, 0, 0];
+  for (let c = 1; c <= 47; c++) n[qRegion(String(c).padStart(2, '0'))]++;
+  assert.deepEqual(n, [7, 7, 9, 7, 5, 4, 8]);
+});
+
+test('この街はどこ？：同じ名前の街・県と同じ名前の市は出さない。範囲ごとに10問、同じ街なし。おまかせは人口5万人以上', { skip }, () => {
+  const cnt = {};
+  for (const r of DY.munis) cnt[r[1]] = (cnt[r[1]] || 0) + 1;
+  assert.ok(qDokoPool(DY, '').every((r) => r[3] >= 50000));
+  assert.ok(!qDokoPool(DY, 'all').some((r) => r[1] === '静岡市' || r[1] === '府中市'));
+  const r = rng(3);
+  for (const s of SCOPES_T) {
+    for (let k = 0; k < 20; k++) {
+      const qs = qDoko(DY, s, r, 10);
+      assert.equal(qs.length, 10, `範囲 ${s}`);
+      assert.equal(new Set(qs.map((q) => q.r[0])).size, 10);
+      for (const q of qs) {
+        assert.equal(cnt[q.r[1]], 1, q.r[1]);
+        assert.equal(q.p, q.r[0].slice(0, 2));
+      }
+    }
+  }
+  // 読みがなは市区町村の行の最後（data/yomi.json があるとき）
+  if (readYomi()) assert.ok(DY.munis.filter((x) => x[3 + DY.m.length]).length > DY.munis.length * 0.95);
+  assert.ok(JSON.stringify(DY).length < 300000, '重すぎる');
+});
+
+test('ならべる：3つのどの2つも qFair（同点・近すぎる数字なし）で、大きい順が1つに決まる。範囲ごとに5問', { skip }, () => {
+  const r = rng(4);
+  for (const s of ['', 'p', 'big', 'all', ...D.prefs.map((p) => p[0])]) {
+    const qs = qNarabe(D, s, r, 5);
+    assert.equal(qs.length, 5, `範囲 ${s}`);
+    for (const q of qs) {
+      const m = D.m[q.mi];
+      const v = q.p.map((x) => x[3 + q.mi]);
+      for (const [a, b] of [[0, 1], [0, 2], [1, 2]]) assert.ok(qFair(m, v[a], v[b]), `${s} ${q.p.map((x) => x[1])}`);
+      assert.ok(v[q.order[0]] > v[q.order[1]] && v[q.order[1]] > v[q.order[2]]);
+    }
+  }
+});
+
+test('ヒントで街あて：3つは同じ地方・県と名前がみなちがい、最後のヒント（県の名前）で答えが1つに決まる。ヒントは4つ', { skip }, () => {
+  const r = rng(5);
+  const PN = Object.fromEntries(D.prefs.map((p) => [p[0], p[1]]));
+  for (const s of SCOPES_T) {
+    for (let k = 0; k < 20; k++) {
+      const qs = qHint(D, s, r, 5);
+      assert.equal(qs.length, 5, `範囲 ${s}`);
+      assert.equal(new Set(qs.map((q) => q.ch[q.a][0])).size, 5);
+      for (const q of qs) {
+        assert.equal(q.hints.length, 4);
+        const a = q.ch[q.a];
+        assert.equal(new Set(q.ch.map((x) => qRegion(x[0]))).size, 1);
+        assert.equal(new Set(q.ch.map((x) => x[0].slice(0, 2))).size, 3);
+        assert.equal(new Set(q.ch.map((x) => x[1])).size, 3);
+        assert.equal(q.ch.filter((x) => q.hints[3] === `${PN[x[0].slice(0, 2)]}の市区町村`).length, 1);
+        assert.ok(q.mi >= 2 && !/減|高齢|65歳/.test(q.hints.join('')));
+        if (s === '' || s[0] === 'r') assert.ok(a[3] >= 50000);
+      }
+    }
+  }
+  assert.ok(qTowns(D, 'all').length > 1500);
+});

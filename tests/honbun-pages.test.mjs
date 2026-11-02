@@ -14,7 +14,7 @@ import { KYOU_ORDER } from '../src/kyou.mjs';
 import { page } from '../src/layout.mjs';
 import { honbunText, honbunCount, HONBUN_MIN } from '../scripts/honbun.mjs';
 import { hinmokuPages } from '../src/pages/hinmoku.mjs';
-import { quizPages, DOCCHI_N, SONAE_N, SONAE_KINDS } from '../src/pages/quiz.mjs';
+import { quizPages, DOCCHI_N, SONAE_N, SONAE_KINDS, DOKO_N, NARABE_N, HINT_N } from '../src/pages/quiz.mjs';
 import { kyouPage } from '../src/pages/kyou.mjs';
 import { toolPages } from '../src/pages/kurabe.mjs';
 import { kigenPages, KIGEN_NOTICE_DAYS } from '../src/pages/kigen.mjs';
@@ -87,11 +87,15 @@ test('クイズ5：本文600字以上・広告なし・問題の数はページ�
     // 答えは送らない：読むのは /quiz/machi.json だけ、sendBeacon・XMLHttpRequest・POST を使わない
     for (const m of (p.script ?? '').matchAll(/fetch\(([^)]*)\)/g)) assert.equal(m[1], "'/quiz/machi.json'", `${p.path}：fetch(${m[1]})`);
     assert.ok(!/sendBeacon|XMLHttpRequest|method\s*:/.test(p.script ?? ''), `${p.path}：送る処理がある`);
-    wording(p, /docchi|dobon/.test(p.path) ? 'しくみ</h2>' : '数字のもと</h2>');
+    wording(p, /docchi|dobon|doko|narabe|hint/.test(p.path) ? 'しくみ</h2>' : '数字のもと</h2>');
   }
   const by = (x) => ps.find((p) => p.path === x);
   assert.ok(by('/quiz/docchi/').script.includes(`N=${DOCCHI_N};`));
   assert.ok(by('/quiz/sonae/').script.includes(`N=${SONAE_N},`));
+  assert.ok(by('/quiz/doko/').script.includes(`N=${DOKO_N};`));
+  assert.ok(by('/quiz/narabe/').script.includes(`N=${NARABE_N};`));
+  assert.ok(by('/quiz/hint/').script.includes(`N=${HINT_N},`));
+  for (const x of ['/quiz/doko/', '/quiz/narabe/', '/quiz/hint/']) assert.ok(by('/quiz/').body.includes(`href="${x}"`), `棚に ${x} がない`);
   assert.ok(by('/quiz/').body.includes(`>${SONAE_KINDS}種類の問題の型<`));
   assert.ok(by('/quiz/dobon/').body.includes(`お題は全部で${qDobonTopics(machi).length.toLocaleString('ja-JP')}あります`));
   // 今日の1問：題の順番は KYOU_ORDER のまま、今日の答えはページの下に書かない（例はきのうの1問）
