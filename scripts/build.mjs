@@ -28,6 +28,7 @@ import { hinmokuPages } from '../src/pages/hinmoku.mjs';
 import { quizPages } from '../src/pages/quiz.mjs';
 import { machiData } from '../src/quiz.mjs';
 import { kyouPage } from '../src/pages/kyou.mjs';
+import { atsumePage } from '../src/pages/atsume.mjs';
 import { jstDate } from '../src/kyou.mjs';
 import { PRODUCTS_PATH } from '../src/rakuten.mjs';
 import { TOWN_SVG } from '../src/art.mjs';
@@ -104,6 +105,8 @@ const machi = machiData(munis.areas, urlOf, yomi);
 for (const p of quizPages({ munis, items, sources, machi })) add(p);
 // 今日の1問：ビルドの日（日本時間）から14日分の問題をページに入れる（毎朝のビルドで入れかわる）
 add(kyouPage({ munis, machi, start: jstDate(), urlOfRow: (r) => r[2] || `/${PREFS.find((p) => p.code === r[0].slice(0, 2)).slug}/#m${r[0]}` }));
+// 街あつめ帳（#42）：今日の1問の記録の引きつぎに、ビルドの日までの問題の街を入れる
+add(atsumePage({ machi, start: jstDate() }));
 for (const p of infoPages({ munis, estatMeta, hinanMeta })) add(p);
 add({ path: null, title: 'ページが見つかりません', description: 'ページが見つかりません。', noindex: true, noAds: true, body: '<h1 class="city">ページが見つかりません</h1><p><a href="/">トップへ</a></p>' });
 
@@ -178,6 +181,8 @@ out(
     '/favicon.*',
     '  Cache-Control: public, max-age=604800',
     '/apple-touch-icon.png',
+    '  Cache-Control: public, max-age=604800',
+    '/icon-*',
     '  Cache-Control: public, max-age=604800',
     '/og.jpg',
     '  Cache-Control: public, max-age=86400',

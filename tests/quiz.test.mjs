@@ -76,6 +76,8 @@ test('わたしの街クイズ：ページを作る街すべてに5問以上。�
       assert.equal(new Set(q.ch).size, q.ch.length, `${a.name} ${q.q}`);
       assert.ok(q.a >= 0 && q.a < q.ch.length);
       assert.ok(!/減|高齢|65歳/.test(q.q));
+      // 街あつめ帳：問題に出た街のコード（この街はいつも入る。5けた）
+      assert.ok(q.c.includes(a.code) && q.c.every((x) => /^\d{5}$/.test(x)), `${a.name} ${q.q}`);
     }
     assert.deepEqual(machiQuiz(a, list, similar(list, a), cityList), qs);
   }

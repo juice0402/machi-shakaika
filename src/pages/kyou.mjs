@@ -8,6 +8,7 @@ import { JMAP } from '../japan-map-data.mjs';
 import { kyouDays, kyouPool, kyouQ, addDays, KYOU_JS, KYOU_DAYS, KYOU_MIN_POP, KYOU_ORDER } from '../kyou.mjs';
 import { DOCCHI_N } from './quiz.mjs';
 import { qFmt } from '../quiz-core.mjs';
+import { ATSUME_JS } from '../atsume-core.mjs';
 
 const PN = Object.fromEntries(PREFS.map((p) => [p.code, p]));
 const KA = '#b5cfbb'; // アの県（緑）
@@ -60,6 +61,7 @@ const choice = (r, i) =>
 
 // ブラウザ：今日の問題を出す・答える・記録（localStorage）・連続正解・7日・わたしの地図・結果を送る
 const JS = `(()=>{${KYOU_JS}
+${ATSUME_JS}
 const $=(s,e=document)=>e.querySelector(s);const K=JSON.parse($('#kq').textContent),M=K.m,WD='${WD}',KEY='machi-kyou';
 const add=addDays,today=jstDate();
 const md=d=>{const[,m,x]=d.split('-').map(Number);return m+'月'+x+'日（'+WD[new Date(d+'T00:00:00Z').getUTCDay()]+'）'};
@@ -93,7 +95,7 @@ const nt=$('.ntt',box);if(nx){nt.textContent='あしたの題　'+M[nx.mi][0];nt
 const res=R[today];$('.nx',box).hidden=false;$('.send',box).onclick=async()=>{const text='まちの社会科「今日の1問」'+md(today).replace(/（.）/,'')+' '+(res[1]?'○':'×')+(s?' 連続正解'+s+'日':''),url=location.origin+location.pathname,msg=$('#sent');msg.textContent='';
 try{if(navigator.share){await navigator.share({text,url});return}await navigator.clipboard.writeText(text+' '+url);msg.textContent='コピーしました'}catch(e){if(e&&e.name==='AbortError')return;msg.textContent=text+' '+url}};
 const got=new Set();Object.values(R).forEach(x=>{if(x[2])got.add(x[2]);if(x[3])got.add(x[3])});const mm=$('#mymap');mm.querySelectorAll('use').forEach(u=>u.setAttribute('class',got.has(u.dataset.c)?'on':''));$('.mmc b',mm).textContent=got.size;mm.hidden=false}
-bs.forEach((b,i)=>b.addEventListener('click',()=>{if(ul.dataset.done)return;R[today]=[i,i===ans?1:0,q.p[0][2],q.p[1][2]];save();shown(i)}));
+bs.forEach((b,i)=>b.addEventListener('click',()=>{if(ul.dataset.done)return;R[today]=[i,i===ans?1:0,q.p[0][2],q.p[1][2]];save();atsume([q.p[0][0],q.p[1][0]]);shown(i)}));
 const kp=kyouKeep(R,today,q);if(kp.changed)save();if(kp.done)shown(R[today][0]);else{if(Object.keys(R).length)record(),['.wk','.best','.han2','.nx','.ntt'].forEach(c=>$(c,box).hidden=true)}})();`;
 
 // ページの下の説明（夜 #47）：数字のもと・題の順番・1問の読み方（ページを作った日の1問から）・よくある問い
@@ -161,7 +163,7 @@ ${today}
 <p class="nx" hidden><button class="go send" type="button">結果を送る</button><span class="ntt" hidden></span><a href="/quiz/docchi/">どっちが多い？を10問</a></p><p class="note" id="sent"></p>
 </section>
 <noscript><p>このクイズはスクリプトで動きます。</p></noscript>
-<section id="mymap" class="side" hidden>${h2('わたしの地図')}<p class="mmc">答えた県<b>0</b>／47</p>${mine}</section>
+<section id="mymap" class="side" hidden>${h2('わたしの地図')}<p class="mmc">答えた県<b>0</b>／47</p>${mine}<p class="note"><a href="/atsume/">街あつめ帳</a>に、答えた街のはんこがたまります</p></section>
 ${srcKokusei(munis)}
 ${more({ munis, machi, start, nPool })}`,
     script: JS,

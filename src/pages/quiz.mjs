@@ -10,6 +10,7 @@ import { japanMap, JMAP_CSS } from '../japan-map.mjs';
 import { sonaeData, rng } from '../quiz.mjs';
 import { CORE_JS, qFair, qFmt, qDocchi, qDobonTopics, qDobonBoard, qRegion, qRegionName, qChiho, qChihoName, qDai, qTowns, qDokoPool, qDoko, qNarabe, qHint } from '../quiz-core.mjs';
 import { kyouPool, KYOU_MIN_POP } from '../kyou.mjs';
+import { ATSUME_JS } from '../atsume-core.mjs';
 import { need } from '../calc.mjs';
 import { fit } from '../layout.mjs';
 
@@ -83,10 +84,11 @@ const scopeSelect = (id, { p = true, big = true, pref = true, off = [], lv = fal
 
 const DOCCHI_JS = `(()=>{${COMMON}
 ${CORE_JS}
+${ATSUME_JS}
 const box=$('#quiz'),meta=$('.meta',box),qq=$('.qq',box),ul=$('.ch',box),ex=$('.ex',box),next=$('.next',box),res=$('#res'),sel=$('#sc'),lv=$('#lv'),OFF=JSON.parse($('#qoff').textContent);const saveLv=level(sel,lv,'machi-docchi-lv',OFF),save=scope(sel,'machi-docchi');let D,PN={},qs,i,score,N=${DOCCHI_N};
 const sub=(r,k)=>k==='m'?PN[r[0].slice(0,2)][1]:'',url=(r,k)=>k==='p'?'/'+r[2]+'/':(r[2]||'/'+PN[r[0].slice(0,2)][2]+'/#m'+r[0]);
 function show(){const q=qs[i],m=D.m[q.mi];meta.textContent=(i+1)+'／'+qs.length;qq.textContent=q.lo?m[6]:m[0];ex.hidden=true;next.hidden=true;delete ul.dataset.done;
-const vals=q.p.map(r=>r[3+q.mi]),ans=(vals[0]>vals[1])!==!!q.lo?0:1;choices(ul,q.p.map(r=>r[1]),q.p.map(r=>sub(r,q.kind)),vals.map(v=>qFmt(m,v)+m[2]),ans,ok=>{if(ok)score++;
+const vals=q.p.map(r=>r[3+q.mi]),ans=(vals[0]>vals[1])!==!!q.lo?0:1;choices(ul,q.p.map(r=>r[1]),q.p.map(r=>sub(r,q.kind)),vals.map(v=>qFmt(m,v)+m[2]),ans,ok=>{if(ok)score++;atsume(q.p.map(r=>r[0]));
 ex.textContent='';q.p.forEach((r,j)=>{const l=document.createElement('a');l.href=url(r,q.kind);l.textContent=r[1];ex.append(l,' '+qFmt(m,vals[j])+m[2]+(j?'':'　'))});ex.hidden=false;next.textContent=i<qs.length-1?'次の問題':'結果を見る';next.hidden=false})}
 function start(){qs=qDocchi(D,sel.value,Math.random,N,lv.value);i=0;score=0;res.hidden=true;box.hidden=false;if(!qs.length){qq.textContent='この範囲では問題が作れませんでした';return}show()}
 next.addEventListener('click',()=>{if(i<qs.length-1){i++;show()}else{box.hidden=true;res.hidden=false;$('.score b',res).textContent=score;$('.score span',res).textContent='／'+qs.length;
@@ -96,6 +98,7 @@ qq.textContent='読み込み中';load().then(d=>{D=d;D.prefs.forEach(p=>PN[p[0]]
 
 const DOBON_JS = `(()=>{${COMMON}
 ${CORE_JS}
+${ATSUME_JS}
 const box=$('#db'),map=$('.t5',box),words=$('.gogun',box),tiles=[...map.querySelectorAll('.pf')],ol=$('.t5l',box),res=$('.dbr',box),nav=$('.dbn',box),sel=$('#sc');const save=scope(sel,'machi-dobon');
 let D,PN={},TP,t,order,found,over,last='',btns=[];
 const url=r=>t.scope==='p'?'/'+r[2]+'/':(r[2]||'/'+PN[r[0].slice(0,2)][2]+'/#m'+r[0]);
@@ -112,7 +115,7 @@ function info(){$('.meta',box).textContent=over?'':found.size?'見つけた '+fo
 function end(win,r,rank){over=true;order.slice(0,t.N).forEach((x,i)=>{if(!found.has(x[0])){slot(i,x,'rest');const el=all().find(e=>e.dataset.c===x[0]);if(el)el.classList.add('ans5')}});all().forEach(e=>e.tagName==='BUTTON'?e.disabled=true:e.setAttribute('aria-disabled','true'));
 $('.score b',res).textContent=found.size;$('.score span',res).textContent='／'+t.N;$('.dbm',res).textContent=win?'パーフェクト':'ドボン　'+r[1]+'は'+(rank+1)+'位';res.hidden=false;nav.hidden=false;
 last='まちの社会科「ドボンクイズ」'+$('.qq',box).textContent+' '+t.N+'個中'+found.size+'個'+(win?'（パーフェクト）':'');info()}
-function tap(el){if(over||el.classList.contains('hit'))return;const c=el.dataset.c,rank=order.findIndex(r=>r[0]===c),r=order[rank];
+function tap(el){if(over||el.classList.contains('hit'))return;const c=el.dataset.c,rank=order.findIndex(r=>r[0]===c),r=order[rank];atsume([c]);
 if(rank>=0&&rank<t.N){el.classList.add('hit');found.add(c);slot(rank,r,'got');info();if(found.size===t.N)end(true)}else{el.classList.add('miss');end(false,r,rank)}}
 const pc={};tiles.forEach(x=>{pc[x.dataset.c]=x;x.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tap(x)}})});map.addEventListener('click',e=>{const g=e.target.closest('[data-c]');if(g)tap(pc[g.dataset.c])});
 $('.next',nav).addEventListener('click',()=>{topic();box.scrollIntoView()});sel.addEventListener('change',()=>{save();if(D)topic()});share($('.send',nav),()=>last);
@@ -136,12 +139,13 @@ const where=r=>r[2]||'/'+PN[r[0].slice(0,2)][2]+'/#m'+r[0];`;
 
 const DOKO_JS = `(()=>{${COMMON}
 ${CORE_JS}
+${ATSUME_JS}
 const box=$('#dk'),meta=$('.meta',box),qq=$('.qq',box),ex=$('.ex',box),next=$('.next',box),map=$('.t5',box),tiles=[...map.querySelectorAll('.pf')],res=$('#res'),sel=$('#sc');const save=scope(sel,'machi-doko');let D,PN={},qs=[],i,score,done=true,N=${DOKO_N};
 ${FINISH}
 const pc={};tiles.forEach(x=>{pc[x.dataset.c]=x;x.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tap(x)}})});
 function show(){const q=qs[i];meta.textContent=(i+1)+'／'+qs.length;qq.textContent=q.r[1];const y=q.r[3+D.m.length];if(y){const s=document.createElement('small');s.textContent=y;qq.prepend(s)}
 ex.hidden=true;next.hidden=true;done=false;tiles.forEach(x=>{x.setAttribute('class','pf');x.removeAttribute('aria-disabled')})}
-function tap(el){if(done||!el)return;done=true;const q=qs[i],ok=el.dataset.c===q.p,p=PN[q.p];if(ok){score++;el.classList.add('hit')}else{el.classList.add('miss');pc[q.p].classList.add('ans5')}tiles.forEach(x=>x.setAttribute('aria-disabled','true'));
+function tap(el){if(done||!el)return;done=true;const q=qs[i],ok=el.dataset.c===q.p,p=PN[q.p];atsume([q.r[0]]);if(ok){score++;el.classList.add('hit')}else{el.classList.add('miss');pc[q.p].classList.add('ans5')}tiles.forEach(x=>x.setAttribute('aria-disabled','true'));
 ex.textContent='';const a=document.createElement('a');a.href=where(q.r);a.textContent=q.r[1];const b=document.createElement('a');b.href='/'+p[2]+'/';b.textContent=p[1];ex.append(a,'は',b,'。人口'+qFmt(D.m[0],q.r[3])+D.m[0][2]);ex.hidden=false;next.textContent=i<qs.length-1?'次の問題':'結果を見る';next.hidden=false}
 map.addEventListener('click',e=>{const g=e.target.closest('[data-c]');if(g)tap(pc[g.dataset.c])});
 function start(){qs=qDoko(D,sel.value,Math.random,N);i=0;score=0;res.hidden=true;box.hidden=false;if(!empty())show()}
@@ -149,6 +153,7 @@ next.addEventListener('click',()=>{if(i<qs.length-1){i++;show()}else finish('こ
 
 const NARABE_JS = `(()=>{${COMMON}
 ${CORE_JS}
+${ATSUME_JS}
 const box=$('#quiz'),meta=$('.meta',box),qq=$('.qq',box),ul=$('.ch',box),ex=$('.ex',box),next=$('.next',box),res=$('#res'),sel=$('#sc'),lv=$('#lv'),OFF=JSON.parse($('#qoff').textContent);const saveLv=level(sel,lv,'machi-narabe-lv',OFF),save=scope(sel,'machi-narabe');let D,PN={},qs=[],i,score,N=${NARABE_N};
 ${FINISH}
 const sub=(r,k)=>k==='m'?PN[r[0].slice(0,2)][1]:'',url=(r,k)=>k==='p'?'/'+r[2]+'/':where(r);
@@ -157,18 +162,19 @@ const bs=q.p.map((r,j)=>{const li=document.createElement('li'),b=document.create
 const v=document.createElement('span');v.className='v';v.textContent=qFmt(m,vals[j])+m[2];const o=document.createElement('span');o.className='o';b.append(k,t,v,o);li.append(b);ul.append(li);
 b.addEventListener('click',()=>{if(ul.dataset.done)return;const at=got.indexOf(j);got=at>=0?got.slice(0,at):got.concat(j);paint();if(got.length===3)judge()});return b});
 const paint=()=>bs.forEach((b,j)=>{const n=got.indexOf(j);$('.o',b).textContent=n<0?'':n+1});
-function judge(){ul.dataset.done=1;let all=true;bs.forEach((b,j)=>{b.disabled=true;if(got.indexOf(j)===q.order.indexOf(j))b.classList.add('ok');else{b.classList.add('ng');all=false}});if(all)score++;
+function judge(){ul.dataset.done=1;atsume(q.p.map(r=>r[0]));let all=true;bs.forEach((b,j)=>{b.disabled=true;if(got.indexOf(j)===q.order.indexOf(j))b.classList.add('ok');else{b.classList.add('ng');all=false}});if(all)score++;
 ex.textContent='';q.order.forEach((j,n)=>{const l=document.createElement('a');l.href=url(q.p[j],q.kind);l.textContent=q.p[j][1];ex.append((n?'　':'')+(n+1)+' ',l,' '+qFmt(m,vals[j])+m[2])});ex.hidden=false;next.textContent=i<qs.length-1?'次の問題':'結果を見る';next.hidden=false}}
 function start(){qs=qNarabe(D,sel.value,Math.random,N,lv.value);i=0;score=0;res.hidden=true;box.hidden=false;if(!empty())show()}
 next.addEventListener('click',()=>{if(i<qs.length-1){i++;show()}else finish('ならべる')});lv.addEventListener('change',()=>{saveLv();save();if(D)start()});boot()})();`;
 
 const HINT_JS = `(()=>{${COMMON}
 ${CORE_JS}
+${ATSUME_JS}
 const box=$('#quiz'),meta=$('.meta',box),qq=$('.qq',box),hl=$('.hl',box),more=$('.more',box),ul=$('.ch',box),ex=$('.ex',box),next=$('.next',box),res=$('#res'),sel=$('#sc');const save=scope(sel,'machi-hint');let D,PN={},qs=[],i,k,score,pts,N=${HINT_N},MX=${HINT_MAX};
 ${FINISH}
 function hints(got){hl.textContent='';qs[i].hints.slice(0,k).forEach(t=>{const li=document.createElement('li');li.textContent=t;hl.append(li)});meta.textContent=(i+1)+'／'+qs.length+'　'+(got==null?'当てたら'+(MX+1-k):got)+'点';more.hidden=got!=null||k>=MX}
 function show(){const q=qs[i];k=1;qq.textContent='ヒントに合う街は？';ex.hidden=true;next.hidden=true;delete ul.dataset.done;
-choices(ul,q.ch.map(r=>r[1]),null,null,q.a,ok=>{const r=q.ch[q.a],p=PN[r[0].slice(0,2)],got=ok?MX+1-k:0;if(ok){score++;pts+=got}k=MX;hints(got);
+choices(ul,q.ch.map(r=>r[1]),null,null,q.a,ok=>{atsume(q.ch.map(r=>r[0]));const r=q.ch[q.a],p=PN[r[0].slice(0,2)],got=ok?MX+1-k:0;if(ok){score++;pts+=got}k=MX;hints(got);
 ex.textContent='';const a=document.createElement('a');a.href=where(r);a.textContent=r[1];ex.append('答えは',a,'（'+p[1]+'）');ex.hidden=false;next.textContent=i<qs.length-1?'次の問題':'結果を見る';next.hidden=false});hints()}
 more.addEventListener('click',()=>{if(k<MX&&!ul.dataset.done){k++;hints()}});
 function start(){qs=qHint(D,sel.value,Math.random,N);i=0;score=0;pts=0;res.hidden=true;box.hidden=false;if(!empty())show()}
@@ -489,7 +495,7 @@ export function quizPages({ munis, items, sources, machi }) {
     body: `<p class="crumb"><a href="/">トップ</a></p>
 <h1 class="city">クイズ</h1>
 ${h2('街の数字クイズ')}
-<ul class="list"><li><a href="/quiz/kyou/">今日の1問</a><small class="sub">日本時間の0時に入れかわる2択。答えた県が地図にたまる</small></li><li><a href="/quiz/docchi/">どっちが多い？</a><small class="sub">都道府県・全国の市区町村・県の中から、2択を10問</small></li><li><a href="/quiz/dobon/">ドボンクイズ</a><small class="sub">トップ10を1つずつ当てる。外れたらドボン</small></li><li><a href="/quiz/doko/">この街はどこ？</a><small class="sub">市区町村の名前から、県を地図でおす10問</small></li><li><a href="/quiz/narabe/">ならべる</a><small class="sub">3つの街を、数字の大きい順に5問</small></li><li><a href="/quiz/hint/">ヒントで街あて</a><small class="sub">少ないヒントで当てるほど高い点。5問</small></li></ul>
+<ul class="list"><li><a href="/quiz/kyou/">今日の1問</a><small class="sub">日本時間の0時に入れかわる2択。答えた県が地図にたまる</small></li><li><a href="/quiz/docchi/">どっちが多い？</a><small class="sub">都道府県・全国の市区町村・県の中から、2択を10問</small></li><li><a href="/quiz/dobon/">ドボンクイズ</a><small class="sub">トップ10を1つずつ当てる。外れたらドボン</small></li><li><a href="/quiz/doko/">この街はどこ？</a><small class="sub">市区町村の名前から、県を地図でおす10問</small></li><li><a href="/quiz/narabe/">ならべる</a><small class="sub">3つの街を、数字の大きい順に5問</small></li><li><a href="/quiz/hint/">ヒントで街あて</a><small class="sub">少ないヒントで当てるほど高い点。5問</small></li><li><a href="/atsume/">街あつめ帳</a><small class="sub">クイズに出た街に、はんこがたまる</small></li></ul>
 <p class="note">市区町村のページの中にも、その街のクイズがあります（例：<a href="/osaka/sakai/">堺市</a>）。</p>
 ${h2('備えの数字クイズ')}
 <ul class="list"><li><a href="/quiz/sonae/">備えの数字クイズ</a><small class="sub">水・食事・携帯トイレの量のめやす5問</small></li></ul>
@@ -649,7 +655,7 @@ export function machiQuizHtml(name, qs) {
   return `${h2(`${esc(name)}クイズ`)}
 <div class="mqs">${qs
     .map(
-      (q, i) => `<div class="qz mq" data-a="${q.a}"${i >= 3 ? ' hidden' : ''}><p class="qq">${esc(q.q)}</p><ul class="ch">${q.ch
+      (q, i) => `<div class="qz mq" data-a="${q.a}" data-m="${(q.c ?? []).join(' ')}"${i >= 3 ? ' hidden' : ''}><p class="qq">${esc(q.q)}</p><ul class="ch">${q.ch
         .map((c, j) => `<li><button type="button"><span class="k">${KANA[j]}</span><span class="t">${esc(c)}</span></button></li>`)
         .join('')}</ul><p class="ex" hidden>${esc(q.ex)}</p></div>`,
     )
@@ -657,5 +663,6 @@ export function machiQuizHtml(name, qs) {
 <p class="note">${qs.length > 3 ? `<button class="go mqn" type="button">ほかの問題</button>　` : ''}<a href="/quiz/">ほかのクイズ</a></p>`;
 }
 
-export const MACHI_JS = `(()=>{document.querySelectorAll('.mq').forEach(q=>{const a=+q.dataset.a,bs=[...q.querySelectorAll('button')];bs.forEach((b,i)=>b.addEventListener('click',()=>{if(q.dataset.done)return;q.dataset.done=1;bs.forEach((x,j)=>{x.disabled=true;if(j===a)x.classList.add('ok')});if(i!==a)b.classList.add('ng');q.querySelector('.ex').hidden=false}))});
+export const MACHI_JS = `(()=>{${ATSUME_JS}
+document.querySelectorAll('.mq').forEach(q=>{const a=+q.dataset.a,bs=[...q.querySelectorAll('button')];bs.forEach((b,i)=>b.addEventListener('click',()=>{if(q.dataset.done)return;q.dataset.done=1;atsume((q.dataset.m||'').split(' '));bs.forEach((x,j)=>{x.disabled=true;if(j===a)x.classList.add('ok')});if(i!==a)b.classList.add('ng');q.querySelector('.ex').hidden=false}))});
 const n=document.querySelector('.mqn');if(n){const qs=[...document.querySelectorAll('.mq')];let at=0;n.addEventListener('click',()=>{at=(at+3)%qs.length;qs.forEach((q,i)=>{q.hidden=!((i-at+qs.length)%qs.length<3)});qs[at].scrollIntoView({block:'nearest'})})}})();`;
