@@ -2,8 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readYaml } from '../src/data.mjs';
 import { calcConf, need } from '../src/calc.mjs';
-import { sonaePages } from '../src/pages/sonae.mjs';
-import { yomimonoPages, checkYomimono, YOMIMONO } from '../src/pages/sonae-yomimono.mjs';
+import { sonaePages, sonaeShelf, YOMI_GROUPS } from '../src/pages/sonae.mjs';
+import { yomimonoPages, checkYomimono, YOMIMONO, allYomimono, tail } from '../src/pages/sonae-yomimono.mjs';
+import { sotoPages } from '../src/pages/sonae-soto.mjs';
 import { sonaeLinks } from '../src/stats.mjs';
 
 const items = readYaml('items.yml');
@@ -88,4 +89,35 @@ test('入口：/sonae/ の棚・関係するページの末尾・市区町村の
   const [k, s] = sonaeLinks({ code: '13101', pKyodo: 70, pSingle: 40, pWith65: 10 }, z);
   assert.equal(k.href, '/sonae/mansion/');
   assert.equal(s.href, '/sonae/hitorigurashi/');
+});
+
+test('/sonae/ の棚：見出し5つの下に今あるページが全部。読みものは group から入る', () => {
+  const shelf = sonaePages({ cc, items, sources }).find((p) => p.path === '/sonae/').body;
+  const must = [
+    ...allYomimono().map((y) => y.path),
+    '/sonae/bichiku/', '/sonae/rolling-stock/', '/sonae/keitai-toilet/', '/hinmoku/',
+    '/dougu/keisan/', '/dougu/check/', '/dougu/kigen/', '/dougu/karte/', '/quiz/sonae/',
+  ];
+  for (const href of must) assert.ok(shelf.includes(`<li><a href="${href}">`), href);
+  const heads = [...shelf.matchAll(/<h2>[\s\S]*?<\/svg>([^<]+)<\/h2>\n<ul class="list">/g)].map((m) => m[1]);
+  assert.deepEqual(heads, ['量と品目', '災害の前に', '家族と住まい', '家の外', '道具とクイズ']);
+  // group は4つの見出しのどれか
+  for (const y of allYomimono()) assert.ok(YOMI_GROUPS.includes(y.group), y.key);
+  // 1行足すだけで、その見出しの下に出る。知らない group はエラー
+  const plus = sonaeShelf([...allYomimono(), { key: 'taifu', path: '/sonae/taifu/', name: '台風の前に足すもの', group: '災害の前に' }]);
+  assert.match(plus, /災害の前に<\/h2>\n<ul class="list">[^\n]*href="\/sonae\/taifu\/"/);
+  assert.throws(() => sonaeShelf([{ key: 'x', path: '/sonae/x/', name: 'x', group: 'なし' }]));
+});
+
+test('読みものの末尾：同じ group のほかの読みもの（4つまで）だけ', () => {
+  const all = [...pages, ...sotoPages({ cc, items, sources })];
+  for (const y of [...YOMIMONO, ...allYomimono().filter((x) => x.key === 'kitaku' || x.key === 'kuruma')]) {
+    const body = all.find((p) => p.path === y.path).body;
+    const end = body.slice(body.indexOf('品目と道具'));
+    const same = allYomimono().filter((x) => x.key !== y.key && x.group === y.group).slice(0, 4);
+    for (const x of allYomimono().filter((x) => x.key !== y.key)) {
+      assert.equal(end.includes(`href="${x.path}"`), same.includes(x), `${y.path} → ${x.path}`);
+    }
+  }
+  assert.ok(tail(items, 'jishin').includes('href="/sonae/fuyu-teiden/"'));
 });

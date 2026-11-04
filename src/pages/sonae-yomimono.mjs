@@ -6,14 +6,19 @@ import { esc, h2, fit } from '../layout.mjs';
 import { need } from '../calc.mjs';
 import { sourceList } from './sonae.mjs';
 import { SOTO } from './sonae-soto.mjs';
+import { FUYU } from './sonae-fuyu.mjs';
 
+// group は /sonae/ の棚の見出し（sonae.mjs の YOMI_GROUPS のどれか）。末尾の「ほかの読みもの」も同じ group から
 export const YOMIMONO = [
-  { key: 'jishin', path: '/sonae/jishin/', name: '地震の前に足すもの' },
-  { key: 'zaitaku', path: '/sonae/zaitaku-hinan/', name: '在宅避難の備え' },
-  { key: 'akachan', path: '/sonae/akachan-koureisha/', name: '赤ちゃん・高齢の家族がいる家の備え' },
-  { key: 'hitori', path: '/sonae/hitorigurashi/', name: 'ひとり暮らしの備え' },
-  { key: 'mansion', path: '/sonae/mansion/', name: 'マンション（共同住宅）の備え' },
+  { key: 'jishin', path: '/sonae/jishin/', name: '地震の前に足すもの', group: '災害の前に' },
+  { key: 'zaitaku', path: '/sonae/zaitaku-hinan/', name: '在宅避難の備え', group: '家族と住まい' },
+  { key: 'akachan', path: '/sonae/akachan-koureisha/', name: '赤ちゃん・高齢の家族がいる家の備え', group: '家族と住まい' },
+  { key: 'hitori', path: '/sonae/hitorigurashi/', name: 'ひとり暮らしの備え', group: '家族と住まい' },
+  { key: 'mansion', path: '/sonae/mansion/', name: 'マンション（共同住宅）の備え', group: '家族と住まい' },
 ];
+
+// 読みものの全部（YOMIMONO・家の外 SOTO・冬の停電）。/sonae/ の棚と末尾はここから
+export const allYomimono = () => [...YOMIMONO, FUYU, ...SOTO];
 
 // items.yml の3本の出典の形を確かめる（問題があれば文のリスト。空なら OK）
 export function checkYomimono(items, src) {
@@ -52,14 +57,17 @@ export function table(head, rows) {
 
 const CALC = '<p><a class="go" href="/dougu/keisan/">わが家の人数で量を計算する</a></p>';
 
-// 末尾：今ある品目ページ6つ（商品は置かない）とチェックリスト、ほかの読みもの
+// 末尾：今ある品目ページ6つ（商品は置かない）とチェックリスト、同じ group のほかの読みもの（4つまで）
 // 家の外の備え2本（sonae-soto.mjs）も同じ末尾を使う
 export function tail(items, self) {
   const hinmoku = items.items.filter((it) => it.hinmoku);
-  const others = [...YOMIMONO, ...SOTO].filter((y) => y.key !== self);
+  const all = allYomimono();
+  const me = all.find((y) => y.key === self);
+  if (!me) throw new Error(`tail：読みもの ${self} がない`);
+  const others = all.filter((y) => y.key !== self && y.group === me.group).slice(0, 4);
   return `${h2('品目と道具')}
 <ul class="list">${hinmoku.map((it) => `<li><a href="/hinmoku/${it.id}/">${esc(it.name)}</a></li>`).join('')}<li><a href="/dougu/check/">チェックリスト</a></li></ul>
-<p>${others.map((y) => `<a href="${y.path}">${esc(y.name)}</a>`).join('・')}</p>`;
+${others.length ? `<p>${others.map((y) => `<a href="${y.path}">${esc(y.name)}</a>`).join('・')}</p>` : ''}`;
 }
 
 export function yomimonoPages({ cc, items, sources }) {
