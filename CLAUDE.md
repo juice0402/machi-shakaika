@@ -52,3 +52,4 @@
 - `src/data.mjs`（data/*.yml の読み取りと点検）・`src/areas.mjs`（ページを作る103の街）・`src/munis.mjs`
 - `scripts/build.mjs`・`verify-dist.mjs`（全ページ点検）・`fetch-*.mjs`（Actions が使う取得）・`check-links.mjs`
 - `tools/og/`（共有画像。作業場で作る）・`static/`（アイコン・絵）
+- `docs/yomimono-neta.md`（読みもののネタの山と書き方。予約タスクが火・土に1本）・`docs/sodateru.md`（育てる山。夜の作業が上から1つ）
