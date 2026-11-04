@@ -13,10 +13,10 @@ const shogo = readYaml('shogo.yml');
 
 test('都道府県47・ページを作る街（種類ごとの数）・英字が重ならない', () => {
   assert.equal(PREFS.length, 47);
-  // 県庁所在地46（東京都は23区）・東京23区・県庁所在地でない政令市5・中核市（県庁所在地でないもの。条件をみたす街だけ）
+  // 県庁所在地46（東京都は23区）・東京23区・県庁所在地でない政令市5・中核市（県庁所在地でないもの。条件をみたす街だけ）・人口10万人以上の市（11/4）
   const kinds = {};
   for (const c of CITIES) kinds[c.kind] = (kinds[c.kind] ?? 0) + 1;
-  assert.deepEqual(kinds, { kencho: 46, ku: 23, seirei: 5, chukaku: 29 });
+  assert.deepEqual(kinds, { kencho: 46, ku: 23, seirei: 5, chukaku: 29, shi: 146 });
   const names = CITIES.map((c) => `${c.pref}/${c.name}`);
   assert.equal(new Set(names).size, names.length, '同じ街を2回入れていない');
   const keys = CITIES.map((c) => `${c.pref}/${c.slug}`);
@@ -43,6 +43,9 @@ test('ページを作る街が e-Stat の地域に1つずつある（データ�
   const { cities, errors } = resolveCities(munis.areas);
   assert.deepEqual(errors, []);
   assert.equal(cities.length, CITIES.length);
+  // 人口10万人以上の市（11/4）：今の国勢調査で10万人を下回ったら、ページを残すか決める（英字は変えない）
+  const low = cities.filter((c) => c.kind === 'shi' && !(munis.areas[c.code].pop >= 100000)).map((c) => c.name);
+  assert.deepEqual(low, []);
 });
 
 // 一覧ファイルは update.yml（国土地理院に届く Actions）が作る。この作業場では作れないので、

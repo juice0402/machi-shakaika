@@ -46,7 +46,7 @@ test('全国の市区町村（1,741）で、新しい文がエラーなく作れ
   }
 });
 
-test('くらべる：103の街とも2〜4文・人口の順位を1画面めとくり返さない・してはいけない順位なし', { skip }, () => {
+test('くらべる：ページを作る街とも2〜4文・人口の順位を1画面めとくり返さない・してはいけない順位なし', { skip }, () => {
   for (const c of cities) {
     const a = derive(m.areas[c.code]);
     const { feat, kurabe } = textsOf(a);
