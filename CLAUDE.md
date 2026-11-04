@@ -49,6 +49,6 @@
 
 ## おもなファイル（中身は docs/files.md）
 - `src/site.mjs`（サイト名・公開前フラグ）・`src/layout.mjs`（ページの外側と共通部品）・`src/pages/*.mjs`（ページ）・`src/stats.mjs`（数字と言い回し）
-- `src/data.mjs`（data/*.yml の読み取りと点検）・`src/areas.mjs`（ページを作る103の街）・`src/munis.mjs`
+- `src/data.mjs`（data/*.yml の読み取りと点検）・`src/areas.mjs`（ページを作る249の街）・`src/munis.mjs`
 - `scripts/build.mjs`・`verify-dist.mjs`（全ページ点検）・`fetch-*.mjs`（Actions が使う取得）・`check-links.mjs`
 - `tools/og/`（共有画像。作業場で作る）・`static/`（アイコン・絵）
