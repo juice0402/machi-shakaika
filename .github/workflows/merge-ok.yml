@@ -53,7 +53,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          n=$(gh api "repos/$GITHUB_REPOSITORY/issues?state=open&labels=merge-ok&per_page=100" --jq '[.[] | select(.pull_request)] | length')
+          # 印が付いた回は数えずに見に行く（付けた直後は issues?labels= の一覧が0のことがある。11/4 sakutto #128）。ほかの回は PR の一覧のラベルで数える
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            n=1
+          else
+            n=$(gh api "repos/$GITHUB_REPOSITORY/pulls?state=open&per_page=100" --jq '[.[] | select(any(.labels[]; .name == "merge-ok"))] | length')
+          fi
           echo "印の付いた開いている PR：$n"
           echo "count=$n" >> "$GITHUB_OUTPUT"
 
