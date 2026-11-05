@@ -1,6 +1,6 @@
 name: 見張り
 
-# ビルドと公開（deploy.yml）・データの更新（update.yml）・災害時モードの切りかえ（saigai.yml）が main で失敗したら、
+# ビルドと公開（deploy.yml）・データの更新（update.yml）・災害時モードの切りかえ（saigai.yml）・地震の見張り（jishin.yml）が main で失敗したら、
 # issue（ラベル mihari＝しょーくんに知らせるだけ）を作る。次に成功したら「直った」とコメントして閉じる。
 # cancelled（あとの公開に入れかわった）は何もしない。プレビュー（PR）の公開は見ない（scripts/mihari.mjs。2026-11-02）。
 # Claude は使わない。毎朝の Claude の「朝の確認」が issue を知らせる。
@@ -9,7 +9,7 @@ name: 見張り
 on:
   workflow_run:
     # 見張る workflow の name:（scripts/mihari.mjs の WATCH と同じものを並べる。name を変えたら、ここも変える）
-    workflows: [ビルドと公開, データの更新, 災害時モードの切りかえ]
+    workflows: [ビルドと公開, データの更新, 災害時モードの切りかえ, 地震の見張り]
     types: [completed]
     branches: [main]
   workflow_dispatch:
