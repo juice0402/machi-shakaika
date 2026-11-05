@@ -1,0 +1,59 @@
+name: 地震の見張り
+
+# 10分ごとに気象庁の地震の一覧（list.json）を読み、最大震度6弱以上の地震があれば issue（ラベル jishin）を1つ立てる（scripts/jishin.mjs。2026-11-05 #61）。
+# 同じ地震（eid）で2つ立てない。災害時モードは切りかえない（しょーくんが saigai.yml で決める）。ページには何も出さない。Claude は使わない。
+# 1回・2回読めないだけでは知らせない。3回続けて読めない・JSON の形が変わったときは失敗で終わり、見張り（mihari.yml）が issue で知らせる。
+# 続けて読めなかった回数は Actions の cache（.jishin/state.json）に残す（変わったときだけ書く）。
+# 手で試すときは Actions の画面の「Run workflow」（dry_run が true なら issue を立てず、立てるはずの題と本文をログに出す）
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'true なら issue を立てず、ログに出すだけ'
+        type: boolean
+        default: true
+
+permissions:
+  issues: write
+  contents: read
+
+concurrency:
+  group: jishin
+  cancel-in-progress: false
+
+jobs:
+  jishin:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: scripts/jishin.mjs
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: 読めなかった回数を出す
+        uses: actions/cache/restore@v4
+        with:
+          path: .jishin
+          key: jishin-v1-${{ github.run_id }}
+          restore-keys: jishin-v1-
+
+      - name: 地震を見る
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JISHIN_DRY_RUN: ${{ inputs.dry_run }}
+        run: node scripts/jishin.mjs
+
+      - name: 読めなかった回数を残す
+        if: always() && steps.check.outputs.save == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .jishin
+          key: jishin-v1-${{ github.run_id }}-${{ github.run_attempt }}

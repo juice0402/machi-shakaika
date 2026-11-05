@@ -12,7 +12,7 @@
 - 読むファイル：CLAUDE.md・docs/yomimono-neta.md・src/pages/sonae.mjs・src/pages/sonae-yomimono.mjs・src/pages/sonae-soto.mjs・src/pages/sonae-fuyu.mjs
 - マージ：する
 
-### [ ] 地震の見張り：最大震度6弱以上で issue を立てる
+### [x] 地震の見張り：最大震度6弱以上で issue を立てる（#61）
 - やること：`.github/workflows/jishin.yml` と `scripts/jishin.mjs` を新しく作る。10分ごと（cron `*/10 * * * *`）に気象庁の地震の一覧 JSON を読み、最大震度が6弱以上の地震があれば issue を1つ立てる（ラベル `jishin`。なければ作る）。同じ地震（`eid`）で2つ立てない（開いている・閉じた jishin の issue の本文に eid を書いておき、それを見る）。workflow_dispatch に dry_run（issue を立てずに結果だけ出す）
 - 読む URL：https://www.jma.go.jp/bosai/quake/data/list.json （1件ごとに `ttl` 情報の題・`at` 時刻・`anm` 震源の地名・`mag` マグニチュード・`maxi` 最大震度・`eid` 地震の ID。`maxi` の書き方〔"6-" "6+" "7" など〕は開いて確かめ、テストに写す）
 - issue の題と本文：題「震度◯（最大）：◯◯（月/日 時:分）」。本文に「災害時モードにするかは、しょーくんが決める（ボタン https://github.com/juice0402/machi-shakaika/actions/workflows/saigai.yml → Run workflow）」「気象庁 https://www.jma.go.jp/bosai/ 」と eid。災害時モードは切りかえない
