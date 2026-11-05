@@ -80,10 +80,9 @@ test('冬の停電：商品は並べず、リンクは品目ページ・計算�
   assert.ok(!/\p{Extended_Pictographic}/u.test(shown));
 });
 
-test('冬の停電：/sonae/ の棚に入口がある（今の3本のあと）。災害時モードでも壊れない', () => {
+test('冬の停電：/sonae/ の棚の「災害の前に」に入口がある。災害時モードでも壊れない', () => {
   const shelf = sonaePages({ cc, items, sources }).find((p) => p.path === '/sonae/');
-  const hrefs = [...shelf.body.matchAll(/href="(\/sonae\/[^"]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(hrefs.slice(0, 4), ['/sonae/bichiku/', '/sonae/rolling-stock/', '/sonae/keitai-toilet/', '/sonae/fuyu-teiden/']);
+  assert.match(shelf.body, /災害の前に<\/h2>\n<ul class="list">[^\n]*href="\/sonae\/fuyu-teiden\/"/);
   const on = page({ ...fuyu, saigai: true });
   assert.ok(on.includes(SAIGAI_BAR) && on.includes('冬の停電と寒さの備え') && !on.includes('adsbygoogle'));
   assert.ok(on.includes(fuyu.description.replace(/&/g, '&amp;')));

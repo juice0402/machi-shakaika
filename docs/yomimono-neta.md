@@ -7,11 +7,10 @@
 ### 置く場所と作り方
 - 1本＝ページ1つ。URL は `/sonae/<英字>/`（「備えの知識」の読みもの）。今の5本（地震の前に足すもの・在宅避難・赤ちゃんと高齢の家族・ひとり暮らし・マンション）と同じ形にする。ひな形は `src/pages/sonae-yomimono.mjs` の「地震の前に足すもの」
 - 足す所
-  1. `src/pages/sonae-yomimono.mjs` の `YOMIMONO` に `{ key, path, name }` を1行（key は英字からハイフンを外したもの）
+  1. `src/pages/sonae-yomimono.mjs` の `YOMIMONO` に `{ key, path, name, group }` を1行（key は英字からハイフンを外したもの）。group は /sonae/ の棚の見出しで「量と品目」「災害の前に」「家族と住まい」「家の外」のどれか。災害の種類の名前が題にあれば「災害の前に」、家族や住まいの形が題にあれば「家族と住まい」、それ以外は「量と品目」。この1行で /sonae/ の棚と、同じ group の読みものの末尾に出る
   2. 同じファイルの `yomimonoPages()` に `out.push({...})` を1つ。中の並び：crumb → `<h1 class="city">` → `<p class="lead">`（1行） → `${CALC}` → `table([...], rows)`（「起きること／前に足すもの」か「止まるもの／代わりに足すもの」。4〜6行） → `<div class="prose">` の h2 と p → `${tail(items, key)}` → `<p class="why">`（起きてからの動き方は気象庁・市区町村・ハザードマップで確かめる、の1行） → `h2('出典')` と `sourceList(items.<key>.sources, sources)`。head は `<style>${CSS}</style>`
   3. `data/items.yml` に `<key>:` と `sources: [...]` を足す（`checkYomimono()` が YOMIMONO の全部を見張る）。新しい数字が要るときも items.yml に足して出典をつける
   4. `data/sources.yml` に新しい出典（id・kind: sonae・publisher・title は開いて確かめた題そのまま・url・checked は開いた日・about は自分の言葉で短く）。今の行の形をまねる
-  5. `src/pages/sonae.mjs` の /sonae/ の一覧（`<ul class="list">`）に `<li>` を1つ（育てる山1で一覧が YOMIMONO から作られる形になったら、この手順はいらない）
 - 数字：備えの数字は `cc`（`cc.by.mizu.per_day`・`cc.days` など）と `items.yml` から。国勢調査の全国の値が要るネタは、`scripts/build.mjs` の `yomimonoPages({ cc, items, sources })` に `z`（全国の値。build.mjs にある）を足して渡す。避難場所の全国の数は `data/hinan/counts.json` の合計。本文に数字を直接書かない
 - コマンド：`npm run check`（テスト → ビルド → 全ページ点検）。作業場から国土地理院に届かないので、避難場所の一覧がないと言われたら `ALLOW_MISSING_HINAN_LIST=1 npm run check`。本文の字数は `node scripts/honbun.mjs dist` のあと、そのページの行を見る
 - ブランチは `claude/yomimono-<英字>`。PR は1本に1つ。このファイルの山の行も同じ PR で `- [x]` にする

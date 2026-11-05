@@ -6,6 +6,28 @@ import { a8Ad } from '../a8.mjs';
 import { readMunis } from '../munis.mjs';
 import { resolveCities, PREFS } from '../areas.mjs';
 import { derive, r1 } from '../stats.mjs';
+import { allYomimono } from './sonae-yomimono.mjs';
+
+// /sonae/ の棚（11/4 夜 #59）：見出し5つ。読みものは YOMIMONO・SOTO・冬の停電の group で入る
+//   head は読みものより前、foot はうしろに置く決まったページ
+export const YOMI_GROUPS = ['量と品目', '災害の前に', '家族と住まい', '家の外'];
+const SHELF = [
+  { group: '量と品目', head: [['/sonae/bichiku/', '備蓄の量のめやす'], ['/sonae/rolling-stock/', 'ローリングストック'], ['/sonae/keitai-toilet/', '携帯トイレの備え']], foot: [['/hinmoku/', '品目ごとのめやす']] },
+  { group: '災害の前に' },
+  { group: '家族と住まい' },
+  { group: '家の外' },
+  { group: '道具とクイズ', foot: [['/dougu/keisan/', '備蓄の量を計算する'], ['/dougu/check/', 'チェックリスト'], ['/dougu/kigen/', '賞味期限のメモ'], ['/dougu/karte/', 'わが家の防災カルテ'], ['/quiz/sonae/', '備えの数字クイズ']] },
+];
+export function sonaeShelf(yomi = allYomimono()) {
+  for (const y of yomi) if (!YOMI_GROUPS.includes(y.group)) throw new Error(`読みもの ${y.key} の group「${y.group}」は ${YOMI_GROUPS.join('・')} のどれか`);
+  const li = ([href, name]) => `<li><a href="${href}">${esc(name)}</a></li>`;
+  return SHELF.map((g) => {
+    const rows = [...(g.head ?? []), ...yomi.filter((y) => y.group === g.group).map((y) => [y.path, y.name]), ...(g.foot ?? [])];
+    return rows.length ? `${h2(g.group)}\n<ul class="list">${rows.map(li).join('')}</ul>` : '';
+  })
+    .filter(Boolean)
+    .join('\n');
+}
 
 // 備えのページに出す街の例（国勢調査の数字から。データがなければ null で、例の文を出さない）
 //   くわしく見られる街（市区町村ページのある街）だけから、1世帯の人数がいちばん多い・少ない街と、共同住宅・ひとり暮らしの割合がいちばん高い街
@@ -70,7 +92,7 @@ export function sonaePages({ cc, items, sources, munis = readMunis() }) {
     body: `<p class="crumb"><a href="/">トップ</a></p>
 <h1 class="city">備えの知識</h1>
 <p class="lead">公的な資料の数字をもとに、家の備えを人数と日数で考える</p>
-<ul class="list"><li><a href="/sonae/bichiku/">備蓄の量のめやす</a></li><li><a href="/sonae/rolling-stock/">ローリングストック</a></li><li><a href="/sonae/keitai-toilet/">携帯トイレの備え</a></li><li><a href="/sonae/fuyu-teiden/">冬の停電と寒さの備え</a></li><li><a href="/sonae/jishin/">地震の前に足すもの</a></li><li><a href="/sonae/zaitaku-hinan/">在宅避難の備え</a></li><li><a href="/sonae/akachan-koureisha/">赤ちゃん・高齢の家族がいる家の備え</a></li><li><a href="/sonae/hitorigurashi/">ひとり暮らしの備え</a></li><li><a href="/sonae/mansion/">マンション（共同住宅）の備え</a></li><li><a href="/sonae/kuruma-taisetsu/">車の大雪の備え</a></li><li><a href="/sonae/kitaku-konnan/">職場と通勤の備え</a></li><li><a href="/dougu/keisan/">備蓄の量を計算する</a></li><li><a href="/dougu/check/">チェックリスト</a></li><li><a href="/hinmoku/">品目ごとのめやす</a></li><li><a href="/quiz/sonae/">備えの数字クイズ</a></li></ul>
+${sonaeShelf()}
 <p class="note">発生したときの行動や避難の判断は、お住まいの自治体の案内とハザードマップを優先してください。</p>
 <div class="prose">
 ${

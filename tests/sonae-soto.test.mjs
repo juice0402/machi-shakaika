@@ -77,7 +77,6 @@ test('入口：/sonae/ の棚・冬の停電の末尾・読みものの末尾', 
   for (const s of SOTO) assert.ok(shelf.includes(`href="${s.path}"`), s.path);
   const [fuyu] = fuyuTeidenPages({ cc, items, sources });
   assert.ok(fuyu.body.includes('href="/sonae/kuruma-taisetsu/"'));
-  for (const y of yomimonoPages({ cc, items, sources })) for (const s of SOTO) assert.ok(y.body.includes(`href="${s.path}"`), `${y.path} → ${s.path}`);
   // 家の外の2本どうしもつながる
   assert.ok(page('/sonae/kuruma-taisetsu/').body.includes('href="/sonae/kitaku-konnan/"'));
   assert.ok(page('/sonae/kitaku-konnan/').body.includes('href="/sonae/kuruma-taisetsu/"'));

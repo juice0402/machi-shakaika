@@ -8,8 +8,8 @@ import { sourceList } from './sonae.mjs';
 import { CSS, table, tail } from './sonae-yomimono.mjs';
 
 export const SOTO = [
-  { key: 'kuruma', path: '/sonae/kuruma-taisetsu/', name: '車の大雪の備え' },
-  { key: 'kitaku', path: '/sonae/kitaku-konnan/', name: '職場と通勤の備え' },
+  { key: 'kuruma', path: '/sonae/kuruma-taisetsu/', name: '車の大雪の備え', group: '家の外' },
+  { key: 'kitaku', path: '/sonae/kitaku-konnan/', name: '職場と通勤の備え', group: '家の外' },
 ];
 
 // items.yml の kuruma・kitaku と出典の形を確かめる（問題があれば文のリスト。空なら OK）
