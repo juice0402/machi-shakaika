@@ -9,6 +9,7 @@ import { resolveCities, PREFS } from '../areas.mjs';
 import { kazuData } from '../machi-tools.mjs';
 import { mtNear } from '../machi-core.mjs';
 import { rankingData, rateText, MIN_POP } from './ranking.mjs';
+import { KOYOMI_CSS } from '../koyomi.mjs';
 
 export const FIND_JS = `(()=>{const f=document.querySelector('[data-find]');if(!f)return;const i=f.querySelector('input'),ul=f.querySelector('.hits'),msg=f.querySelector('.msg');let all=null;
 const load=()=>all?Promise.resolve(all):fetch('/search.json').then(r=>r.json()).then(j=>all=j);
@@ -52,13 +53,14 @@ ${top1 ? `<p>${prevYear}年から<a href="/ranking/jinko/">人口が増えた市
   return out.join('\n');
 }
 
-export function topPage({ cc, munis, hinanMeta, nMunis }) {
+// ima：備えのごよみの「いまの備え」の1行（#64。災害時モードでは空）
+export function topPage({ cc, munis, hinanMeta, nMunis, ima = '' }) {
   const body = `${heroHtml()}
 <div class="side"><form class="find" data-find role="search"><label for="q">市区町村</label><input id="q" type="search" placeholder="例 堺市・さかい" autocomplete="off" enterkeyhint="search"><button>さがす</button><ul class="hits"></ul><p class="msg" aria-live="polite"></p></form>
 ${calcHtml(cc)}
 <p class="src">${cc.perText}（農林水産省・内閣府のガイドラインほか）<br>${esc(munis.statName)}（${jpDate(munis.published)}公表）・避難場所データ ${jpDate(hinanMeta.checked)}取得</p></div>
 <section id="map">${h2('都道府県から')}${japanMap()}<ul class="list"><li><a href="/ranking/jinko/">人口が増えた市区町村</a></li><li><a href="/niteru/">数字が似ている街をさがす</a></li><li><a href="/kurabe/">2つの街の数字をくらべる</a></li></ul></section>
-<section>${h2('備えの知識')}<ul class="list"><li><a href="/sonae/bichiku/">備蓄の量のめやす</a></li><li><a href="/sonae/rolling-stock/">ローリングストック</a></li><li><a href="/sonae/keitai-toilet/">携帯トイレの備え</a></li><li><a href="/sonae/fuyu-teiden/">冬の停電と寒さの備え</a></li><li><a href="/dougu/check/">チェックリスト</a></li><li><a href="/dougu/kigen/">期限メモ</a></li><li><a href="/dougu/karte/">わが家の防災カルテ</a></li><li><a href="/hinmoku/">品目ごとのめやす</a></li></ul></section>
+<section>${h2('備えの知識')}${ima}<ul class="list"><li><a href="/sonae/bichiku/">備蓄の量のめやす</a></li><li><a href="/sonae/rolling-stock/">ローリングストック</a></li><li><a href="/sonae/keitai-toilet/">携帯トイレの備え</a></li><li><a href="/sonae/fuyu-teiden/">冬の停電と寒さの備え</a></li><li><a href="/dougu/check/">チェックリスト</a></li><li><a href="/dougu/kigen/">期限メモ</a></li><li><a href="/dougu/karte/">わが家の防災カルテ</a></li><li><a href="/hinmoku/">品目ごとのめやす</a></li></ul></section>
 <section>${h2('クイズ')}<ul class="list"><li><a href="/quiz/kyou/">今日の1問</a></li><li><a href="/quiz/docchi/">どっちが多い？</a></li><li><a href="/quiz/dobon/">ドボンクイズ</a></li><li><a href="/quiz/sonae/">備えの数字クイズ</a></li><li><a href="/atsume/">街あつめ帳</a></li></ul></section>
 ${moreHtml({ cc, munis })}`;
   return {
@@ -69,7 +71,7 @@ ${moreHtml({ cc, munis })}`;
       [[`全国${fmt(hinanMeta.total.basho)}か所の指定緊急避難場所の数や、街の数字のクイズも。`, '街の数字のクイズも。']],
     ),
     // Google の「サイト名」がドメインのまま出ないように（WebSite の構造化データ）
-    head: `<style>${JMAP_CSS}</style><script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'WebSite', name: SITE.name, alternateName: SITE.project, url: `${SITE.url}/` })}</script>`,
+    head: `<style>${JMAP_CSS}${ima ? KOYOMI_CSS : ''}</style><script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'WebSite', name: SITE.name, alternateName: SITE.project, url: `${SITE.url}/` })}</script>`,
     body,
     hashira: true,
     script: CALC_JS + FIND_JS,

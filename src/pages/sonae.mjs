@@ -16,7 +16,7 @@ const SHELF = [
   { group: '災害の前に' },
   { group: '家族と住まい' },
   { group: '家の外' },
-  { group: '道具とクイズ', foot: [['/dougu/keisan/', '備蓄の量を計算する'], ['/dougu/check/', 'チェックリスト'], ['/dougu/kigen/', '賞味期限のメモ'], ['/dougu/karte/', 'わが家の防災カルテ'], ['/quiz/sonae/', '備えの数字クイズ']] },
+  { group: '道具とクイズ', foot: [['/dougu/keisan/', '備蓄の量を計算する'], ['/dougu/check/', 'チェックリスト'], ['/dougu/kigen/', '賞味期限のメモ'], ['/koyomi/', '備えのごよみ'], ['/dougu/karte/', 'わが家の防災カルテ'], ['/quiz/sonae/', '備えの数字クイズ']] },
 ];
 export function sonaeShelf(yomi = allYomimono()) {
   for (const y of yomi) if (!YOMI_GROUPS.includes(y.group)) throw new Error(`読みもの ${y.key} の group「${y.group}」は ${YOMI_GROUPS.join('・')} のどれか`);

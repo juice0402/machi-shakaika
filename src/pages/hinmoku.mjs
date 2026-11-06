@@ -6,6 +6,7 @@ import { need } from '../calc.mjs';
 import { SHOW, cleanName } from '../rakuten.mjs';
 import { SAIGAI } from '../mode.mjs';
 import { KIGEN_NOTICE_DAYS } from './kigen.mjs';
+import { KOYOMI_CSS } from '../koyomi.mjs';
 
 const SONAE = { mizu: ['/sonae/bichiku/', '備蓄の量のめやす'], shushoku: ['/sonae/rolling-stock/', 'ローリングストック'], 'keitai-toilet': ['/sonae/keitai-toilet/', '携帯トイレの備え'], gas: ['/sonae/fuyu-teiden/', '冬の停電と寒さの備え'], light: ['/sonae/fuyu-teiden/', '冬の停電と寒さの備え'], battery: ['/sonae/fuyu-teiden/', '冬の停電と寒さの備え'] };
 
@@ -197,7 +198,9 @@ function amountDesc(it, days, sources) {
 }
 
 // 災害時モード（saigai）のときは、楽天の商品を出さない（題・説明文からも楽天を外す）。AdSense も置かない（layout.mjs）
-export function hinmokuPages({ items, sources, products, saigai = SAIGAI }) {
+// ima：備えのごよみの今の期間 { item, html }（#64）。その品目のページだけ、量のめやすの下に1行
+export function hinmokuPages({ items, sources, products, saigai = SAIGAI, ima = null }) {
+  if (saigai) ima = null;
   if (saigai) products = null;
   const days = items.days;
   const list = items.items.filter((it) => it.hinmoku);
@@ -236,10 +239,11 @@ ${sourceText([...new Set([...days.sources, ...items.yohairyo_sources, ...list.fl
           : ['楽天市場の商品は、ランキングとレビューの数から毎朝6時ごろにえらび直します。', 'チェックリストや計算のページにもつながります。'],
       ),
       rakuten: !saigai,
+      head: ima?.item === it.id ? `<style>${KOYOMI_CSS}</style>` : undefined,
       body: `<p class="crumb"><a href="/">トップ</a> / <a href="/hinmoku/">備えの品目</a></p>
 <h1 class="city">${esc(it.page)}</h1>
 <p class="feat">${esc(amount(it, days))}</p>
-${it.calc ? '<p><a class="go" href="/dougu/keisan/">わが家の人数で計算</a></p>' : ''}
+${ima?.item === it.id ? ima.html : ''}${it.calc ? '<p><a class="go" href="/dougu/keisan/">わが家の人数で計算</a></p>' : ''}
 ${own.html}
 ${shopList(shop, products?.fetchedAt)}
 ${h2('あわせて')}

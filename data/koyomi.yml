@@ -1,0 +1,199 @@
+# 備えのごよみ（/koyomi/・/koyomi/koyomi.ics。トップ・品目ページ・期限メモの「いまの備え」の1行）
+# 1年を24の期間に分けて、1期間1行。期間の区切りは日本時間の0時。from・to は 'MM-DD'（2月の終わりは '02-29'。うるう年でない年は 02-28 まで）
+# item は items.yml の hinmoku: true の品目。text は「なぜ今か」の1文（全角60字まで・数字を直接書かない。月日だけはよい）
+#   数字は items.yml から差しこむ：{mizu}（1人1日の水）・{shushoku}（1人1日の主食）・{toilet}（1人1日の携帯トイレ）・{gas}（農林水産省の例のボンベ）・{min}・{better}（日数）
+# links は品目ページのほかに出すページ。sources は sources.yml の id（行事・季節の出典と、品目の出典）
+# 使わない言葉：〜しましょう・ぜひ・便利・簡単・安心・おすすめ・お得・ポイント・コツ・最安値・定価・今すぐ・手遅れ（tests/koyomi.test.mjs が見る）
+
+periods:
+  - from: '01-01'
+    to: '01-15'
+    theme: 冬の停電と寒さ
+    item: gas
+    text: 停電すると電気の調理器具は使えません。{gas}です
+    links: [/sonae/fuyu-teiden/]
+    sources: [bousai-teiden, maff-sonae]
+
+  - from: '01-16'
+    to: '01-31'
+    theme: 1/17 防災とボランティアの日：期限の見直し
+    item: mizu
+    text: 1月17日は防災とボランティアの日。置いてある水の期限と、{mizu}の量を見直します
+    links: [/dougu/kigen/]
+    sources: [bousai-volunteer, maff-sonae]
+
+  - from: '02-01'
+    to: '02-14'
+    theme: 冬の停電と寒さ
+    item: light
+    text: 日の短い冬は、停電の夜が長くなります。ライトと替えの電池を見ておきます
+    links: [/sonae/fuyu-teiden/]
+    sources: [bousai-teiden, nagasaki-mochidashi]
+
+  - from: '02-15'
+    to: '02-29'
+    theme: 冬の停電と寒さ
+    item: battery
+    text: 停電の夜もスマートフォンを使えるように、バッテリーを充電しておきます
+    links: [/sonae/fuyu-teiden/]
+    sources: [bousai-teiden, nagasaki-mochidashi]
+
+  - from: '03-01'
+    to: '03-15'
+    theme: 3/11：備蓄の量の見直し
+    item: mizu
+    text: 3月11日は東日本大震災が起きた日です。家の水が{mizu}の量で足りているか見直します
+    links: [/sonae/bichiku/]
+    sources: [bousai-hakusho-311, maff-sonae]
+
+  - from: '03-16'
+    to: '03-31'
+    theme: 新生活：ひとり暮らしの備え
+    item: shushoku
+    text: 引っこした部屋にも、食べ物の備えを置きます。主食は{shushoku}で数えます
+    links: [/sonae/hitorigurashi/]
+    sources: [maff-tanshin, maff-sonae]
+
+  - from: '04-01'
+    to: '04-15'
+    theme: 新生活：ひとり暮らしの備え
+    item: keitai-toilet
+    text: 新しい部屋のトイレも、断水すると流せません。携帯トイレは{toilet}がめやすです
+    links: [/sonae/hitorigurashi/]
+    sources: [maff-tanshin, hiroshima-toilet]
+
+  - from: '04-16'
+    to: '04-30'
+    theme: ローリングストック
+    item: shushoku
+    text: ふだん食べる物を多めに買い、古い順に食べて買い足します。主食は{shushoku}で数えます
+    links: [/sonae/rolling-stock/]
+    sources: [maff-guide, maff-sonae]
+
+  - from: '05-01'
+    to: '05-15'
+    theme: 大雨の前
+    item: light
+    text: 梅雨は大雨の災害が起きやすい時期です。その前に、停電の夜に使うライトを見ておきます
+    links: []
+    sources: [jma-baiu, nagasaki-mochidashi]
+
+  - from: '05-16'
+    to: '05-31'
+    theme: 大雨の前
+    item: battery
+    text: 梅雨入りの前に、雨の情報を見るスマートフォンのバッテリーを充電しておきます
+    links: []
+    sources: [jma-baiu, nagasaki-mochidashi]
+
+  - from: '06-01'
+    to: '06-15'
+    theme: 大雨の前
+    item: keitai-toilet
+    text: 断水や配管の被害で、トイレを流せないことがあります。携帯トイレは{toilet}がめやすです
+    links: [/sonae/keitai-toilet/]
+    sources: [jma-baiu, hiroshima-toilet]
+
+  - from: '06-16'
+    to: '06-30'
+    theme: 大雨の前
+    item: mizu
+    text: 梅雨は大雨の災害が起きやすい時期です。水は{mizu}を家族の人数分そろえます
+    links: [/sonae/bichiku/]
+    sources: [jma-baiu, maff-sonae]
+
+  - from: '07-01'
+    to: '07-15'
+    theme: 台風の前
+    item: light
+    text: 7月から、日本に近づく台風がふえます。停電の夜に使うライトと電池を見ておきます
+    links: []
+    sources: [jma-typhoon, nagasaki-mochidashi]
+
+  - from: '07-16'
+    to: '07-31'
+    theme: 台風の前
+    item: mizu
+    text: 台風で停電や断水になることがあります。水は{mizu}がめやすです
+    links: [/sonae/bichiku/]
+    sources: [jma-typhoon, maff-sonae]
+
+  - from: '08-01'
+    to: '08-15'
+    theme: 台風の前
+    item: battery
+    text: 日本に近づく台風は、8月と9月がいちばん多くなります。バッテリーを充電しておきます
+    links: []
+    sources: [jma-typhoon, nagasaki-mochidashi]
+
+  - from: '08-16'
+    to: '08-31'
+    theme: 9/1 防災の日の前：期限の見直し
+    item: mizu
+    text: 8月30日からは防災週間。置いてある水の期限を見て、近いものから使って買い足します
+    links: [/dougu/kigen/]
+    sources: [bousai-week, maff-sonae]
+
+  - from: '09-01'
+    to: '09-15'
+    theme: 9/1 防災の日：備蓄の量の見直し
+    item: shushoku
+    text: 9月1日は防災の日。主食が{shushoku}の{better}そろっているか数えます
+    links: [/sonae/bichiku/]
+    sources: [bousai-week, maff-sonae]
+
+  - from: '09-16'
+    to: '09-30'
+    theme: 台風の前
+    item: gas
+    text: 9月も台風が多く近づく月です。停電でも温かい物を作れるように、{gas}です
+    links: []
+    sources: [jma-typhoon, maff-sonae]
+
+  - from: '10-01'
+    to: '10-15'
+    theme: 台風の前
+    item: keitai-toilet
+    text: 10月も台風が近づきます。断水のときのトイレに、携帯トイレは{toilet}がめやすです
+    links: [/sonae/keitai-toilet/]
+    sources: [jma-typhoon, hiroshima-toilet]
+
+  - from: '10-16'
+    to: '10-31'
+    theme: ローリングストック
+    item: shushoku
+    text: 夏から秋に使った分を買い足す時期です。主食は古い順に食べて入れかえます
+    links: [/sonae/rolling-stock/]
+    sources: [maff-guide, maff-sonae]
+
+  - from: '11-01'
+    to: '11-15'
+    theme: 冬の前：冬の停電と寒さ
+    item: gas
+    text: 冬の停電では、暖房と電気の調理器具が止まります。{gas}です
+    links: [/sonae/fuyu-teiden/]
+    sources: [bousai-teiden, maff-sonae]
+
+  - from: '11-16'
+    to: '11-30'
+    theme: 11/19 備蓄の日：期限の見直し
+    item: mizu
+    text: 11月19日は東京都の備蓄の日。水の期限を見て、{mizu}の量を数え直します
+    links: [/dougu/kigen/]
+    sources: [tokyo-bichiku, maff-sonae]
+
+  - from: '12-01'
+    to: '12-15'
+    theme: 冬の停電と寒さ
+    item: light
+    text: 冬は日が短く、停電の夜が長くなります。ライトと替えの電池を見ておきます
+    links: [/sonae/fuyu-teiden/]
+    sources: [bousai-teiden, nagasaki-mochidashi]
+
+  - from: '12-16'
+    to: '12-31'
+    theme: 冬の停電と寒さ
+    item: battery
+    text: 年末年始の停電にも、スマートフォンを使えるように。バッテリーを充電しておきます
+    links: [/sonae/fuyu-teiden/]
+    sources: [bousai-teiden, nagasaki-mochidashi]

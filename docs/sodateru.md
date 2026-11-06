@@ -23,7 +23,7 @@
 - 読むファイル：CLAUDE.md・scripts/mihari.mjs・.github/workflows/mihari.yml・docs/shikumi.md の「見張り」・.github/workflows/saigai.yml
 - マージ：する
 
-### [ ] 備えのごよみ：季節で変わる「いまの備え」の1行とカレンダーの購読（連絡 C-025 案B）
+### [x] 備えのごよみ：季節で変わる「いまの備え」の1行とカレンダーの購読（連絡 C-025 案B）（#64）
 - やること
   - `data/koyomi.yml` を新しく作る。1年を24の期間（各月の1〜15日と16日〜月末）に分け、1期間1行（`from`・`to`〔MM-DD〕・`theme`・`item`〔items.yml の `hinmoku: true` の id〕・`text`・`links`・`sources`）。期間とテーマと品目は下の表のとおり
   - `text` は「なぜ今か」の1文（全角60字まで）。品目の数字は items.yml から差しこむ（例 `{gas}` → 農林水産省の例のボンベ6本、`{mizu}` → 1人1日3L）。yml の `text` に数字を直接書かない（月日だけはよい）

@@ -233,6 +233,46 @@ sources:
     checked: 2026-10-21
     about: 11月19日を「備蓄の日」としている
 
+  - id: bousai-volunteer
+    kind: sonae
+    publisher: 防災庁
+    title: その他の災害ボランティアに関する事業について
+    url: https://www.bousai.go.jp/kyoiku/bousai-vol/others.html
+    checked: 2026-11-06
+    about: 1月17日が「防災とボランティアの日」、1月15日から21日が「防災とボランティア週間」（備えのごよみ）
+
+  - id: bousai-week
+    kind: sonae
+    publisher: 防災庁
+    title: 令和８年度「防災週間」及び「火山防災の日」について
+    url: https://www.bousai.go.jp/kyoiku/week/r8bousaiweek.html
+    checked: 2026-11-06
+    about: 9月1日が「防災の日」、8月30日から9月5日が「防災週間」（備えのごよみ）
+
+  - id: bousai-hakusho-311
+    kind: sonae
+    publisher: 内閣府
+    title: 令和5年版 防災白書｜特集1　第1章　第5節　5－3　東日本大震災を契機とした被災者支援体制の充実等
+    url: https://www.bousai.go.jp/kaigirep/hakusho/r05/honbun/t1_1s_05_03.html
+    checked: 2026-11-06
+    about: 2011年3月11日に東日本大震災が起きた（備えのごよみ）
+
+  - id: jma-baiu
+    kind: sonae
+    publisher: 気象庁
+    title: 令和8年の梅雨入りと梅雨明け（速報値）
+    url: https://www.data.jma.go.jp/cpd/baiu/sokuhou_baiu.html
+    checked: 2026-11-06
+    about: 梅雨期は大雨による災害が起きやすい時期。梅雨入りの平年は九州北部5月16日ごろ・近畿5月17日ごろ・関東甲信5月22日ごろ（1991〜2020年の平均。備えのごよみ）
+
+  - id: jma-typhoon
+    kind: sonae
+    publisher: 気象庁
+    title: 台風の平年値
+    url: https://www.data.jma.go.jp/typhoon/statistics/average/average.html
+    checked: 2026-11-06
+    about: 日本への台風の接近数の平年値（1991〜2020年）は7月2.1・8月3.3・9月3.3・10月1.7で、8月と9月が多い（備えのごよみ）
+
   - id: disaportal
     kind: sonae
     publisher: 国土交通省
