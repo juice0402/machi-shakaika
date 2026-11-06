@@ -20,6 +20,8 @@ import { sotoPages } from '../src/pages/sonae-soto.mjs';
 import { infoPages } from '../src/pages/info.mjs';
 import { douguPages } from '../src/pages/dougu.mjs';
 import { kigenPages } from '../src/pages/kigen.mjs';
+import { koyomiPages } from '../src/pages/koyomi.mjs';
+import { checkKoyomi, koyomiPick, koyomiLine } from '../src/koyomi.mjs';
 import { printPages } from '../src/pages/print.mjs';
 import { kartePages } from '../src/pages/karte.mjs';
 import { manabiPages, manabiBData, MANABI_B_PATH } from '../src/pages/manabi.mjs';
@@ -47,8 +49,9 @@ const stop = (msg) => {
 const sources = readYaml('sources.yml');
 const items = readYaml('items.yml');
 const shogo = readYaml('shogo.yml');
+const koyomi = readYaml('koyomi.yml');
 const bichiku = readBichiku();
-const errors = [...checkSources(sources), ...checkItems(items, sources), ...checkShogo(shogo, sources), ...checkBichiku(bichiku)];
+const errors = [...checkSources(sources), ...checkItems(items, sources), ...checkShogo(shogo, sources), ...checkBichiku(bichiku), ...checkKoyomi(koyomi, items, sources)];
 const munis = readMunis();
 if (!munis) errors.push('data/estat/munis.json がない');
 else errors.push(...checkMunis(munis, shogo));
@@ -84,7 +87,10 @@ const urlOf = (code) => cityUrl.get(code) ?? null;
 // 似てる街さがし・2つの街をくらべる の数字（/kurabe/kazu.json。市区町村ページの似ている街もこれから作る）
 const kazu = kazuData(munis.areas, urlOf);
 
-add(topPage({ cc, munis, hinanMeta, nMunis: list.length }));
+// 備えのごよみ（#64）：ビルドの日（日本時間）の期間。「いまの備え」の1行は災害時モードでは出さない
+const today = jstDate();
+const ima = SAIGAI ? null : koyomiPick(koyomi.periods, today);
+add(topPage({ cc, munis, hinanMeta, nMunis: list.length, ima: koyomiLine(ima, items) }));
 for (const pref of PREFS) add(prefPage({ pref, munis, list, z, cc, urlOf }));
 const bichikuOf = bichikuMap(bichiku);
 for (const city of cities) add(cityPage({ city, munis, list, z, cc, hinan, hinanMeta, urlOf, kazu, bichiku: bichikuOf.get(`${city.pref}/${city.slug}`) ?? null }));
@@ -93,20 +99,22 @@ for (const p of fuyuTeidenPages({ cc, items, sources })) add(p);
 for (const p of yomimonoPages({ cc, items, sources })) add(p);
 for (const p of sotoPages({ cc, items, sources })) add(p);
 for (const p of douguPages({ cc, items, sources })) add(p);
-for (const p of kigenPages({ items })) add(p);
+for (const p of kigenPages({ items, ima: ima?.theme.includes('期限の見直し') ? koyomiLine(ima, items) : '' })) add(p);
+for (const p of koyomiPages({ koyomi, items, sources, today })) if (p.raw != null) out(p.path, p.raw);
+else add(p);
 for (const p of printPages({ cc, items, sources })) add(p);
 for (const p of kartePages({ cc, items, sources, munis, nat: nationalRates(list), z })) add(p);
 for (const p of rankingPages({ munis, list, urlOf })) add(p);
 for (const p of toolPages({ munis, kazu })) add(p);
 for (const p of manabiPages({ munis, list, nat: nationalRates(list), kazu, sources })) add(p);
-for (const p of hinmokuPages({ items, sources, products })) add(p);
+for (const p of hinmokuPages({ items, sources, products, ima: ima ? { item: ima.item, html: koyomiLine(ima, items, { item: false }) } : null })) add(p);
 const yomi = readYomi();
 const machi = machiData(munis.areas, urlOf, yomi);
 for (const p of quizPages({ munis, items, sources, machi })) add(p);
 // 今日の1問：ビルドの日（日本時間）から14日分の問題をページに入れる（毎朝のビルドで入れかわる）
-add(kyouPage({ munis, machi, start: jstDate(), urlOfRow: (r) => r[2] || `/${PREFS.find((p) => p.code === r[0].slice(0, 2)).slug}/#m${r[0]}` }));
+add(kyouPage({ munis, machi, start: today, urlOfRow: (r) => r[2] || `/${PREFS.find((p) => p.code === r[0].slice(0, 2)).slug}/#m${r[0]}` }));
 // 街あつめ帳（#42）：今日の1問の記録の引きつぎに、ビルドの日までの問題の街を入れる
-add(atsumePage({ machi, start: jstDate() }));
+add(atsumePage({ machi, start: today }));
 for (const p of infoPages({ munis, estatMeta, hinanMeta })) add(p);
 add({ path: null, title: 'ページが見つかりません', description: 'ページが見つかりません。', noindex: true, noAds: true, body: '<h1 class="city">ページが見つかりません</h1><p><a href="/">トップへ</a></p>' });
 
@@ -171,6 +179,9 @@ out(
     '/quiz/machi.json',
     '  Cache-Control: public, max-age=86400',
     '/kurabe/kazu.json',
+    '  Cache-Control: public, max-age=86400',
+    '/koyomi/koyomi.ics',
+    '  Content-Type: text/calendar; charset=utf-8',
     '  Cache-Control: public, max-age=86400',
     '/dougu/manabi/b.json',
     '  Cache-Control: public, max-age=86400',

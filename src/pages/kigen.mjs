@@ -7,6 +7,7 @@
 // 部品（URL の文字・.ics・並べ方・残り）は src/kigen-core.mjs（toString でページに入れ、テストでも同じ関数を使う）
 import { esc, h2, fit } from '../layout.mjs';
 import { KIGEN_JS } from '../kigen-core.mjs';
+import { KOYOMI_CSS } from '../koyomi.mjs';
 
 // カレンダーの通知を期限の何日前にするか（品目に関係なく1つ）。期限が近い印もこの日数から
 // 入れかえの時期の公的な目安ではない（公的な目安が見つからないので、入れかえの数字は書かない）
@@ -133,7 +134,8 @@ ${qa('入れかえの時期のめやすは', `公的な資料にめやすが見�
 </div>`;
 }
 
-export function kigenPages({ items }) {
+// ima：備えのごよみの「いまの備え」の1行（#64。期限の見直しの期間だけ。ほかは空）
+export function kigenPages({ items, ima = '' }) {
   const C = kigenChoices(items);
   const names = C.map((c) => c[1]);
   const n = KIGEN_NOTICE_DAYS;
@@ -148,7 +150,7 @@ export function kigenPages({ items }) {
         ],
       ),
       adsLate: true,
-      head: CSS,
+      head: ima ? `${CSS}<style>${KOYOMI_CSS}</style>` : CSS,
       body: `<p class="crumb"><a href="/">トップ</a> / <a href="/sonae/">備えの知識</a></p>
 <h1 class="city">期限メモ</h1>
 <p class="lead">家の備えの期限を入れると、近い順に並びます</p>
@@ -162,6 +164,7 @@ export function kigenPages({ items }) {
 <div class="kh" aria-hidden="true"><span class="kr"><span>今日</span><span style="left:25%">3か月</span><span style="left:50%">半年</span><span style="left:100%">1年</span></span></div>
 <ul class="kl" id="kl"></ul>
 <p class="k0" id="k0">まだ何も入っていません</p>
+${ima}
 <noscript><p>期限メモはスクリプトで動きます。</p></noscript>
 <section id="kp" hidden>
 ${h2('このメモを残す')}
