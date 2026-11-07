@@ -5,7 +5,7 @@ import { calcConf } from '../src/calc.mjs';
 import { readMunis } from '../src/munis.mjs';
 import { derive, muniList, nationalRates } from '../src/stats.mjs';
 import { kazuData } from '../src/machi-tools.mjs';
-import { kaState, kaAmounts, kaUnit, kaWaterSvg, kaGridSvg, kaLines, kaSheet } from '../src/karte-core.mjs';
+import { kaState, kaAmounts, kaLack, kaHave, kaUnit, kaWaterSvg, kaGridSvg, kaLines, kaSheet } from '../src/karte-core.mjs';
 import { kartePages, karteConf, KARTE_PATH } from '../src/pages/karte.mjs';
 import { printPages } from '../src/pages/print.mjs';
 import { douguPages } from '../src/pages/dougu.mjs';
@@ -45,11 +45,50 @@ test('ボトルは48本まで、こえたら1箱12Lの箱。マスは21×10に�
 });
 
 test('入れたものは範囲にそろえる（URL の ? やおぼえた値から）', () => {
-  assert.deepEqual(kaState({}, conf.days), { m: '', n: 3, d: 7, s: 'k', y: 0 });
-  assert.deepEqual(kaState({ m: '01100', n: '3', d: '7', s: 'm', y: '0' }, conf.days), { m: '01100', n: 3, d: 7, s: 'm', y: 0 });
-  assert.deepEqual(kaState({ m: '<x>', n: '99', d: '5', s: 'z', y: '20' }, conf.days), { m: '', n: 10, d: 7, s: 'k', y: 10 });
+  assert.deepEqual(kaState({}, conf.days), { m: '', n: 3, d: 7, s: 'k', y: 0, w: null, f: null, t: null });
+  assert.deepEqual(kaState({ m: '01100', n: '3', d: '7', s: 'm', y: '0' }, conf.days), { m: '01100', n: 3, d: 7, s: 'm', y: 0, w: null, f: null, t: null });
+  assert.deepEqual(kaState({ m: '<x>', n: '99', d: '5', s: 'z', y: '20' }, conf.days), { m: '', n: 10, d: 7, s: 'k', y: 10, w: null, f: null, t: null });
   assert.equal(kaState({ n: '2', y: '5' }, conf.days).y, 2, '2週間分の人は家族の人数まで');
   assert.equal(kaState({ n: '0' }, conf.days).n, 3);
+});
+
+test('家にある数（#67）：0〜999・入れていないものは null・足りない数とはんこ', () => {
+  const h = kaState({ w: '6', f: '0', t: '' }, conf.days);
+  assert.deepEqual([h.w, h.f, h.t], [6, 0, null]);
+  const x = kaState({ w: '5000', f: '-3', t: 'abc' }, conf.days);
+  assert.deepEqual([x.w, x.f, x.t], [999, null, null]);
+  // 3人7日分：水63L → 2Lで32本（切り上げ）。主食63食・トイレ105回分
+  const st = kaState({ n: 3, d: 7, w: 26, f: 70, t: 100 }, conf.days);
+  const a = kaAmounts(conf.per, conf.yd, st);
+  assert.deepEqual(kaLack(a, st), { mizu: 6, shoku: 0, toilet: 5 });
+  assert.deepEqual(kaLack(a, kaState({ n: 3, d: 7 }, conf.days)), { mizu: null, shoku: null, toilet: null });
+  // 水が奇数の L でも切り上げた本数から（1人3日分＝9L → 5本）
+  const one = kaState({ n: 1, d: 3, w: 4 }, conf.days);
+  assert.equal(kaLack(kaAmounts(conf.per, conf.yd, one), one).mizu, 1);
+  const hv = kaHave(conf, st, a);
+  assert.match(hv.mizu, /^水 あと<b>6<\/b>本（2L）で7日分<a href="\/hinmoku\/mizu\/">/);
+  assert.match(hv.toilet, /^携帯トイレ あと<b>5<\/b>回分で7日分<a href="\/hinmoku\/keitai-toilet\/">/);
+  assert.ok(hv.shoku.includes(conf.han) && hv.shoku.includes('7日分そろった') && !hv.shoku.includes('あと'));
+  assert.ok(!hv.mizu.includes(conf.han));
+  assert.deepEqual(conf.hin, { mizu: { href: '/hinmoku/mizu/', page: '備蓄の水' }, shoku: { href: '/hinmoku/shushoku/', page: '備蓄の主食（アルファ米など）' }, toilet: { href: '/hinmoku/keitai-toilet/', page: '携帯トイレ' } });
+  assert.deepEqual(kaHave(conf, kaState({}, conf.days), a), { mizu: '', shoku: '', toilet: '' });
+});
+
+test('家にある数の絵：ある分だけ線の色でぬる（半端は切り捨て）。入れていなければ紙は今と同じ', () => {
+  const ink = /fill="#23312a"/g;
+  assert.equal(count(kaWaterSvg({ bottles: 32, boxes: 6 }, 26), ink), 26);
+  assert.equal(count(kaWaterSvg({ bottles: 32, boxes: 6 }, 99), ink), 32);
+  assert.equal(count(kaWaterSvg({ bottles: 60, boxes: 10 }, 17), ink), 2, '箱は6本で1箱');
+  assert.equal(count(kaGridSvg(105, 1, '#fff', 100), ink), 100);
+  assert.equal(count(kaGridSvg(420, 2, '#fff', 9), ink), 4, '1マス2食なら9食は4マス');
+  assert.equal(count(kaGridSvg(700, 5, '#fff', 999), ink), 140, 'マスの数より多くぬらない');
+  assert.equal(kaWaterSvg({ bottles: 32, boxes: 6 }), kaWaterSvg({ bottles: 32, boxes: 6 }, 0));
+  const sap = kazu.r.find((r) => r[0] === '01100');
+  const base = kaState({ n: 3, d: 7, s: 'm', y: 1 }, conf.days);
+  const s0 = kaSheet(conf, base, sap, '北海道', '2026年11月7日');
+  assert.ok(!ink.test(s0));
+  assert.equal(kaSheet(conf, { ...base, w: 0, f: 0, t: 0 }, sap, '北海道', '2026年11月7日'), s0);
+  assert.ok(count(kaSheet(conf, { ...base, w: 10, f: 10, t: 10 }, sap, '北海道', '2026年11月7日'), ink) > 0);
 });
 
 test('全国の▲：データの合計から（街くらべカード #28 と同じ作り方）', () => {
@@ -97,6 +136,9 @@ test('ページ：広告なし・A4・印刷・入れたものは送らない', 
   assert.ok(!/sendBeacon|XMLHttpRequest|method:/.test(p.script));
   assert.ok(/localStorage\.setItem\('karte'/.test(p.script) && /try\{localStorage/.test(p.script));
   new Function(p.script); // 文法
+  assert.match(p.body, /<details class="ka"><summary>家にある数を入れる<\/summary>/);
+  assert.equal(count(p.body, /data-h="[wft]" type="number" inputmode="numeric" min="0" max="999"/g), 3);
+  assert.ok(!p.body.includes('fill="#23312a"'), '入れる前の紙はぬらない');
 });
 
 test('入口：トップの備えの知識・チェックリスト・冷蔵庫に貼る紙', () => {

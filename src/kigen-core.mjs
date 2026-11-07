@@ -145,7 +145,8 @@ export function kFold(line) {
 }
 
 // カレンダーの予定（.ics）。期限ごとに終日の予定「（品目）の期限」、通知は before 日前の朝9時
-// o = { now: Date, url: 続きのURL, before: 30 }
+// o = { now: Date, url: 続きのURL, before: 30, pages: { 名前: '/hinmoku/<id>/' }, site: 'https://machi-shakaika.com' }
+//   品目ページのある品目だけ、説明に「品目のめやす <URL>」の1行（#67。期限の前の知らせから品目ページへ）
 export function kIcs(list, o) {
   const ymd = (day) => new Date(day * 86400000).toISOString().slice(0, 10).replace(/-/g, '');
   const stamp = o.now.toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
@@ -163,7 +164,7 @@ export function kIcs(list, o) {
       'DTSTART;VALUE=DATE:' + ymd(day),
       'DTEND;VALUE=DATE:' + ymd(day + 1),
       'SUMMARY:' + kEsc(title),
-      'DESCRIPTION:' + kEsc('期限 ' + kDate(e) + (e.q ? '・数 ' + e.q : '') + (o.url ? '\n期限メモ ' + o.url : '')),
+      'DESCRIPTION:' + kEsc('期限 ' + kDate(e) + (e.q ? '・数 ' + e.q : '') + (o.pages && Object.prototype.hasOwnProperty.call(o.pages, e.n) && o.pages[e.n] ? '\n品目のめやす ' + o.site + o.pages[e.n] : '') + (o.url ? '\n期限メモ ' + o.url : '')),
       'TRANSP:TRANSPARENT',
       'BEGIN:VALARM',
       'ACTION:DISPLAY',

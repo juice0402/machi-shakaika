@@ -8,6 +8,7 @@
 import { esc, h2, fit } from '../layout.mjs';
 import { KIGEN_JS } from '../kigen-core.mjs';
 import { KOYOMI_CSS } from '../koyomi.mjs';
+import { SITE } from '../site.mjs';
 
 // カレンダーの通知を期限の何日前にするか（品目に関係なく1つ）。期限が近い印もこの日数から
 // 入れかえの時期の公的な目安ではない（公的な目安が見つからないので、入れかえの数字は書かない）
@@ -69,7 +70,7 @@ a.kn{text-decoration:underline dotted var(--sub);text-underline-offset:3px}.kn s
 </style>`;
 
 const kigenJs = (C, notice) => `(()=>{${KIGEN_JS}
-const C=${JSON.stringify(C).replace(/</g, '\\u003c')},K='machi-kigen-v1',NEAR=${notice},$=s=>document.querySelector(s);
+const C=${JSON.stringify(C).replace(/</g, '\\u003c')},SITE_URL=${JSON.stringify(SITE.url)},K='machi-kigen-v1',NEAR=${notice},$=s=>document.querySelector(s);
 const now=new Date(),T=[now.getFullYear(),now.getMonth()+1,now.getDate()];
 const ls={get(){try{return localStorage.getItem(K)||''}catch(e){return ''}},set(v){try{if(v)localStorage.setItem(K,v);else localStorage.removeItem(K)}catch(e){}}};
 const nm=$('#kn'),qt=$('#kq'),yy=$('#ky'),mm=$('#km'),dd=$('#kd'),add=$('#kadd'),ul=$('#kl'),msg=$('#kmsg'),ask=$('#kask'),keep=$('#kp'),out=$('#kout'),words=[...document.querySelectorAll('#kw button')];
@@ -109,7 +110,7 @@ window.addEventListener('hashchange',load);load();
 const ad=document.body.dataset.adsLate;if(ad){const s=document.createElement('script');s.async=true;s.crossOrigin='anonymous';s.src=ad;document.head.append(s)}
 async function copy(t,ok){try{await navigator.clipboard.writeText(t);say(ok)}catch(e){out.value=t;out.hidden=false;out.select();say('下の文字をコピーしてください')}}
 $('#kshare').addEventListener('click',async()=>{const u=link();if(navigator.share){try{await navigator.share({title:'期限メモ',url:u});return}catch(e){if(e&&e.name==='AbortError')return}}copy(u,'URLをコピーしました')});
-$('#kics').addEventListener('click',()=>{const b=new Blob([kIcs(L,{now:new Date(),url:link(),before:NEAR})],{type:'text/calendar;charset=utf-8'}),a=document.createElement('a');
+$('#kics').addEventListener('click',()=>{const b=new Blob([kIcs(L,{now:new Date(),url:link(),before:NEAR,pages:hp,site:SITE_URL})],{type:'text/calendar;charset=utf-8'}),a=document.createElement('a');
 a.href=URL.createObjectURL(b);a.download='kigen-memo.ics';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),60000);say('カレンダーのファイルを作りました')});
 $('#ktext').addEventListener('click',()=>copy(kText(L,T,link()),'コピーしました'));
 $('#kclr').addEventListener('click',()=>{if(asking||!L.length)return;const g=L;L=[];save();draw();say('すべて消しました',['もとに戻す',()=>{L=g;save();draw();say('')}])})})();`;
