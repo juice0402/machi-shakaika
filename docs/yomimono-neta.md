@@ -63,7 +63,7 @@
 ## ネタの山
 上から順に書く。行の「／」のあとは使う資料（出典の id は data/sources.yml にあるもの。ないものは WebSearch で公式のページを探す）。
 
-- [ ] 年に2回の備えの見直し（英字 minaoshi）— 備えはいつ、何を見直せばいいか（期限・家族の人数の変化・季節の入れかえ）。11/19 の東京都の「備蓄の日」と 9/1 の防災の日を見直しの日にする例／tokyo-bichiku・maff-stock・kantei-sonae。「備蓄の日」は東京都の公式ページで確かめる。期限メモ（/dougu/kigen/）とチェックリストへつなぐ
+- [x] 年に2回の備えの見直し（英字 minaoshi）— 備えはいつ、何を見直せばいいか（期限・家族の人数の変化・季節の入れかえ）。11/19 の東京都の「備蓄の日」と 9/1 の防災の日を見直しの日にする例／tokyo-bichiku・maff-stock・kantei-sonae。「備蓄の日」は東京都の公式ページで確かめる。期限メモ（/dougu/kigen/）とチェックリストへつなぐ
 - [ ] 火事の備え（英字 kasai）— 住宅用火災警報器と消火器を家のどこに、どう点検するか／総務省消防庁の住宅防火のページ（WebSearch）・tfd-jishin。警報器の交換のめやすの年数は出典の言い方のまま
 - [ ] 断水の備え（英字 dansui）— 飲み水のほかに、トイレや体をふく生活用水をどう用意するか／miyagi-mizu・chiba-zaitaku・hiroshima-toilet・kanagawa-toilet。くみ置きのしかたは自治体の公式で確かめる
 - [ ] 非常用持ち出し袋と家の備蓄のちがい（英字 mochidashi）— 袋に入れるものと家に置くものをどう分けるか／nagasaki-mochidashi・osaka-bichiku・kantei-sonae。チェックリスト（持ち出す袋）へつなぐ

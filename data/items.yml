@@ -39,6 +39,14 @@ hitori:
   sources: [maff-tanshin, maff-shuno, maff-sonae, maff-stock, hiroshima-toilet, kanagawa-toilet]
 mansion:
   sources: [chiba-pref-mansion, suginami-mansion, kanagawa-toilet, chiba-zaitaku, maff-sonae, hiroshima-toilet, bousai-teiden]
+# 年に2回の備えの見直し（/sonae/minaoshi/。11/7）。ページに出る数字は days・mizu と keitai-toilet の per_day・yohairyo_days と、そこから計算した量だけ
+minaoshi:
+  # 見直しの日（出典の言い方のまま）。bousai：防災の日・week：防災週間（bousai-week）、bichiku：東京都の備蓄の日（tokyo-bichiku-toilet）
+  hi:
+    bousai: 9月1日
+    week: 8月30日から9月5日
+    bichiku: 11月19日
+  sources: [bousai-week, tokyo-bichiku-toilet, maff-sonae, maff-guide, maff-shuno, nerima-yohairyo, hiroshima-toilet, kanagawa-toilet]
 
 # 家の外の備え2本（/sonae/kuruma-taisetsu/・/sonae/kitaku-konnan/。10/28 #19）。sources はページの出典に並べる id（この順）
 #   車のページは数字を出さない（積んでおく量の目安を公的な資料で確かめていないため）
