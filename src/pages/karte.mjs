@@ -2,15 +2,16 @@
 //   街・家族の人数・日数・住まい・2週間分の人を入れると、わが家の量（ボトルとマスの絵）と街の数字が1枚の紙になる
 //   量は items.yml の per_day・yohairyo_days だけで計算（src/karte-core.mjs）。街の数字は /kurabe/kazu.json を街をえらんだときだけ読む
 //   入れたものはブラウザの中だけ（URL の ? とこの端末におぼえるだけ。送らない）。印刷のやり方は /dougu/print/ と同じ。AdSense なし
+//   家にある数（#67）：たたんだ「家にある数を入れる」で水（2Lの本数）・主食・携帯トイレ。ある分は紙の絵をぬり、足りない数と品目ページの1行は画面だけ（紙の A4 はそのまま）
 import { esc, h2, fit, srcKokusei, TREES, RIVER, HAN, MINCHO, GOTHIC } from '../layout.mjs';
 import { checkEntries } from '../data.mjs';
 import { sourceList } from './sonae.mjs';
 import { SITE } from '../site.mjs';
-import { kaEsc, kaState, kaAmounts, kaUnit, kaWaterSvg, kaGridSvg, kaGauge, kaLines, kaSheet } from '../karte-core.mjs';
+import { kaEsc, kaState, kaAmounts, kaLack, kaHave, kaUnit, kaWaterSvg, kaGridSvg, kaGauge, kaLines, kaSheet } from '../karte-core.mjs';
 import { findForm, PICK_JS } from './kurabe.mjs';
 
 export const KARTE_PATH = '/dougu/karte/';
-const CORE = [kaEsc, kaState, kaAmounts, kaUnit, kaWaterSvg, kaGridSvg, kaGauge, kaLines, kaSheet].map((f) => f.toString()).join('\n');
+const CORE = [kaEsc, kaState, kaAmounts, kaLack, kaHave, kaUnit, kaWaterSvg, kaGridSvg, kaGauge, kaLines, kaSheet].map((f) => f.toString()).join('\n');
 
 const W = 635; // 木の帯：/dougu/print/ と同じ（A4 の幅へ）
 const band = () => TREES('kt').replace('viewBox="0 0 390 24"', `viewBox="0 0 ${W} 24"`).replace('<rect width="390"', `<rect width="${W}"`);
@@ -39,6 +40,12 @@ export function karteConf({ cc, items, sources, munis, nat, z }) {
   const Q = { mizu: 'mizu', shushoku: 'shoku', 'keitai-toilet': 'toilet' };
   const kigen = b.entries.map((e, i) => (e.kigen ? { name: ents[i].name, q: (ents[i].qty && Q[ents[i].item.id]) || null } : null)).filter(Boolean);
   const yd = items.yohairyo_days;
+  // 家にある数の1行から行く品目ページ（#67。items.yml の hinmoku: true のものだけ）
+  const hin = {};
+  for (const [k, id] of [['mizu', 'mizu'], ['shoku', 'shushoku'], ['toilet', 'keitai-toilet']]) {
+    const it = items.items.find((x) => x.id === id);
+    if (it?.hinmoku) hin[k] = { href: `/hinmoku/${it.id}/`, page: it.page };
+  }
   const ids = [...new Set([...items.days.sources, ...items.yohairyo_sources, ...cc.by.mizu.sources, ...cc.by.shushoku.sources, ...cc.by['keitai-toilet'].sources, ...ents.filter((e, i) => b.entries[i].kigen).flatMap((e) => e.sources), ...items.kitaku.sources])];
   return {
     ids,
@@ -49,6 +56,8 @@ export function karteConf({ cc, items, sources, munis, nat, z }) {
       nat,
       single3: Math.round((z.pSingle + 3) * 10),
       kigen,
+      hin,
+      han: HAN,
       perText: `1人1日 水${cc.per.mizu}L・主食${cc.per.shoku}食・トイレ${cc.per.toilet}回で計算`,
       dengon: items.kitaku.dengon,
       host: SITE.url.replace('https://', ''),
@@ -104,7 +113,14 @@ ${S} .foot .site{font:700 12px/1 ${MINCHO};color:var(--ink);margin-right:10px;le
 const FORM_CSS = `.day.sm{font-size:16px!important;padding:0 14px!important}.day.sm .han{left:0;right:0;width:auto;height:46px;margin:-23px 0 0;transform:rotate(-3deg)}
 [data-pick] .hits:empty,[data-pick] .msg:empty{display:none}
 .yk{display:flex;align-items:center;gap:10px;min-height:54px;border-bottom:1px dotted var(--line);font-size:13px;cursor:pointer}.yk input{width:22px;height:22px;flex:none;accent-color:var(--num)}
-#kf .row[hidden]{display:none}`;
+#kf .row[hidden]{display:none}
+.ka{border-bottom:1px dotted var(--line)}.ka summary{display:flex;align-items:center;min-height:48px;font-size:14px;cursor:pointer;list-style:none;text-decoration:underline dotted var(--sub);text-underline-offset:4px}.ka summary::-webkit-details-marker{display:none}
+.ka[open] summary{text-decoration:none;color:var(--sub);font-size:13px}
+#kf .ka .row{min-height:46px;border:0}.ka .k{width:5.4em}.ka .u{font-size:13px;color:var(--sub)}
+.ka input{font:inherit;font-size:16px;color:var(--ink);background:none;border:0;border-bottom:1.5px solid var(--ink);border-radius:0;padding:6px 2px;min-width:0;width:3.6em;text-align:right}
+.kaz{margin:0 0 4px;font-size:13.5px;line-height:1.5;padding-left:5.4em}.kaz:empty{display:none}.kaz b{color:var(--num);font-size:16px;margin:0 1px}.kaz a{margin-left:10px}
+.kaz .ok{position:relative;display:inline-block;padding:3px 10px;margin-left:4px;color:var(--accent);font-weight:700}.kaz .ok .t{position:relative;z-index:1}
+.kaz .han{position:absolute;left:0;right:0;top:50%;width:auto;height:34px;margin:-17px 0 0;opacity:1;border:2.5px solid var(--accent);border-radius:50%;box-shadow:inset 0 0 0 2px #fff,inset 0 0 0 3.5px var(--accent);transform:rotate(-3deg);pointer-events:none}`;
 
 const PRINT_CSS = `@page{size:A4;margin:0}
 @media print{
@@ -117,14 +133,16 @@ ${S}{transform:none!important;height:296mm}
 // ブラウザの中の動き：入れたもの → 紙を作り直す → URL の ? とこの端末におぼえる
 const KARTE_JS = String.raw`(()=>{const kf=document.getElementById('kf'),sh=document.querySelector('.sheet'),f=document.querySelector('[data-pick]');if(!kf||!sh)return;
 let row=null,pn='',moved=false;const t=new Date(),today=t.getFullYear()+'年'+(t.getMonth()+1)+'月'+t.getDate()+'日';
-const KS=['m','n','d','s','y'];let o={};if(KS.some(k=>mtQ.has(k))){KS.forEach(k=>{if(mtQ.has(k))o[k]=mtQ.get(k)});moved=true}else{try{o=Object.fromEntries(new URLSearchParams(localStorage.getItem('karte')||''))}catch(e){}}
+const KS=['m','n','d','s','y','w','f','t'],HK={w:'mizu',f:'shoku',t:'toilet'};let o={};if(KS.some(k=>mtQ.has(k))){KS.forEach(k=>{if(mtQ.has(k))o[k]=mtQ.get(k)});moved=true}else{try{o=Object.fromEntries(new URLSearchParams(localStorage.getItem('karte')||''))}catch(e){}}
 const st=kaState(o,C.days);
-const qs=()=>(st.m?'m='+st.m+'&':'')+'n='+st.n+'&d='+st.d+'&s='+st.s+'&y='+st.y;
+const qs=()=>(st.m?'m='+st.m+'&':'')+'n='+st.n+'&d='+st.d+'&s='+st.s+'&y='+st.y+['w','f','t'].map(k=>st[k]===null?'':'&'+k+'='+st[k]).join('');
+const hs=[...kf.querySelectorAll('[data-h]')];hs.forEach(i=>{if(st[i.dataset.h]!==null)i.value=st[i.dataset.h]});if(hs.some(i=>i.value))kf.querySelector('.ka').open=true;
 const wrap=document.querySelector('.sheetwrap');const fit=()=>{const k=Math.min(1,wrap.clientWidth/sh.offsetWidth);sh.style.transform='scale('+k+')';wrap.style.height=Math.ceil(sh.offsetHeight*k)+'px'};
 function draw(){kf.querySelector('[data-n]').textContent=st.n;kf.querySelector('[data-yn]').textContent=st.y;
 kf.querySelectorAll('[data-day]').forEach(b=>{const on=+b.dataset.day===st.d;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
 kf.querySelectorAll('[data-s]').forEach(b=>{const on=b.dataset.s===st.s;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
 const cb=kf.querySelector('[data-y]');cb.checked=st.y>0;kf.querySelector('[data-yrow]').hidden=!st.y;
+const hv=kaHave(C,st,kaAmounts(C.per,C.yd,st));kf.querySelectorAll('[data-z]').forEach(p=>{p.innerHTML=hv[HK[p.dataset.z]]});
 sh.innerHTML=kaSheet(C,st,row,pn,today);fit();
 if(moved){history.replaceState(null,'','?'+qs());try{localStorage.setItem('karte',qs())}catch(e){}}}
 const set=f?mtPick(f,r=>MT.load().then(K=>{row=r;pn=K.p[r[0].slice(0,2)];st.m=r[0];moved=true;draw()})):null;
@@ -132,6 +150,8 @@ kf.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
 if(b.dataset.step){st.n=Math.min(10,Math.max(1,st.n+ +b.dataset.step));st.y=Math.min(st.y,st.n)}
 else if(b.dataset.ystep){st.y=Math.min(st.n,Math.max(1,st.y+ +b.dataset.ystep))}
 else if(b.dataset.day)st.d=+b.dataset.day;else if(b.dataset.s)st.s=b.dataset.s;draw()});
+hs.forEach(i=>{i.addEventListener('input',()=>{const v=i.value.trim();st[i.dataset.h]=v===''?null:Math.min(999,Math.max(0,Math.floor(+v)||0));moved=true;draw()});
+i.addEventListener('change',()=>{i.value=st[i.dataset.h]===null?'':st[i.dataset.h]})});
 kf.querySelector('[data-y]').addEventListener('change',e=>{moved=true;st.y=e.target.checked?Math.max(1,st.y):0;draw()});
 addEventListener('resize',fit);const p=document.querySelector('[data-print]');if(p)p.addEventListener('click',()=>print());
 if(st.m&&set)MT.load().then(K=>{const r=K.r.find(x=>x[0]===st.m);if(r)set(r);else{st.m='';draw()}});draw()})();`;
@@ -148,6 +168,10 @@ export function kartePages({ cc, items, sources, munis, nat, z }) {
 <div class="row"><span class="k">住まい</span><button class="day sm on" type="button" data-s="k" aria-pressed="true"><span>一戸建て</span>${HAN}</button><button class="day sm" type="button" data-s="m" aria-pressed="false"><span>マンション・アパート</span>${HAN}</button></div>
 <label class="yk"><input type="checkbox" data-y>赤ちゃん・高齢の家族・持病などで2週間分がいる人</label>
 <div class="row" data-yrow hidden><span class="k">うち</span><button type="button" data-ystep="-1" aria-label="1人へらす">−</button><b data-yn>0</b><span>人</span><button type="button" data-ystep="1" aria-label="1人ふやす">＋</button></div>
+<details class="ka"><summary>家にある数を入れる</summary>
+${[['w', '水', '本（2L）'], ['f', '主食', '食'], ['t', '携帯トイレ', '回分']].map(([k, lab, u]) => `<div class="row"><label class="k" for="ka${k}">${lab}</label><input id="ka${k}" data-h="${k}" type="number" inputmode="numeric" min="0" max="999" placeholder="-"><span class="u">${u}</span></div>
+<p class="kaz" data-z="${k}" aria-live="polite"></p>`).join('\n')}
+</details>
 </section>`;
   const body = `<p class="crumb"><a href="/">トップ</a> / <a href="/dougu/check/">チェックリスト</a></p>
 <h1 class="city">わが家の防災カルテ</h1>
