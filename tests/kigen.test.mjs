@@ -9,6 +9,7 @@ import { page } from '../src/layout.mjs';
 const items = readYaml('items.yml');
 const sources = readYaml('sources.yml');
 const C = kigenChoices(items);
+const count2 = (s, re) => (s.match(re) ?? []).length;
 const L = [
   { n: '水', y: 2028, m: 1, d: 0, q: 6 },
   { n: '水', y: 2027, m: 3, d: 0, q: 0 },
@@ -106,6 +107,14 @@ test('.ics：RFC 5545（CRLF・UID・DTSTAMP・終日・UTF-8・75オクテッ�
     assert.match(e, /\r\nDTSTART;VALUE=DATE:\d{8}\r\nDTEND;VALUE=DATE:\d{8}\r\n/);
     assert.match(e, /\r\nBEGIN:VALARM\r\nACTION:DISPLAY\r\nDESCRIPTION:[^\r]+\r\nTRIGGER:-P29DT15H\r\nEND:VALARM\r\n/);
   }
+  assert.ok(!un.includes('品目のめやす'), 'pages を渡さなければ今と同じ');
+  // 品目ページのある品目だけ「品目のめやす <URL>」（#67）
+  const hp = Object.fromEntries(C.map((c) => [c[1], c[2]]));
+  const un2 = kIcs(L.concat([{ n: 'constructor', y: 2029, m: 1, d: 0, q: 0 }]), { now: new Date('2026-10-26T09:30:00Z'), url: 'https://machi-shakaika.com/dougu/kigen/#x', before: KIGEN_NOTICE_DAYS, pages: hp, site: 'https://machi-shakaika.com' }).replace(/\r\n /g, '');
+  assert.match(un2, /SUMMARY:水の期限\r\nDESCRIPTION:期限 2027年3月\\n品目のめやす https:\/\/machi-shakaika\.com\/hinmoku\/mizu\/\\n期限メモ https:\/\/machi-shakaika\.com\/dougu\/kigen\/#x\r\n/);
+  assert.match(un2, /SUMMARY:缶詰の期限\r\nDESCRIPTION:期限 2026年11月15日\\n期限メモ /);
+  assert.equal(count2(un2, /品目のめやす/g), 3, '水2件とカセットボンベ（缶詰・単3電池・自分で書いた名前はなし）');
+  assert.match(un2, /SUMMARY:カセットボンベの期限\r\nDESCRIPTION:期限 2033年5月・数 3\\n品目のめやす https:\/\/machi-shakaika\.com\/hinmoku\//);
   // 日なしは月末。終わりは次の日（終日の予定）
   assert.match(un, /SUMMARY:水の期限\r\nDESCRIPTION:期限 2027年3月\\n期限メモ https:\/\/machi-shakaika\.com\/dougu\/kigen\/#k1_2703\.w\r\n/);
   assert.match(ev[1], /DTSTART;VALUE=DATE:20270331\r\nDTEND;VALUE=DATE:20270401/);

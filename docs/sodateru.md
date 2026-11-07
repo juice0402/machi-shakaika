@@ -68,7 +68,7 @@
 - 読むファイル：CLAUDE.md・data/items.yml・data/sources.yml の頭の決まり・src/pages/top.mjs・src/pages/hinmoku.mjs・src/pages/kigen.mjs・src/kigen-core.mjs の .ics の所・src/pages/sonae.mjs・src/pages/sonae-fuyu.mjs・src/mode.mjs・scripts/honbun.mjs
 - マージ：する
 
-### [ ] わが家の防災カルテに「家にある数」：そろった分に色がつく（連絡 C-025 案A）
+### [x] わが家の防災カルテに「家にある数」：そろった分に色がつく（連絡 C-025 案A）（#67）
 - やること
   - /dougu/karte/（`src/pages/karte.mjs`・`src/karte-core.mjs`）の入力のすぐ下に、たたんだ1行「家にある数を入れる」（details と summary）を足し、開くと水（2Lのボトルの本数）・主食（食）・携帯トイレ（回分）の3つの数の欄。欄の見た目は期限メモの数の欄（`.kf` の input）と同じ。0〜999
   - 紙（`kaSheet`）の絵で、ある分のボトルとマスを中までぬる（色は今の線の色。新しい色は足さない）。足りない分は今のまま白
