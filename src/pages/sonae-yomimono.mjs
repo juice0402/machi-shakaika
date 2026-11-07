@@ -15,6 +15,7 @@ export const YOMIMONO = [
   { key: 'akachan', path: '/sonae/akachan-koureisha/', name: '赤ちゃん・高齢の家族がいる家の備え', group: '家族と住まい' },
   { key: 'hitori', path: '/sonae/hitorigurashi/', name: 'ひとり暮らしの備え', group: '家族と住まい' },
   { key: 'mansion', path: '/sonae/mansion/', name: 'マンション（共同住宅）の備え', group: '家族と住まい' },
+  { key: 'minaoshi', path: '/sonae/minaoshi/', name: '年に2回の備えの見直し', group: '量と品目' },
 ];
 
 // 読みものの全部（YOMIMONO・家の外 SOTO・冬の停電）。/sonae/ の棚と末尾はここから
@@ -265,6 +266,48 @@ ${tail(items, 'mansion')}
 <p class="why">揺れたあとに家にいてよいかは、市区町村の案内と<a href="${esc(hazard.url)}" rel="noopener">ハザードマップ</a>で確かめます。</p>
 ${h2('出典')}
 ${sourceList(items.mansion.sources, sources)}`,
+  });
+
+  // ---------- 年に2回の備えの見直し（11/7） ----------
+  //   見直しの日は 9/1 防災の日（bousai-week）と 11/19 東京都の備蓄の日（tokyo-bichiku-toilet）。備えのごよみ（data/koyomi.yml）の2つのテーマと同じ割りふり
+  //   数字は days・mizu・keitai-toilet の per_day・yohairyo_days と、そこから計算した量だけ。日付は items.yml の minaoshi.hi
+  const hi = items.minaoshi.hi;
+  out.push({
+    path: '/sonae/minaoshi/',
+    title: '年に2回の備えの見直し（9月1日と11月19日・期限と人数と季節）',
+    description: fit(
+      [`${hi.bousai}の防災の日に量を、${hi.bichiku}の東京都の備蓄の日に期限を見直す例。水は1人1日${w}L・携帯トイレは${t}回で、1人${days.better}日分は水${need(w, 1, days.better)}L・${need(t, 1, days.better)}回分。`],
+      [[`4人家族なら水${need(w, 4, days.better)}L。`, '']],
+    ),
+    head: `<style>${CSS}</style>`,
+    body: `${crumb}
+<h1 class="city">年に2回の備えの見直し</h1>
+<p class="lead">見直す日を2つ決めて、量と期限を確かめる</p>
+${CALC}
+${table(['変わること', '見直すこと'], [
+  ['期限が近づく', '置いてある食品', '期限の近い順に使う', '使った分を買い足す'],
+  ['家族の人数', '生まれた・同居・ひとり立ち', '水と携帯トイレの量', `1人1日${w}L・${t}回`],
+  ['配慮のいる家族', '赤ちゃん・高齢の家族・持病', `少なくとも${y}日分`, 'ミルク・介護食品など'],
+  ['置き場所', '引っ越し・模様替え', '中身が見える箱', '側面に期限、重いものは下'],
+  ['季節', '冬の前', '寒さの備え', '冬の停電と寒さの備えの表で'],
+])}
+<div class="prose">
+${h2('見直す日を決める')}
+<p>備えは、置いたままにすると期限が切れたり、家族の人数と合わなくなったりします。そこで、見る日を先に決めておきます。</p>
+<p>${hi.bousai}は防災の日で、${hi.week}までが防災週間です。東京都は、家族で備蓄を確認するきっかけになるように、${hi.bichiku}を「備蓄の日」としています。このページでは、${hi.bousai}に量を、${hi.bichiku}に期限を見る例で書きます。</p>
+${h2(`${hi.bousai}に量を数える`)}
+<p>家族の人数をもとに、水と携帯トイレの数を数え直します。水は1人1日${w}L、携帯トイレは1人1日${t}回がめやすです。備蓄は最低${days.min}日分、できれば${days.better}日分で、1人の${days.better}日分は水${need(w, 1, days.better)}L・携帯トイレ${need(t, 1, days.better)}回分になります。</p>
+<p>この1年で赤ちゃんが生まれた、親と暮らしはじめた、子どもがひとり立ちした家は、人数を入れ直して計算します。乳幼児や高齢の家族、持病のある人がいる家は、少なくとも${y}日分がめやすです。必要な品と量は家族の形や住まいでちがうので、<a href="/sonae/akachan-koureisha/">赤ちゃん・高齢の家族がいる家の備え</a>もあわせて見ます。</p>
+${h2(`${hi.bichiku}に期限を見る`)}
+<p>食品の箱を開けて、期限の近いものから並べ直します。期限が近いものはふだんの食事で使い、使った分を買い足します。この回し方をローリングストック（使いながら備える方法）といいます。</p>
+<p>毎日使う食品は台所に、たまにしか使わないものは押し入れなどに置き、中身の見える箱に入れて、側面に期限を書いておきます。重いものは下の段にします。期限は<a href="/dougu/kigen/">期限メモ</a>に入れておくと、近い順に並びます。</p>
+${h2('季節の入れかえ')}
+<p>${hi.bichiku}は冬の前にあたります。期限を見るついでに、寒さの備えを<a href="/sonae/fuyu-teiden/">冬の停電と寒さの備え</a>の表と照らし合わせます。</p>
+</div>
+${tail(items, 'minaoshi')}
+<p class="why">災害が起きたときの動き方や避難は、<a href="https://www.jma.go.jp/bosai/">気象庁</a>の情報、市区町村の案内、<a href="${esc(hazard.url)}" rel="noopener">ハザードマップ</a>で確かめます。</p>
+${h2('出典')}
+${sourceList(items.minaoshi.sources, sources)}`,
   });
   return out;
 }

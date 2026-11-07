@@ -233,6 +233,14 @@ sources:
     checked: 2026-10-21
     about: 11月19日を「備蓄の日」としている
 
+  - id: tokyo-bichiku-toilet
+    kind: sonae
+    publisher: 東京都
+    title: 携帯トイレ・簡易トイレ
+    url: https://www.bousai.metro.tokyo.lg.jp/_res/common/bichiku/lief_r5_8.pdf
+    checked: 2026-11-07
+    about: 家族で備蓄を確認するきっかけとして毎年11月19日を「備蓄の日」としている。必要な備蓄品と数量は家族構成や住まいでちがう（令和5年8月版のちらし）
+
   - id: bousai-volunteer
     kind: sonae
     publisher: 防災庁
