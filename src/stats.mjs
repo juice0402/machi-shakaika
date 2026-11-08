@@ -304,7 +304,7 @@ export function kurabeText({ list, a, z, feat = '', meRow = null, near1 = null, 
     const z0 = `全国とくらべると、${nm}の${m1.label}は${m1.show(m1.me)}で、全国は${m1.show(m1.zk)}です。`;
     zen.push(
       d >= 0.28
-        ? fit60(`全国の値からいちばん離れているのは${m1.label}で、${nm}は${m1.show(m1.me)}、全国は${m1.show(m1.zk)}です。`, z0)
+        ? fit60(`全国の値から離れている数字の1つは${m1.label}で、${nm}は${m1.show(m1.me)}、全国は${m1.show(m1.zk)}です。`, z0)
         : d >= 0.18
           ? fit60(`${m1.label}を全国とならべると、${nm}は${m1.show(m1.me)}、全国は${m1.show(m1.zk)}です。`, z0)
           : z0,

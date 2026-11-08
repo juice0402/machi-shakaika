@@ -54,7 +54,7 @@ test('くらべる：ページを作る街とも2〜4文・人口の順位を1�
     if (/市区町村で、人口が/.test(feat)) assert.ok(!kurabe.some((s) => /人口が(いちばん|\d+番目に)多/.test(s)), `${c.slug}：人口の順位を2回`);
     for (const s of kurabe) assert.ok(!/65歳以上[^。]*番目|減[^。]*番目|番目[^。]*減/.test(s), `${c.slug}：してはいけない順位「${s}」`);
     // 全国とのくらべの1つめに、人口の減り方と65歳以上の割合を出さない
-    const zs = kurabe.find((s) => s.startsWith('全国とくらべると'));
+    const zs = kurabe.find((s) => /^(全国とくらべると|全国の値から離れている数字の1つは|[^。]+を全国とならべると)/.test(s));
     if (zs) assert.ok(!/65歳以上|人口の増減/.test(zs), `${c.slug}：${zs}`);
     // 似ている街とのちがいに「でも」「差が大きく」を使わない
     for (const s of kurabe) assert.ok(!/いちばん離れた|差が大きく/.test(s), `${c.slug}：${s}`);
