@@ -7,6 +7,7 @@ import { machiQuiz } from '../quiz.mjs';
 import { machiQuizHtml, MACHI_JS } from './quiz.mjs';
 import { mtNear, mtNearHtml } from '../machi-core.mjs';
 import { village, villageHtml, VILLAGE_CSS } from '../machi-tools.mjs';
+import { kaobureText } from '../lib/kaobure.mjs';
 
 const pct = (v) => `${r1(v).toFixed(1)}%`;
 const signed = (v) => `${v > 0 ? '+' : ''}${r1(v).toFixed(1)}%`;
@@ -19,7 +20,7 @@ export function bichikuLine(city, b) {
   return `<p class="why">${who}の備蓄は避難所に来た人の分です。<br>家の分は家で備えます。<br><a href="${esc(b.url)}" rel="noopener">${srcName(b)}</a></p>`;
 }
 
-export function cityPage({ city, munis, list, z, cc, hinan, hinanMeta, urlOf, kazu, bichiku = null }) {
+export function cityPage({ city, munis, list, z, cc, hinan, hinanMeta, urlOf, kazu, bichiku = null, hinanList = null }) {
   const a = derive(munis.areas[city.code]);
   const pref = prefOf(a.code);
   const per = r1(a.per);
@@ -101,7 +102,10 @@ ${
     ? `<div class="cnt"><p>指定緊急避難場所<b>${fmt(h[0])}</b></p><p>指定避難所<b>${fmt(h[1])}</b></p></div>
 <p class="note">指定緊急避難場所のうち、災害の種類ごとの数（1か所が複数の種類に入ります）</p>
 <div class="kinds">${kinds.map(([k, v]) => `<span>${k}</span><i style="width:${((v / h[0]) * 100).toFixed(1)}%"></i><span class="num">${fmt(v)}</span>`).join('')}</div>
-<ul class="notes"><li>指定緊急避難場所は危険が迫ったときに逃げる所、指定避難所は家に戻れないときに過ごす所です。</li><li>ここに載っていない場所が、無いとはかぎりません。</li><li>最新は${esc(a.name)}の情報とハザードマップで確かめてください。</li></ul>
+${(() => {
+  const k = kaobureText(hinanList);
+  return k.length ? `<p>${k.map(esc).join('')}</p>\n` : '';
+})()}<ul class="notes"><li>指定緊急避難場所は危険が迫ったときに逃げる所、指定避難所は家に戻れないときに過ごす所です。</li><li>ここに載っていない場所が、無いとはかぎりません。</li><li>最新は${esc(a.name)}の情報とハザードマップで確かめてください。</li></ul>
 <details id="hl" data-src="/hinan/${city.code}.json"><summary>一覧を開く（指定緊急避難場所${fmt(h[0])}・指定避難所${fmt(h[1])}）</summary><ul class="hl"></ul></details>
 <p class="src">「指定緊急避難場所データ」「指定避難所データ」（国土地理院）をもとにまちの社会科作成。${esc(a.name)}の更新 ${h[2] ? jpDate(h[2]) : '-'}・取得 ${jpDate(hinanMeta.checked)}</p>`
     : '<p>国土地理院のデータに、この街の避難場所はまだ載っていません。</p>'

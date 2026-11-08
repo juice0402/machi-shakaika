@@ -67,7 +67,7 @@ test('くらべる：数字を固定した確かめ（世田谷区・千代田�
   assert.ok(se.includes('人口は5年で1.2%増えました。増えた人数は、東京都で増えた31市区町村のうち10番目です。'), se.join('\n'));
   const ch = textsOf(cityA('tokyo', 'chiyoda')).kurabe;
   assert.ok(ch.includes('共同住宅に住む世帯の割合は東京都で2番目に高く、1番目は中央区です。'), ch.join('\n'));
-  assert.ok(ch.includes('数字がいちばん似ているのは港区です。ちがいが最も大きいのは人口で、港区は千代田区の約4.1倍です。'), ch.join('\n'));
+  assert.ok(ch.includes('6つの数字でいちばん近い街は港区です。ちがいが最も大きいのは人口で、港区は千代田区の約4.1倍です。'), ch.join('\n'));
   const to = textsOf(cityA('toyama', 'toyama')).kurabe;
   assert.ok(to.includes('人口は、富山県で2番目の高岡市の約2.5倍です。'), to.join('\n'));
   assert.ok(to.includes('全国とくらべると、富山市のひとり暮らしの世帯の割合は37.2%で、全国は41.4%です。'), to.join('\n'));
@@ -134,7 +134,10 @@ test('65歳以上のひとり暮らしの文・100人の村の文（合成デー
   assert.equal(hitori65Text({ age65: 0, single65: 0 }, zz), '');
   const n = { kids: 11, work: 60, old: 29, alone: 19 };
   assert.equal(villageText('A', n, n), '全国を100人にしたときと、4つとも1人以内の差です。');
-  assert.equal(villageText('A', { kids: 15, work: 55, old: 30, alone: 20 }, n), '働く世代は全国の60人に対して55人、子どもは11人に対して15人です。');
+  // 言い回しは差の大きさでえらぶ（6人以上・4〜5人・2〜3人）。書く数字は同じ
+  assert.equal(villageText('A', { kids: 17, work: 53, old: 30, alone: 20 }, n), '全国とのちがいがいちばん大きいのは働く世代で、Aは53人、全国は60人です。子どもは17人と11人です。');
+  assert.equal(villageText('A', { kids: 15, work: 55, old: 30, alone: 20 }, n), 'Aの村では働く世代が55人で、全国の村なら60人です。子どもは15人で、全国なら11人です。');
+  assert.equal(villageText('A', { kids: 14, work: 57, old: 29, alone: 19 }, n), '子どもは全国の11人に対して14人、働く世代は60人に対して57人です。');
   assert.equal(villageText('A', { kids: 13, work: 59, old: 28, alone: 19 }, n), '子どもは全国の11人に対して13人です。');
 });
 

@@ -85,9 +85,10 @@ const TOILET = { href: '/sonae/mansion/', text: 'マンション（共同住宅�
 const ONE = { href: '/sonae/hitorigurashi/', text: 'ひとり暮らしの備え' };
 export function sonaeLinks(a, z, p = null) {
   const out = [];
-  if (a.pKyodo >= 50) out.push({ why: `世帯の${wari(a.pKyodo)}割が共同住宅に住んでいます。`, ...TOILET });
-  if (a.pSingle >= z.pSingle + 3) out.push({ why: `ひとり暮らしの世帯が${r1(a.pSingle)}%あります。`, ...ONE });
-  if (a.pWith65 >= z.pWith65) out.push({ why: `65歳以上の人がいる世帯が${r1(a.pWith65)}%あります。`, href: '/sonae/akachan-koureisha/', text: '高齢の家族がいる家の備え' });
+  // 言い回しは数の大きさでえらぶ（11/8 夜 #70。言っていることは同じ）
+  if (a.pKyodo >= 50) out.push({ why: a.pKyodo >= 70 ? `共同住宅に住む世帯が${wari(a.pKyodo)}割をしめます。` : `世帯の${wari(a.pKyodo)}割が共同住宅に住んでいます。`, ...TOILET });
+  if (a.pSingle >= z.pSingle + 3) out.push({ why: a.pSingle >= 50 ? `一般世帯の${r1(a.pSingle)}%がひとり暮らしです。` : `ひとり暮らしの世帯が${r1(a.pSingle)}%あります。`, ...ONE });
+  if (a.pWith65 >= z.pWith65) out.push({ why: a.pWith65 >= 50 ? `半分をこえる${r1(a.pWith65)}%の世帯に、65歳以上の人がいます。` : a.pWith65 >= 45 ? `一般世帯のうち${r1(a.pWith65)}%は、65歳以上の人がいる世帯です。` : `65歳以上の人がいる世帯が${r1(a.pWith65)}%あります。`, href: '/sonae/akachan-koureisha/', text: '高齢の家族がいる家の備え' });
   if (!out.length && p) {
     const pn = prefOf(a.code).name;
     if (a.pKyodo >= p.pKyodo + 10) out.push({ why: `共同住宅に住む世帯が${r1(a.pKyodo)}%あります（${pn}は${r1(p.pKyodo)}%）。`, ...TOILET });
@@ -106,6 +107,8 @@ const p1 = (v) => `${r1(v).toFixed(1)}%`;
 const sg = (v) => `${v > 0 ? '+' : ''}${r1(v).toFixed(1)}%`;
 const ab = (v) => `${r1(Math.abs(v)).toFixed(1)}%`; // 符号を外した割合（「増え」「減り」と書くとき）
 const ADJ = { 多: ['多い', '多く'], 高: ['高い', '高く'], 広: ['広い', '広く'] };
+// 言い回しのえらび分け（11/8 夜 #70）：先の候補から、どの文も全角60字までに収まる最初のもの。収まらなければ最後（前からの言い回し）
+export const fit60 = (...c) => c.find((t) => t.split(/(?<=。)/).every((x) => [...x].length <= 60)) ?? c[c.length - 1];
 
 // 倍率の言い方：1.0倍になるときは「ほぼ同じ」
 export function bai(r) {
@@ -184,6 +187,9 @@ export function hitori65Text(a, z) {
   const zr = (z.single65 / z.age65) * 100;
   if (r >= zr + 3) return `65歳以上の人のうち${p1(r)}がひとり暮らしで、全国の${p1(zr)}より高い割合です。`;
   if (r <= zr - 3) return `65歳以上の人のうちひとり暮らしの人は${p1(r)}で、全国の${p1(zr)}より低い割合です。`;
+  // 言い回しは人数の大きさでえらぶ（11/8 夜 #70。書く数字は同じ）
+  if (a.single65 >= 20000 && [...`${a.name}`].length <= 6) return `${a.name}では65歳以上の${n0(a.single65)}人がひとり暮らしで、65歳以上の人の${p1(r)}にあたります。`;
+  if (a.single65 >= 8000) return `ひとり暮らしの65歳以上の人は${n0(a.single65)}人いて、65歳以上の人の${p1(r)}です。`;
   return `65歳以上でひとり暮らしの人は${n0(a.single65)}人で、65歳以上の人のうち${p1(r)}です。`;
 }
 
@@ -193,7 +199,11 @@ export function villageText(name, v, n) {
   const ds = L.map(([k, l]) => ({ l, me: v[k], zk: n[k], d: v[k] - n[k] })).filter((x) => Math.abs(x.d) >= 2).sort((x, y) => Math.abs(y.d) - Math.abs(x.d));
   if (!ds.length) return '全国を100人にしたときと、4つとも1人以内の差です。';
   const [x, y] = ds;
-  return `${x.l}は全国の${x.zk}人に対して${x.me}人${y ? `、${y.l}は${y.zk}人に対して${y.me}人` : ''}です。`;
+  // 言い回しは差の大きさでえらぶ（11/8 夜 #70。書く数字は同じ）
+  const t0 = `${x.l}は全国の${x.zk}人に対して${x.me}人${y ? `、${y.l}は${y.zk}人に対して${y.me}人` : ''}です。`;
+  if (Math.abs(x.d) >= 6) return fit60(`全国とのちがいがいちばん大きいのは${x.l}で、${name}は${x.me}人、全国は${x.zk}人です。${y ? `${y.l}は${y.me}人と${y.zk}人です。` : ''}`, t0);
+  if (Math.abs(x.d) >= 4) return fit60(`${name}の村では${x.l}が${x.me}人で、全国の村なら${x.zk}人です。${y ? `${y.l}は${y.me}人で、全国なら${y.zk}人です。` : ''}`, t0);
+  return t0;
 }
 
 // 似ている街の1つめとのちがいが最も大きい数字（machi-core の mtVec の並び。S は kazu.s）
@@ -234,8 +244,20 @@ export function prefScaleText(list, a, p) {
     .sort((x, y) => y.d - x.d);
   if (!ds.length) return [`目盛りの6つの数字は、どれも${pn}の値と同じです。`];
   const [x, y] = ds;
-  const out = [`${pn}の値とくらべると、${x.label}は${pn}の${x.show(p[x.k])}に対して${x.show(a[x.k])}です。`];
-  if (y) out.push(`${y.label}は、${pn}の${y.show(p[y.k])}に対して${y.show(a[y.k])}です。`);
+  const nm = a.name;
+  const A = (m) => m.show(a[m.k]);
+  const P = (m) => m.show(p[m.k]);
+  // 言い回しは、県の値からのはなれ方（市区町村の中の位置の差）でえらぶ（11/8 夜 #70。書く数字は同じ）
+  const x0 = `${pn}の値とくらべると、${x.label}は${pn}の${P(x)}に対して${A(x)}です。`;
+  const y0 = y && `${y.label}は、${pn}の${P(y)}に対して${A(y)}です。`;
+  const out = [
+    x.d >= 0.35
+      ? fit60(`目盛りの数字で${pn}の値からいちばん離れているのは${x.label}で、${nm}は${A(x)}、${pn}は${P(x)}です。`, `${pn}の値からいちばん離れているのは${x.label}で、${nm}は${A(x)}、${pn}は${P(x)}です。`, x0)
+      : x.d >= 0.2
+        ? fit60(`${pn}全体の${P(x)}とくらべて、${nm}の${x.label}は${A(x)}です。`, x0)
+        : x0,
+  ];
+  if (y) out.push(y.d >= 0.2 ? fit60(`次に離れているのは${y.label}で、${pn}の${P(y)}に対して${A(y)}です。`, y0) : fit60(`${y.label}は、${nm}が${A(y)}、${pn}が${P(y)}です。`, y0));
   return out;
 }
 
@@ -261,8 +283,11 @@ export function kurabeText({ list, a, z, feat = '', meRow = null, near1 = null, 
   } else if (pop.rank > 1) {
     const up = byPop[pop.rank - 2];
     const dn = byPop[pop.rank];
-    const nb = dn ? `人口ですぐ上は${up.name}、すぐ下は${dn.name}です。` : `人口ですぐ上は${up.name}です。`;
-    s1a = popInFeat ? `${pn}のなかで、${nb}` : `${pn}の${pop.of}市区町村のうち、${nm}は人口が${pop.rank}番目に多い街です。${nb}`;
+    // 言い回しは順位でえらぶ（11/8 夜 #70。上位3つ・県内の上半分・下半分）
+    const nb0 = dn ? `人口ですぐ上は${up.name}、すぐ下は${dn.name}です。` : `人口ですぐ上は${up.name}です。`;
+    const nb = !dn ? nb0 : pop.rank <= 3 ? `人口の順では${up.name}と${dn.name}のあいだです。` : pop.rank * 2 <= pop.of ? nb0 : `人口が1つ上の街は${up.name}、1つ下は${dn.name}です。`;
+    const mk = (b) => (popInFeat ? `${pn}のなかで、${b}` : `${pn}の${pop.of}市区町村のうち、${nm}は人口が${pop.rank}番目に多い街です。${b}`);
+    s1a = fit60(mk(nb), mk(nb0));
   }
 
   // 2. 全国の値とくらべる数字を1つか2つ（市区町村の中の位置が、全国の値の位置からはなれている順）
@@ -273,8 +298,19 @@ export function kurabeText({ list, a, z, feat = '', meRow = null, near1 = null, 
   const m2 = m1 && zd.find((m) => m !== m1 && Math.abs(m.d) >= ZEN_BIG);
   const big = [m1, m2].filter(Boolean);
   const zen = [];
-  if (m1) zen.push(`全国とくらべると、${nm}の${m1.label}は${m1.show(m1.me)}で、全国は${m1.show(m1.zk)}です。`);
-  if (m2) zen.push(`${m2.label}は${m2.show(m2.me)}で、全国は${m2.show(m2.zk)}です。`);
+  // 言い回しは全国の値からのはなれ方でえらぶ（11/8 夜 #70。書く数字は同じ）
+  if (m1) {
+    const d = Math.abs(m1.d);
+    const z0 = `全国とくらべると、${nm}の${m1.label}は${m1.show(m1.me)}で、全国は${m1.show(m1.zk)}です。`;
+    zen.push(
+      d >= 0.28
+        ? fit60(`全国の値からいちばん離れているのは${m1.label}で、${nm}は${m1.show(m1.me)}、全国は${m1.show(m1.zk)}です。`, z0)
+        : d >= 0.18
+          ? fit60(`${m1.label}を全国とならべると、${nm}は${m1.show(m1.me)}、全国は${m1.show(m1.zk)}です。`, z0)
+          : z0,
+    );
+  }
+  if (m2) zen.push(Math.abs(m2.d) >= 0.3 ? fit60(`${m2.label}も全国の${m2.show(m2.zk)}に対して${m2.show(m2.me)}です。`, `${m2.label}は${m2.show(m2.me)}で、全国は${m2.show(m2.zk)}です。`) : `${m2.label}は${m2.show(m2.me)}で、全国は${m2.show(m2.zk)}です。`);
 
   // 1b. ほかでいちばん上にある順位（上から3番目までか、上の1割）。全国とのちがいで書く数字と、人口と同じ順位の世帯の数はのぞく
   const top = ranks
@@ -305,9 +341,11 @@ export function kurabeText({ list, a, z, feat = '', meRow = null, near1 = null, 
   // 4. 数字がいちばん似ている街とのちがいが最も大きい数字（大きい・小さいは言わない。人口は倍率）
   let s4 = '';
   if (meRow && near1 && S) {
-    const df = niteruDiff(meRow, near1, S);
     const bn = near1[0].slice(0, 2) === a.code.slice(0, 2) ? near1[1] : `${near1[1]}（${P[near1[0].slice(0, 2)]}）`;
-    const head = `数字がいちばん似ているのは${bn}です。`;
+    const df = niteruDiff(meRow, near1, S);
+    // 言い回しは、ちがいが最も大きい数字（人口・割合のどれか）でえらぶ（11/8 夜 #70）
+    const head0 = `数字がいちばん似ているのは${bn}です。`;
+    const head = fit60(df && df.i === 0 ? `6つの数字でいちばん近い街は${bn}です。` : df && df.i >= 4 ? `数字の並びが${nm}にいちばん近いのは${bn}です。` : head0, head0);
     const bName = near1[1];
     if (df && df.i === 0) {
       // 人口は倍率で（1倍より大きくなる向きで書く）
@@ -364,8 +402,18 @@ export function niteruText(me, near, S) {
     })
     .sort((x, y) => x.w - y.w)
     .slice(0, 2);
-  const [p, q] = w.map((x) => (x.lo === x.hi ? `${x.m.label}はどれも${x.lo}です。` : `${x.m.label}は${x.lo}から${x.hi}のあいだです。`));
-  return `この${rows.length}つの街の${p}${q}`;
+  // 言い回しは、2つめの数字の幅（全国の散らばりでならした幅）でえらぶ（11/8 夜 #70。書く数字は同じ）
+  const n = rows.length;
+  const [x, y] = w;
+  const rng = (v, a, b) => (v.lo === v.hi ? a : b);
+  const t0 = `この${n}つの街の${rng(x, `${x.m.label}はどれも${x.lo}です。`, `${x.m.label}は${x.lo}から${x.hi}のあいだです。`)}${rng(y, `${y.m.label}はどれも${y.lo}です。`, `${y.m.label}は${y.lo}から${y.hi}のあいだです。`)}`;
+  if (y.w >= 0.4) {
+    return fit60(`この${n}つの街の${rng(x, `${x.m.label}はどれも${x.lo}です。`, `${x.m.label}は${x.lo}から${x.hi}のあいだです。`)}${rng(y, `${y.m.label}もどれも${y.lo}です。`, `${y.m.label}は${y.lo}から${y.hi}まで開きがあります。`)}`, t0);
+  }
+  if (y.w >= 0.2) {
+    return fit60(`${n}つの街で${rng(x, `${x.m.label}がどれも${x.lo}と同じです。`, `${x.m.label}がそろっていて、${x.lo}から${x.hi}に入ります。`)}${rng(y, `${y.m.label}もどれも${y.lo}です。`, `${y.m.label}は${y.lo}から${y.hi}の幅です。`)}`, t0);
+  }
+  return t0;
 }
 
 // 「この街の数字」の下の文：5年の世帯の数の変わり方（人口の増減との組み合わせで言い回しをえらぶ）
