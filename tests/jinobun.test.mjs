@@ -1,7 +1,7 @@
 // 地の文の数え方（11/8 AdSense のやり直し。scripts/honbun.mjs の jinobunCount）
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { jinobunCount, pageKind } from '../scripts/honbun.mjs';
+import { jinobunCount, pageKind, jinobunMeyasu } from '../scripts/honbun.mjs';
 
 const S = 'この街では、ひとり暮らしの世帯が県より多く、共同住宅に住む世帯も多めです。'; // 数える字 35
 const n = [...S].filter((c) => /[\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}ーA-Za-z0-9]/u.test(c)).length;
@@ -25,4 +25,14 @@ test('ページのまとまり', () => {
   assert.equal(pageKind('/osaka/'), 'pref');
   assert.equal(pageKind('/osaka/sakai/'), 'city');
   assert.equal(pageKind('/sonae/minaoshi/'), 'sonae');
+});
+
+test('地の文のめやす', () => {
+  assert.equal(jinobunMeyasu('/osaka/sakai/'), 700);
+  assert.equal(jinobunMeyasu('/osaka/'), 600);
+  assert.equal(jinobunMeyasu('/sonae/minaoshi/'), 900);
+  assert.equal(jinobunMeyasu('/sonae/'), 600);
+  assert.equal(jinobunMeyasu('/hinmoku/mizu/'), 900);
+  assert.equal(jinobunMeyasu('/quiz/kyou/'), null);
+  assert.equal(jinobunMeyasu('/dougu/karte/'), null);
 });
