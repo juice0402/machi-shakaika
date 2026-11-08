@@ -17,7 +17,9 @@ const signed = (v) => `${v > 0 ? '+' : ''}${r1(v).toFixed(1)}%`;
 export function bichikuLine(city, b) {
   if (!b) return '';
   const who = city.kind === 'ku' ? '区' : '市';
-  return `<p class="why">${who}の備蓄は避難所に来た人の分です。<br>家の分は家で備えます。<br><a href="${esc(b.url)}" rel="noopener">${srcName(b)}</a></p>`;
+  // note があれば「◯◯市の備蓄のページは、＜note＞」を頭に（11/8 夜 #71）
+  const head = b.note ? `${esc(b.publisher)}の備蓄のページは、${esc(b.note)}<br>` : '';
+  return `<p class="why">${head}${who}の備蓄は避難所に来た人の分です。<br>家の分は家で備えます。<br><a href="${esc(b.url)}" rel="noopener">${srcName(b)}</a></p>`;
 }
 
 export function cityPage({ city, munis, list, z, cc, hinan, hinanMeta, urlOf, kazu, bichiku = null, hinanList = null }) {
