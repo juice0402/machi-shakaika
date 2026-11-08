@@ -12,12 +12,12 @@
   3. `data/items.yml` に `<key>:` と `sources: [...]` を足す（`checkYomimono()` が YOMIMONO の全部を見張る）。新しい数字が要るときも items.yml に足して出典をつける
   4. `data/sources.yml` に新しい出典（id・kind: sonae・publisher・title は開いて確かめた題そのまま・url・checked は開いた日・about は自分の言葉で短く）。今の行の形をまねる
 - 数字：備えの数字は `cc`（`cc.by.mizu.per_day`・`cc.days` など）と `items.yml` から。国勢調査の全国の値が要るネタは、`scripts/build.mjs` の `yomimonoPages({ cc, items, sources })` に `z`（全国の値。build.mjs にある）を足して渡す。避難場所の全国の数は `data/hinan/counts.json` の合計。本文に数字を直接書かない
-- コマンド：`npm run check`（テスト → ビルド → 全ページ点検）。作業場から国土地理院に届かないので、避難場所の一覧がないと言われたら `ALLOW_MISSING_HINAN_LIST=1 npm run check`。本文の字数は `node scripts/honbun.mjs dist` のあと、そのページの行を見る
+- コマンド：`npm run check`（テスト → ビルド → 全ページ点検）。作業場から国土地理院に届かないので、避難場所の一覧がないと言われたら `ALLOW_MISSING_HINAN_LIST=1 npm run check`。地の文の字数は `node scripts/honbun.mjs dist --pages` のあと、そのページの行を見る（左が地の文・右が本文）
 - ブランチは `claude/yomimono-<英字>`。PR は1本に1つ。このファイルの山の行も同じ PR で `- [x]` にする
 
 ### 中身
 - だれの問いに答えるか：「わが家は、その災害や暮らしの形のために、前に何を足しておけばいいか」。1本に1つのテーマ
-- 長さ：本文（`scripts/honbun.mjs` で測る）900字以上。文字を増やすための水増しはしない（AdSense の審査中。連絡 C-019）
+- 長さ：地の文（`node scripts/honbun.mjs dist --pages` の左の数。表・見出し・出典は数えない）900字以上。文字を増やすための水増しはしない（AdSense のやり直し中。11/8・claude/machi-adsense-plan.md）
 - 1画面めは、題・1行のリード・計算への入口。表と本文はその下
 - 出典：公的な発行元（内閣府・消防庁・気象庁・国土交通省・農林水産省・厚生労働省・都道府県・市区町村など）を2つ以上。開けて題を確かめたものだけ使う。開いたページに書いてないことは書かない。日付や回数などの数字は出典の言い方のまま
 - 書かないこと

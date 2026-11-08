@@ -3,7 +3,7 @@ import { readdirSync, readFileSync, statSync, existsSync } from 'node:fs';
 import { SITE, ESTAT_CREDIT } from '../src/site.mjs';
 import { RAKUTEN_CREDIT } from '../src/layout.mjs';
 import { SAIGAI, SAIGAI_BAR } from '../src/mode.mjs';
-import { measure, HONBUN_MIN, KATA_MAX } from './honbun.mjs';
+import { measure, HONBUN_MIN, KATA_MAX, JINOBUN_STRICT, KATA_GOAL, jinobunMeyasu } from './honbun.mjs';
 
 const DIST = 'dist';
 const walk = (d) => readdirSync(d).flatMap((x) => (statSync(`${d}/${x}`).isDirectory() ? walk(`${d}/${x}`) : [`${d}/${x}`]));
@@ -139,13 +139,27 @@ if (SITE.launched) {
 //   水増しせずに届かないページだけ、理由つきでここに足す（5ページまで）
 const HONBUN_EXCEPT = {};
 {
-  const { pages, kata } = measure(DIST);
+  const { pages, kata, prefKata } = measure(DIST);
   for (const p of pages) {
     if (p.path === '/404.html' || p.path in HONBUN_EXCEPT) continue;
     if (p.n < HONBUN_MIN) fail(`${DIST}${p.path}`, `本文が${p.n}字（${HONBUN_MIN}字以上にする）`);
   }
   for (const [p, v] of kata) if (v > KATA_MAX && !(p in HONBUN_EXCEPT)) fail(`${DIST}${p}`, `どの街も同じ文の割合が${Math.round(v * 100)}%（${Math.round(KATA_MAX * 100)}%以下にする）`);
   if (Object.keys(HONBUN_EXCEPT).length > 5) fail(`${DIST}/`, '本文の例外が5ページをこえている');
+
+  // 地の文のめやすと、型の割合のめあて（11/8 AdSense のやり直し。JINOBUN_STRICT が false のあいだは知らせるだけ）
+  const short = [];
+  for (const p of pages) {
+    const m = jinobunMeyasu(p.path);
+    if (m && p.j < m && !(p.path in HONBUN_EXCEPT)) short.push(`${p.path} ${p.j}字（めやす${m}字）`);
+  }
+  const ks = [...kata.values()].sort((a, b) => a - b);
+  const pct = (x) => `${Math.round(x * 100)}%`;
+  if (ks.length && ks[ks.length >> 1] > KATA_GOAL.cityMedian) short.push(`市区町村の型の割合の中央 ${pct(ks[ks.length >> 1])}（めあて${pct(KATA_GOAL.cityMedian)}以下）`);
+  for (const [p, v] of kata) if (v > KATA_GOAL.cityMax) short.push(`${p} 型の割合 ${pct(v)}（めあて${pct(KATA_GOAL.cityMax)}以下）`);
+  for (const [p, v] of prefKata) if (v > KATA_GOAL.prefMax) short.push(`${p} 型の割合 ${pct(v)}（めあて${pct(KATA_GOAL.prefMax)}以下）`);
+  if (JINOBUN_STRICT) for (const x of short) fail(`${DIST}/`, x);
+  else if (short.length) console.log(`注記：地の文のめやす・型の割合のめあてに足りない ${short.length}（知らせるだけ。node scripts/honbun.mjs dist で一覧）`);
 }
 
 if (missingHinan.length) console.log(`注記：避難場所の一覧がない ${missingHinan.length}（ALLOW_MISSING_HINAN_LIST=1・ローカルなので止めない。公開の前に update.yml で作る）`);
