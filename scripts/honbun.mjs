@@ -2,7 +2,8 @@
 //   本文：<main> の中から script・style・svg・header・nav・footer・noscript を除き、ひらがな・カタカナ・漢字・英数字を数える
 //   型の割合：市区町村ページの本文の数字を # にして、8字の切れはしを1字ずつずらして作り、
 //            その街の切れはしのうち、市区町村ページの半分以上に出るものの割合
-//   単体で動かすと一覧を出す：node scripts/honbun.mjs [dist]
+//   地の文：下の jinobunCount（本文から表・見出し・出典・数字の札・クイズを除いた文）
+//   単体で動かすと一覧を出す：node scripts/honbun.mjs [dist] [--pages]（--pages で市区町村・都道府県以外のページごとの 地の文・本文）
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { PREFS } from '../src/areas.mjs';
 
@@ -39,32 +40,94 @@ export function kataShare(texts) {
   return new Map([...sets].map(([p, s]) => [p, s.size ? [...s].filter((g) => df.get(g) >= half).length / s.size : 0]));
 }
 
+// 地の文（11/8 AdSense のやり直し。claude/machi-adsense-plan.md）：本文から、表・見出し・フォーム・パンくず・出典・数字の札・クイズの問いと答えを除き、
+//   p・li・dd・figcaption のうち「数える字が20字以上で、。か、がある」ものだけを数える（li の中のリンクの字は数えない。p を含む li は p の側で数える）
+const JINOBUN_SKIP = /\b(crumb|src|big|chg|hh|qq|ex|credit)\b/;
+export function jinobunCount(html) {
+  const m = html.match(/<main\b[^>]*>([\s\S]*)<\/main>/i);
+  let s = m ? m[1] : '';
+  for (const t of ['script', 'style', 'svg', 'header', 'nav', 'footer', 'noscript', 'table', 'h1', 'h2', 'h3', 'h4', 'form', 'button', 'select', 'cite'])
+    s = s.replace(new RegExp(`<${t}\\b[\\s\\S]*?<\\/${t}>`, 'gi'), ' ');
+  let n = 0;
+  const add = (tag, attr, inner) => {
+    if (/\bhidden\b/.test(attr) || JINOBUN_SKIP.test((attr.match(/class="([^"]*)"/) ?? [])[1] ?? '')) return;
+    const body = tag === 'p' ? inner : inner.replace(/<a\b[\s\S]*?<\/a>/gi, ' ');
+    const text = honbunText(`<main>${body}</main>`);
+    const c = honbunCount(text);
+    if (c >= 20 && /[。、]/.test(text)) n += c;
+  };
+  // p を先に数えて消し、残りの li・dd・figcaption を数える（p を含む li を二重に数えない）
+  for (const [, attr, inner] of s.matchAll(/<p\b([^>]*)>([\s\S]*?)<\/p>/gi)) add('p', attr, inner);
+  s = s.replace(/<p\b[^>]*>[\s\S]*?<\/p>/gi, ' ');
+  for (const [, tag, attr, inner] of s.matchAll(/<(li|dd|figcaption)\b([^>]*)>([\s\S]*?)<\/\1>/gi)) add(tag, attr, inner);
+  return n;
+}
+
 const PREF_SLUGS = new Set(PREFS.map((p) => p.slug));
+const segs = (path) => path.replace(/^\/|\/?(index\.html)?$/g, '').split('/').filter(Boolean);
 export const isCityPage = (path) => {
-  const seg = path.replace(/^\/|\/?(index\.html)?$/g, '').split('/');
+  const seg = segs(path);
   return seg.length === 2 && PREF_SLUGS.has(seg[0]);
 };
+export const isPrefPage = (path) => {
+  const seg = segs(path);
+  return seg.length === 1 && PREF_SLUGS.has(seg[0]);
+};
+// ページのまとまり：top・pref・city・それ以外は1段めの名前（sonae・hinmoku・quiz・dougu など）
+export const pageKind = (path) => (segs(path).length === 0 ? 'top' : isCityPage(path) ? 'city' : isPrefPage(path) ? 'pref' : segs(path)[0]);
 
-// dist の全ページを測る：{ pages: [{ path, n }], kata: Map(パス → 割合) }
+// 地の文のめやす（11/8 しょーくん：案B「市区町村は残して街ごとに厚く」。claude/machi-adsense-plan.md）
+//   null のページ（クイズ・カルテ・プリント・街あつめ帳など広告を置かない道具、このサイトについて、プライバシーポリシー）はめやすなし
+//   JINOBUN_STRICT が false のあいだは verify-dist が知らせるだけ。夜の直しが全部入ったら true にして止める
+export const JINOBUN_STRICT = false;
+export const KATA_GOAL = { cityMedian: 0.5, cityMax: 0.55, prefMax: 0.55 };
+const MEYASU_600 = new Set(['/', '/ranking/jinko/', '/sonae/', '/hinmoku/', '/dougu/check/', '/dougu/keisan/', '/dougu/kigen/', '/kurabe/', '/niteru/', '/koyomi/']);
+export function jinobunMeyasu(path) {
+  const kind = pageKind(path);
+  if (kind === 'city') return 800;
+  if (kind === 'pref') return 700;
+  if (MEYASU_600.has(path)) return 600;
+  if ((kind === 'sonae' || kind === 'hinmoku') && segs(path).length === 2) return 900;
+  return null;
+}
+
+// dist の全ページを測る：{ pages: [{ path, n, j }], kata: Map(パス → 割合)〔市区町村〕, prefKata: Map〔都道府県〕 }
+//   n＝本文の字数・j＝地の文の字数
 export function measure(dist = 'dist') {
   const walk = (d) => readdirSync(d).flatMap((x) => (statSync(`${d}/${x}`).isDirectory() ? walk(`${d}/${x}`) : [`${d}/${x}`]));
   const pages = [];
   const cityTexts = new Map();
+  const prefTexts = new Map();
   for (const f of walk(dist).filter((f) => f.endsWith('.html'))) {
     const path = f.slice(dist.length).replace(/index\.html$/, '');
-    const text = honbunText(readFileSync(f, 'utf8'));
-    pages.push({ path, n: honbunCount(text) });
+    const html = readFileSync(f, 'utf8');
+    const text = honbunText(html);
+    pages.push({ path, n: honbunCount(text), j: jinobunCount(html) });
     if (isCityPage(path)) cityTexts.set(path, text);
+    if (isPrefPage(path)) prefTexts.set(path, text);
   }
-  return { pages, kata: kataShare(cityTexts) };
+  return { pages, kata: kataShare(cityTexts), prefKata: kataShare(prefTexts) };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const { pages, kata } = measure(process.argv[2] ?? 'dist');
+  const { pages, kata, prefKata } = measure(process.argv.slice(2).find((a) => !a.startsWith('--')) ?? 'dist');
   const short = pages.filter((p) => p.path !== '/404.html' && p.n < HONBUN_MIN).sort((a, b) => a.n - b.n);
-  const k = [...kata.values()].sort((a, b) => a - b);
   const pct = (x) => `${Math.round(x * 100)}%`;
+  const spread = (m) => {
+    const k = [...m.values()].sort((a, b) => a - b);
+    return `最小 ${pct(k[0])}・中央 ${pct(k[k.length >> 1])}・最大 ${pct(k[k.length - 1])}・${pct(KATA_MAX)}をこえる ${k.filter((x) => x > KATA_MAX).length}`;
+  };
   console.log(`本文${HONBUN_MIN}字未満：${short.length}ページ`);
   for (const p of short) console.log(`  ${p.n}\t${p.path}`);
-  if (k.length) console.log(`型の割合（市区町村${k.length}）：最小 ${pct(k[0])}・中央 ${pct(k[k.length >> 1])}・最大 ${pct(k[k.length - 1])}・${pct(KATA_MAX)}をこえる ${k.filter((x) => x > KATA_MAX).length}`);
+  if (kata.size) console.log(`型の割合（市区町村${kata.size}）：${spread(kata)}`);
+  if (prefKata.size) console.log(`型の割合（都道府県${prefKata.size}）：${spread(prefKata)}`);
+  // 地の文：まとまりごとの最小・中央・最大と、600字・900字に足りないページの数
+  const groups = new Map();
+  for (const p of pages.filter((p) => p.path !== '/404.html')) groups.set(pageKind(p.path), [...(groups.get(pageKind(p.path)) ?? []), p]);
+  console.log('地の文（まとまり・ページ数・最小・中央・最大・600字未満・900字未満・めやす未満）');
+  for (const [k, ps] of [...groups].sort((a, b) => b[1].length - a[1].length)) {
+    const js = ps.map((p) => p.j).sort((a, b) => a - b);
+    console.log(`  ${k}\t${ps.length}\t${js[0]}\t${js[js.length >> 1]}\t${js[js.length - 1]}\t${js.filter((j) => j < 600).length}\t${js.filter((j) => j < 900).length}\t${ps.filter((p) => jinobunMeyasu(p.path) && p.j < jinobunMeyasu(p.path)).length}`);
+  }
+  if (process.argv.includes('--pages')) for (const p of pages.filter((p) => !isCityPage(p.path) && !isPrefPage(p.path)).sort((a, b) => (a.path < b.path ? -1 : 1))) console.log(`  ${p.j}\t${p.n}\t${p.path}`);
 }
