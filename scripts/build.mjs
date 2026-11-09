@@ -93,7 +93,9 @@ const ima = SAIGAI ? null : koyomiPick(koyomi.periods, today);
 add(topPage({ cc, munis, hinanMeta, nMunis: list.length, ima: koyomiLine(ima, items) }));
 for (const pref of PREFS) add(prefPage({ pref, munis, list, z, cc, urlOf }));
 const bichikuOf = bichikuMap(bichiku);
-for (const city of cities) add(cityPage({ city, munis, list, z, cc, hinan, hinanMeta, urlOf, kazu, bichiku: bichikuOf.get(`${city.pref}/${city.slug}`) ?? null }));
+// 避難場所の一覧（顔ぶれの文に使う。ない街は null）
+const hinanList = (code) => (existsSync(`data/hinan/list/${code}.json`) ? JSON.parse(readFileSync(`data/hinan/list/${code}.json`, 'utf8')) : null);
+for (const city of cities) add(cityPage({ city, munis, list, z, cc, hinan, hinanMeta, urlOf, kazu, bichiku: bichikuOf.get(`${city.pref}/${city.slug}`) ?? null, hinanList: hinanList(city.code) }));
 for (const p of sonaePages({ cc, items, sources })) add(p);
 for (const p of fuyuTeidenPages({ cc, items, sources })) add(p);
 for (const p of yomimonoPages({ cc, items, sources })) add(p);
