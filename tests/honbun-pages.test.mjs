@@ -12,7 +12,8 @@ import { machiData, METRICS } from '../src/quiz.mjs';
 import { qDobonTopics } from '../src/quiz-core.mjs';
 import { KYOU_ORDER } from '../src/kyou.mjs';
 import { page } from '../src/layout.mjs';
-import { honbunText, honbunCount, HONBUN_MIN } from '../scripts/honbun.mjs';
+import { honbunText, honbunCount, HONBUN_MIN, jinobunCount, jinobunMeyasu } from '../scripts/honbun.mjs';
+import { douguPages } from '../src/pages/dougu.mjs';
 import { hinmokuPages } from '../src/pages/hinmoku.mjs';
 import { quizPages, DOCCHI_N, SONAE_N, SONAE_KINDS, DOKO_N, NARABE_N, HINT_N } from '../src/pages/quiz.mjs';
 import { kyouPage } from '../src/pages/kyou.mjs';
@@ -136,4 +137,45 @@ test('道具：/dougu/kigen/・/dougu/keisan/ と トップ', { skip }, () => {
   // 1画面め（さがす・計算・地図）が先、足した2節はクイズの棚より下
   assert.ok(top.body.indexOf('data-find') < top.body.indexOf('id="map"') && top.body.indexOf('/quiz/sonae/') < top.body.indexOf('街の数字</h2>'));
   wording(top, '街の数字</h2>');
+});
+
+// 夜 #74（AdSense のやり直し E）：品目6は地の文900字・入口と道具とトップは600字。足した節は商品の一覧のあと、数字は items.yml から
+test('夜 #74：品目・道具・トップの地の文がめやす以上', { skip }, () => {
+  const jc = (p) => jinobunCount(page(p));
+  const ps = [
+    ...hinmokuPages({ items, sources, products: null, saigai: false }),
+    ...douguPages({ cc, items, sources }),
+    ...kigenPages({ items }),
+    ...sonaePages({ cc, items, sources }).filter((p) => p.path === '/dougu/keisan/'),
+    ...toolPages({ munis, kazu }),
+    topPage({ cc, munis, hinanMeta: { total: { basho: 1 }, checked: '2026-10-27' }, nMunis: list.length }),
+  ];
+  for (const p of ps) {
+    const m = jinobunMeyasu(p.path);
+    assert.ok(m, `${p.path}：めやすがない`);
+    assert.ok(jc(p) >= m, `${p.path} 地の文${jc(p)}字（めやす${m}）`);
+  }
+  const ck = douguPages({ cc, items, sources }).find((p) => p.path === '/dougu/check/');
+  wording(ck, 'しくみ</h2>');
+  assert.ok(ck.body.indexOf('しくみ</h2>') > ck.body.indexOf('data-reset'), 'チェックリストの説明は一覧の下');
+});
+
+test('夜 #74：品目ページの足した節は商品の一覧のあと・水の数は items.yml から', () => {
+  const one = { url: 'https://item.rakuten.co.jp/x/', img: 'https://thumbnail.image.rakuten.co.jp/x.jpg', name: 'x', price: 1000, reviews: 10, rating: 4 };
+  const products = { fetchedAt: '2026-11-09T00:00:00Z', items: Object.fromEntries(items.items.map((it) => [it.id, [one]])) };
+  for (const p of hinmokuPages({ items, sources, products, saigai: false }).filter((x) => x.path !== '/hinmoku/')) {
+    const shop = p.body.indexOf('class="shopb"');
+    assert.ok(shop > 0, p.path);
+    for (const h of ['えらび方の目安</h2>', 'まちがえやすいところ</h2>']) assert.ok(p.body.indexOf(h) > shop, `${p.path}：${h} が商品の一覧より前`);
+  }
+  const mizu = items.items.find((x) => x.id === 'mizu');
+  const { bottle: bt, kumioki: km } = mizu;
+  const d = items.days.better;
+  const m = hinmokuPages({ items, sources, products: null, saigai: false }).find((x) => x.path === '/hinmoku/mizu/');
+  const hon = Math.ceil(need(mizu.per_day, 4, d) / bt.liters);
+  assert.ok(m.body.includes(`${bt.liters}Lのボトルが${bt.per_case}本入った箱を${bt.cases}箱`));
+  assert.ok(m.body.includes(`${need(mizu.per_day, 4, d)}L、${hon}本です。${bt.per_case}本入りの箱なら${Math.ceil(hon / bt.per_case)}箱`));
+  assert.ok(m.body.includes(`約${km.suzushii}日、冷蔵庫なら約${km.reizouko}日`));
+  // 足した節の出典は、ページの下の出典にも並ぶ
+  for (const id of ['nerima-kumioki']) assert.ok(m.body.includes(sources.sources.find((x) => x.id === id).title), id);
 });

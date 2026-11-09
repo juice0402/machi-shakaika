@@ -28,6 +28,27 @@ export function douguPages({ cc, items, sources }) {
       return `<li><label><input type="checkbox" data-l="${cl.id}" data-k="${esc(e.key)}"><span class="bx" aria-hidden="true"></span><span class="t">${esc(e.name)}${sub ? `<small>${esc(sub)}</small>` : ''}</span>${qty}</label></li>`;
     })
     .join('')}</ul></section>`;
+  // 下の説明（夜 #74）：しくみと使う場面の例。品目の数・日付・量はデータから
+  const [home, bag] = lists;
+  const q = (id, nn, dd) => `${need(cc.by[id].per_day, nn, dd).toLocaleString('ja-JP')}${esc(cc.by[id].unit)}`;
+  const hi = items.minaoshi.hi;
+  const more = `<div class="prose">
+${h2('しくみ')}
+<p>${esc(home.cl.name)}は${home.entries.length}品目、${esc(bag.cl.name)}は${bag.entries.length}品目です。品目は、国や自治体の資料にある備えの例から集め、ページの下に出典を並べています。</p>
+<p>水と主食と携帯トイレの3つは、上の欄の人数と日数で量が変わります。量は1人1日の量に人数と日数をかけたもので、はじめは${n}人の${d}日分です。</p>
+<p>${esc(bag.cl.name)}の携帯トイレには、量を出していません。家に置く分の量は、${esc(home.cl.name)}の行で数えます。</p>
+<p>チェックした行は、この端末のブラウザの中だけに残ります。当サイトには送りません。「チェックをすべて消す」をおすと、はじめの状態に戻ります。</p>
+${h2('使う場面の例')}
+<p>日を決めて見直すときに使えます。${esc(hi.bousai)}の防災の日や、東京都が備蓄の日としている${esc(hi.bichiku)}などです。見直しの流れは<a href="/sonae/minaoshi/">年に2回の備えの見直し</a>に。</p>
+<p>家族の人数が変わったら、人数を入れ直します。3人から4人になると、${days.better}日分の水は${q('mizu', 3, days.better)}から${q('mizu', 4, days.better)}にふえます。</p>
+<p>赤ちゃんが生まれた家は、${esc(bag.cl.name)}にある乳児がいる家の行も見ます。ミルクや紙おむつ、ほ乳びんの行です。</p>
+<p>期限のある品目は、<a href="/dougu/kigen/">期限メモ</a>に入れると近い順に並びます。紙に印刷して、冷蔵庫に貼っておく形もあります。</p>
+${h2('まちがえやすいところ')}
+<p>水の量は、飲み水と調理の水です。トイレを流す水などの生活用水は、別の行にしてあります。</p>
+<p>主食の数は、ご飯や乾パンなど主食だけの数です。おかずになる缶詰などは、すぐ下の行で確かめます。</p>
+<p>${esc(bag.cl.name)}は、${esc(home.cl.name)}とは別にそろえます。携帯トイレが両方に出てくるのは、そのためです。</p>
+<p>チェックはこの端末だけに残るので、家族のほかの端末で開くと、何もついていない状態に見えます。家族で見るときは、1台にまとめてつけます。</p>
+</div>`;
   const allSources = [...new Set(lists.flatMap(({ entries }) => entries.flatMap((e) => e.sources)).concat(days.sources))];
 
   return [
@@ -46,6 +67,7 @@ ${lists.map(section).join('\n')}
 <p><button class="clr" type="button" data-reset>チェックをすべて消す</button></p>
 <p><a class="go" href="/hinmoku/">品目ごとのめやす</a><br><a class="go" href="/dougu/keisan/">備蓄の量を計算する</a><br><a class="go" href="/dougu/kigen/">賞味期限をメモする</a><br><a class="go" href="/dougu/print/">冷蔵庫に貼る紙（A4）</a><br><a class="go" href="/dougu/karte/">わが家の防災カルテ（A4）</a><br><a class="go" href="/dougu/manabi/">まなびプリント（街の数字を読む・A4）</a></p>
 ${a8Ad('bousaiset')}
+${more}
 ${h2('出典')}
 ${sourceList(allSources, sources)}`,
       script: CALC_JS + CHECK_JS,

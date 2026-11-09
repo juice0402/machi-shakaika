@@ -73,6 +73,16 @@ items:
       ng: [ウォーターサーバー, 炭酸, ペット用]
     sources: [maff-sonae, miyagi-mizu]
     about: 飲み水と調理の水。トイレを流す水は別に要る
+    # 品目ページの「えらび方の目安」：農林水産省の大人1人1週間の例（2L×6本×2箱）と、くみ置きの水道水が飲み水に使える日数（練馬区）
+    bottle:
+      liters: 2
+      per_case: 6
+      cases: 2
+      sources: [maff-sonae]
+    kumioki:
+      suzushii: 3
+      reizouko: 10
+      sources: [nerima-kumioki]
 
   - id: shushoku
     name: 主食
