@@ -4,12 +4,15 @@ import { SITE } from '../site.mjs';
 import { heroHtml } from '../art.mjs';
 import { japanMap, JMAP_CSS } from '../japan-map.mjs';
 import { calcHtml, CALC_JS, need } from '../calc.mjs';
-import { muniList } from '../stats.mjs';
+import { muniList, KYODO_MIN, SINGLE_PLUS } from '../stats.mjs';
 import { resolveCities, PREFS } from '../areas.mjs';
 import { kazuData } from '../machi-tools.mjs';
 import { mtNear } from '../machi-core.mjs';
 import { rankingData, rateText, MIN_POP } from './ranking.mjs';
 import { KOYOMI_CSS } from '../koyomi.mjs';
+import { readYaml } from '../data.mjs';
+
+const pubOf = (id) => readYaml('sources.yml').sources.find((x) => x.id === id).publisher;
 
 export const FIND_JS = `(()=>{const f=document.querySelector('[data-find]');if(!f)return;const i=f.querySelector('input'),ul=f.querySelector('.hits'),msg=f.querySelector('.msg');let all=null;
 const load=()=>all?Promise.resolve(all):fetch('/search.json').then(r=>r.json()).then(j=>all=j);
@@ -53,8 +56,8 @@ ${top1 ? `<p>${prevYear}年から<a href="/ranking/jinko/">人口が増えた市
   // このサイトでわかること（夜 #74）：街の数字と家の備えのつながり。条件は stats.mjs の sonaeLinks と同じ
   out.push(`<section class="prose">${h2('このサイトでわかること')}
 <p>このサイトは、住んでいる街の数字から、家の備えを考えるためのものです。市区町村のページでは、1世帯の平均人数で水と携帯トイレの量を出しています。</p>
-<p>同じページの「この街の備え」には、世帯の数字に合わせた読みものをつないでいます。共同住宅に住む世帯が半分以上の街には、マンションの備えを出します。</p>
-<p>停電で建物の給水ポンプが止まると、断水になることがあるためです。ひとり暮らしの世帯の割合が全国より3%分以上高い街には、ひとり暮らしの備えを出します。</p>
+<p>同じページの「この街の備え」には、世帯の数字に合わせた読みものをつないでいます。共同住宅に住む世帯が${KYODO_MIN}%以上の街には、マンションの備えを出します。</p>
+<p>停電で建物の給水ポンプが止まると断水になることを、${esc(pubOf('bousai-teiden'))}も停電に備える項目に入れています。ひとり暮らしの世帯の割合が全国より${SINGLE_PLUS}%分以上高い街には、ひとり暮らしの備えを出します。</p>
 <p>65歳以上の人がいる世帯の割合が全国と同じか高い街には、高齢の家族がいる家の備えをつなぎます。当てはまるものがない街は県の数字とくらべ、それでもなければ備蓄の量のめやすをつなぎます。</p>
 <p>数字には、どれも出典と調べた日をつけています。人口は国勢調査、備えの量は国や自治体の資料です。街の順位や、住みやすさのよしあしは出していません。</p>
 </section>`);

@@ -81,13 +81,16 @@ export function feature(list, a, z) {
 
 // 「この街の備え」で見せる知識（世帯の特徴から1〜2本）。全国とくらべて言えることがなければ県とくらべる
 // （10/27 しょーくん：ページを作る条件5は「全国か県とはっきり違う」。p は県の数字、なければ全国だけ）
+// しきい（トップの「このサイトでわかること」も同じ数を使う）：共同住宅に住む世帯が KYODO_MIN% 以上、ひとり暮らしが全国より SINGLE_PLUS 以上
+export const KYODO_MIN = 50;
+export const SINGLE_PLUS = 3;
 const TOILET = { href: '/sonae/mansion/', text: 'マンション（共同住宅）の備え' };
 const ONE = { href: '/sonae/hitorigurashi/', text: 'ひとり暮らしの備え' };
 export function sonaeLinks(a, z, p = null) {
   const out = [];
   // 言い回しは数の大きさでえらぶ（11/8 夜 #70。言っていることは同じ）
-  if (a.pKyodo >= 50) out.push({ why: a.pKyodo >= 70 ? `共同住宅に住む世帯が${wari(a.pKyodo)}割をしめます。` : `世帯の${wari(a.pKyodo)}割が共同住宅に住んでいます。`, ...TOILET });
-  if (a.pSingle >= z.pSingle + 3) out.push({ why: a.pSingle >= 50 ? `一般世帯の${r1(a.pSingle)}%がひとり暮らしです。` : `ひとり暮らしの世帯が${r1(a.pSingle)}%あります。`, ...ONE });
+  if (a.pKyodo >= KYODO_MIN) out.push({ why: a.pKyodo >= 70 ? `共同住宅に住む世帯が${wari(a.pKyodo)}割をしめます。` : `世帯の${wari(a.pKyodo)}割が共同住宅に住んでいます。`, ...TOILET });
+  if (a.pSingle >= z.pSingle + SINGLE_PLUS) out.push({ why: a.pSingle >= 50 ? `一般世帯の${r1(a.pSingle)}%がひとり暮らしです。` : `ひとり暮らしの世帯が${r1(a.pSingle)}%あります。`, ...ONE });
   if (a.pWith65 >= z.pWith65) out.push({ why: a.pWith65 >= 50 ? `半分をこえる${r1(a.pWith65)}%の世帯に、65歳以上の人がいます。` : a.pWith65 >= 45 ? `一般世帯のうち${r1(a.pWith65)}%は、65歳以上の人がいる世帯です。` : `65歳以上の人がいる世帯が${r1(a.pWith65)}%あります。`, href: '/sonae/akachan-koureisha/', text: '高齢の家族がいる家の備え' });
   if (!out.length && p) {
     const pn = prefOf(a.code).name;
