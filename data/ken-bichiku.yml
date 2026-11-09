@@ -1,0 +1,154 @@
+# 都道府県の備えのページ（都道府県ページに1行のリンク。11/9 夜 #72）
+# 都道府県が自分のホームページで出している、県の備蓄の状況のページか、家庭に呼びかけている備えのページ。見つからない県は書かない（ページにも出さない）
+# pref は src/areas.mjs の PREFS の英字。publisher はその都道府県の名前（PREFS と同じ）
+# title は開いて確かめたページの題そのまま（サイト名の部分は除く）。checked は開いて確かめた日
+# 並びは PREFS の順。国・市町村のページ、PDF だけのものは入れない
+# note はそのページに書いてあることを1文（全角60字まで・「。」で終わる）。開いて読んだことだけ・評価やくらべは書かない（決まりは data/bichiku.yml と同じ）
+
+prefs:
+  - pref: hokkaido
+    publisher: 北海道
+    title: "家庭における災害への備え"
+    url: https://www.pref.hokkaido.lg.jp/sm/ktk/223918.html
+    checked: 2026-11-09
+    note: "食品や飲料水などは、家族の人数に合わせて最低3日分、推奨1週間分をめやすにしています。"
+
+  - pref: aomori
+    publisher: 青森県
+    title: "災害備蓄について"
+    url: https://www.pref.aomori.lg.jp/soshiki/kikikanri/bousai/aomoriken_saigaibichiku.html
+    checked: 2026-11-09
+    note: "県が県有施設に備える食料や毛布などと、家庭の備蓄のめやすを載せています。"
+
+  - pref: iwate
+    publisher: 岩手県
+    title: "日頃の備えは万全ですか？"
+    url: https://www.pref.iwate.jp/kurashikankyou/anzenanshin/bosai/kokoroe/1004205.html
+    checked: 2026-11-09
+    note: "家の中と外の対策と、3日分、できれば1週間分の家庭の備蓄を載せています。"
+
+  - pref: miyagi
+    publisher: 宮城県
+    title: "災害に対するご家庭での備え"
+    url: https://www.pref.miyagi.jp/soshiki/bousai/km-wagaya.html
+    checked: 2026-11-09
+    note: "飲料水は1人1日3リットルをめやすに、家庭で備える物を載せています。"
+
+  - pref: yamagata
+    publisher: 山形県
+    title: "ローリングストックをはじめよう！"
+    url: https://www.pref.yamagata.jp/020072/bosai/kochibou/bousaijouhou/sonae/yamagata_rollingstock.html
+    checked: 2026-11-09
+    note: "普段の食品を多めに買って使いながら買い足す方法と、冬の灯油の備えを載せています。"
+
+  - pref: fukushima
+    publisher: 福島県
+    title: "福島県の非常用物資の備蓄について"
+    url: https://www.pref.fukushima.lg.jp/site/bousai/bichiku.html
+    checked: 2026-11-09
+    note: "1万人が避難する場合を想定して、避難生活の物資を3日分備えていると載せています。"
+
+  - pref: ibaraki
+    publisher: 茨城県
+    title: "県の災害用物資の備蓄状況について"
+    url: https://www.pref.ibaraki.jp/bousaikiki/bousaikiki/bousai/bitikuzyoukyou.html
+    checked: 2026-11-09
+    note: "市町村と協力して備える3日分の物資を、県内12か所に分けて保管していると載せています。"
+
+  - pref: tochigi
+    publisher: 栃木県
+    title: "備蓄のすすめ"
+    url: https://www.pref.tochigi.lg.jp/l01/241221bichikukeihatu.html
+    checked: 2026-11-09
+    note: "3日分の食料や飲料水と、高齢の人や乳児に要る物などの備蓄品の例を載せています。"
+
+  - pref: gunma
+    publisher: 群馬県
+    title: "「群馬県防災レシピ」について"
+    url: https://www.pref.gunma.jp/page/199190.html
+    checked: 2026-11-09
+    note: "備蓄の食料で作れるレシピと炊き出しのレシピを、県と市町村の栄養士がまとめています。"
+
+  - pref: saitama
+    publisher: 埼玉県
+    title: "防災備蓄の状況"
+    url: https://www.pref.saitama.lg.jp/a0402/bichiku.html
+    checked: 2026-11-09
+    note: "県と市町村を合わせて、想定する避難者の3日分以上を備えていると載せています。"
+
+  - pref: chiba
+    publisher: 千葉県
+    title: "県の備蓄"
+    url: https://www.pref.chiba.lg.jp/bousai/saigaitaisaku/bichiku.html
+    checked: 2026-11-09
+    note: "県が市町村を補う立場で、食料や発電機などを県内の倉庫に分けて備えていると載せています。"
+
+  - pref: tokyo
+    publisher: 東京都
+    title: "「東京備蓄ナビ」"
+    url: https://www.bousai.metro.tokyo.lg.jp/kyojyo/1001855/1013810.html
+    checked: 2026-11-09
+    note: "家族の人数や住まいに答えると、備蓄品の品目と数のめやすがリストで出ます。"
+
+  - pref: kanagawa
+    publisher: 神奈川県
+    title: "携帯トイレを備蓄しましょう"
+    url: https://www.pref.kanagawa.jp/docs/j8g/bousai/keitaitoirebitiku.html
+    checked: 2026-11-09
+    note: "携帯トイレは1人1日5回に家族の人数と最低3日分をかけた数をめやすにしています。"
+
+  - pref: niigata
+    publisher: 新潟県
+    title: "災害に対して「皆で備える」～家庭内備蓄のすすめ～"
+    url: https://www.pref.niigata.lg.jp/site/bosai/20260501saigaihenosonae.html
+    checked: 2026-11-09
+    note: "家庭の備蓄は最低3日間、推奨1週間をめやすにし、ローリングストックも紹介しています。"
+
+  - pref: toyama
+    publisher: 富山県
+    title: "特集１ 災害に備えよう 〜もしものときのために〜"
+    url: https://www.pref.toyama.jp/1021/kensei/kouhou/kouhoushi/kj00016456/2024/kouhou0606-3.html
+    checked: 2026-11-09
+    note: "食料品を使いながら備えるローリングストックと、非常持ち出し品の見直しを載せています。"
+
+  - pref: ishikawa
+    publisher: 石川県
+    title: "災害用備蓄物資の公表について"
+    url: https://www.pref.ishikawa.lg.jp/bousai/bitiku.html
+    checked: 2026-11-09
+    note: "石川県と県内の市町の災害用物資の備蓄状況を、災害対策基本法にもとづいて公表しています。"
+
+  - pref: fukui
+    publisher: 福井県
+    title: "県民の皆様へのお願い(地震への備え)"
+    url: https://www.pref.fukui.lg.jp/doc/kikitaisaku/kikitaisaku/onegai.html
+    checked: 2026-11-09
+    note: "家具の転倒防止や避難場所の確認とあわせて、水や食料の備蓄を挙げています。"
+
+  - pref: yamanashi
+    publisher: 山梨県
+    title: "避難の持出品や降灰の屋内退避に備えた備蓄品を準備しましょう"
+    url: https://www.pref.yamanashi.jp/kazan/bitiku.html
+    checked: 2026-11-09
+    note: "噴火のときに備えて、1週間程度の飲料水や食料、携帯トイレなどの備蓄を挙げています。"
+
+  - pref: nagano
+    publisher: 長野県
+    title: "災害用備蓄・非常持ち出し品"
+    url: https://www.pref.nagano.lg.jp/bosai/kurashi/shobo/bosai/bichiku.html
+    checked: 2026-11-09
+    note: "最低3日分の水と食料の備蓄と、防災の日に賞味期限を確かめることを挙げています。"
+
+  - pref: gifu
+    publisher: 岐阜県
+    title: "地震対策チェック表"
+    url: https://www.pref.gifu.lg.jp/page/4291.html
+    checked: 2026-11-09
+    note: "非常食や水などは最低3日分、できれば1週間分程度を、数か所に分けて置く例を載せています。"
+
+  - pref: shizuoka
+    publisher: 静岡県
+    title: "備蓄について"
+    url: https://www.pref.shizuoka.jp/bosaikinkyu/bosaijoho/1030019.html
+    checked: 2026-11-09
+    note: "水と食料と携帯トイレの備えを挙げ、食べ慣れた食品の買い置きを勧めています。"

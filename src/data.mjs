@@ -2,7 +2,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { parseYaml } from './lib/yaml.mjs';
-import { CITIES } from './areas.mjs';
+import { CITIES, PREFS } from './areas.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 export const readYaml = (name) => parseYaml(readFileSync(`${root}data/${name}`, 'utf8'));
@@ -157,16 +157,49 @@ export function checkBichiku(b, cities = CITIES) {
     if (!/^https:\/\/[^\s]+$/.test(c?.url ?? '')) errors.push(`${at}: url は https で`);
     if (!DATE.test(String(c?.checked))) errors.push(`${at}: checked（確かめた日）は 2026-10-26 の形で`);
     // note：そのページに書いてあることを1文（11/8 夜 #71）。空でない・全角60字まで・使わない言葉なし・「。」で終わる
-    if (c && 'note' in c) {
-      const n = typeof c.note === 'string' ? c.note.trim() : '';
-      if (!n) errors.push(`${at}: note が空です`);
-      else {
-        if ([...n].length > 60) errors.push(`${at}: note は全角60字まで`);
-        if (!n.endsWith('。') || n.slice(0, -1).includes('。')) errors.push(`${at}: note は「。」で終わる1文で`);
-        const ng = NOTE_NG.find((w) => n.includes(w));
-        if (ng) errors.push(`${at}: note に使わない言葉「${ng}」`);
-      }
-    }
+    if (c && 'note' in c) errors.push(...noteErrors(at, c.note));
+  }
+  return errors;
+}
+function noteErrors(at, note) {
+  const n = typeof note === 'string' ? note.trim() : '';
+  if (!n) return [`${at}: note が空です`];
+  const errors = [];
+  if ([...n].length > 60) errors.push(`${at}: note は全角60字まで`);
+  if (!n.endsWith('。') || n.slice(0, -1).includes('。')) errors.push(`${at}: note は「。」で終わる1文で`);
+  const ng = NOTE_NG.find((w) => n.includes(w));
+  if (ng) errors.push(`${at}: note に使わない言葉「${ng}」`);
+  return errors;
+}
+
+// 都道府県の備えのページ（data/ken-bichiku.yml。11/9 夜 #72）。ファイルがない・空のときは1件もないものとして読む
+export function readKenBichiku() {
+  try {
+    return readYaml('ken-bichiku.yml') ?? { prefs: [] };
+  } catch (e) {
+    if (e.code === 'ENOENT') return { prefs: [] };
+    throw e;
+  }
+}
+export const kenBichikuMap = (b) => new Map((b?.prefs ?? []).map((c) => [c.pref, c]));
+
+// 形は data/bichiku.yml と同じ決まり。pref は都道府県の英字・publisher は都道府県の名前・note は必ず書く
+export function checkKenBichiku(b, prefs = PREFS) {
+  const names = new Map(prefs.map((p) => [p.slug, p.name]));
+  if (b != null && !Array.isArray(b.prefs)) return ['ken-bichiku: prefs のリストがありません'];
+  const errors = [];
+  const seen = new Set();
+  for (const c of b?.prefs ?? []) {
+    const at = c?.pref ?? '(pref なし)';
+    if (!names.has(c?.pref)) errors.push(`${at}: この都道府県は src/areas.mjs の PREFS にありません（英字）`);
+    if (seen.has(c?.pref)) errors.push(`${at}: 2回書かれています`);
+    seen.add(c?.pref);
+    if (!c?.publisher) errors.push(`${at}: publisher がありません`);
+    else if (names.has(c.pref) && c.publisher !== names.get(c.pref)) errors.push(`${at}: publisher は都道府県の名前（${names.get(c.pref)}）で`);
+    if (typeof c?.title !== 'string' || !c.title.trim()) errors.push(`${at}: title（ページの題）がありません`);
+    if (!/^https:\/\/[^\s]+$/.test(c?.url ?? '')) errors.push(`${at}: url は https で`);
+    if (!DATE.test(String(c?.checked))) errors.push(`${at}: checked（確かめた日）は 2026-11-09 の形で`);
+    errors.push(...noteErrors(at, c?.note));
   }
   return errors;
 }
