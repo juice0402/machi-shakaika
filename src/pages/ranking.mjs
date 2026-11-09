@@ -35,6 +35,12 @@ function ogImage(munis, list) {
 const CHIHO = [['北海道', 1], ['東北', 7], ['関東', 14], ['中部', 23], ['近畿', 30], ['中国', 35], ['四国', 39], ['九州・沖縄', 47]];
 const chihoOf = (code) => CHIHO.find(([, last]) => Number(String(code).slice(0, 2)) <= last)[0];
 const n0 = (v) => Math.round(v).toLocaleString('ja-JP');
+// 地方ごとの数：[[地方, 数], ...]（多い順・同じ数は北から。0の地方は入れない）
+export function chihoCounts(xs) {
+  const cnt = new Map();
+  for (const x of xs) cnt.set(chihoOf(x.code), (cnt.get(chihoOf(x.code)) ?? 0) + 1);
+  return [...cnt].sort((a, b) => b[1] - a[1] || CHIHO.findIndex(([n]) => n === a[0]) - CHIHO.findIndex(([n]) => n === b[0]));
+}
 
 // 表の読み方と、増えた街のようす（11/9 夜 #72）。データから作る。減った順・「ワースト」は作らない
 //   kencho：県庁所在地の市区町村コードの Set
@@ -51,52 +57,53 @@ export function rankingText({ list, kencho = new Set() }) {
   const tiny = up.filter((x) => x.pop < MIN_POP).sort((a, b) => b.rate - a.rate)[0];
   if (tiny) yomikata.push(fit60(`表に入らない人口${MIN_POP / 10000}万人未満の街では、${tiny.name}の${rateText(tiny)}がいちばん大きい割合です。`, `人口${MIN_POP / 10000}万人未満の街でいちばん大きい割合は${rateText(tiny)}です。`));
   const rateChoson = byRate.filter((x) => /[町村]$/.test(x.name)).length;
-  if (rateChoson) yomikata.push(`割合の表の${byRate.length}の街のうち、${rateChoson}は町か村です。`);
+  if (rateChoson) yomikata.push(`割合の表の${byRate.length}市区町村のうち、町と村は${rateChoson}町村です。`);
   const rs = new Set(byRate.map((x) => x.code));
   const both = byCount.filter((x) => rs.has(x.code));
   yomikata.push(
     !both.length
       ? '2つの表の両方に入る街はありません。'
       : both.length <= 3
-        ? fit60(`2つの表の両方に入っているのは、${both.map((x) => x.name).join('・')}です。`, `2つの表の両方に入っているのは${both.length}の街です。`)
-        : fit60(`2つの表の両方に入っているのは${both.length}の街で、${both.slice(0, 3).map((x) => x.name).join('・')}などです。`, `2つの表の両方に入っているのは${both.length}の街です。`),
+        ? fit60(`2つの表の両方に入っているのは、${both.map((x) => x.name).join('・')}です。`, `2つの表の両方に入っているのは${both.length}市区町村です。`)
+        : fit60(`2つの表の両方に入っているのは${both.length}市区町村で、${both.slice(0, 3).map((x) => x.name).join('・')}などです。`, `2つの表の両方に入っているのは${both.length}市区町村です。`),
   );
   // 地方ごとの数（多い順。0の地方は書かない）
-  const cnt = new Map();
-  for (const x of up) cnt.set(chihoOf(x.code), (cnt.get(chihoOf(x.code)) ?? 0) + 1);
-  const ch = [...cnt].sort((a, b) => b[1] - a[1] || CHIHO.findIndex(([n]) => n === a[0]) - CHIHO.findIndex(([n]) => n === b[0]));
+  const ch = chihoCounts(up);
   const yosu = [];
   if (ch.length) yosu.push(fit60(`増えた${n0(up.length)}市区町村を地方ごとに数えると、${ch.slice(0, 3).map(([n, v]) => `${n}が${v}`).join('、')}です。`));
   if (ch.length > 3) yosu.push(`ほかは${ch.slice(3).map(([n, v]) => `${n}が${v}`).join('、')}です。`);
-  // 県庁所在地
+  // 県庁所在地。東京都（新宿区）はページの街の一覧で kencho ではなく区なので、そのときは「東京都をのぞく」と書く
+  const tokyoOut = ![...kencho].some((c) => c.startsWith('13'));
+  const kenName = tokyoOut ? `東京都をのぞく道府県庁所在地の${kencho.size}市` : `都道府県庁所在地の${kencho.size}市区`;
   const kenUp = up.filter((x) => kencho.has(x.code));
   if (kencho.size) {
     const inCount = byCount.filter((x) => kencho.has(x.code));
     const inRate = byRate.filter((x) => kencho.has(x.code));
     yosu.push(
       !kenUp.length
-        ? `県庁所在地の${kencho.size}市で、人口が増えた市はありません。`
-        : fit60(`県庁所在地の${kencho.size}市のうち人口が増えたのは${kenUp.length}市で、${inCount.length}市が人数の表に入っています。`),
+        ? `${kenName}で、人口が増えた所はありません。`
+        : fit60(`${kenName}のうち人口が増えたのは${kenUp.length}市で、${inCount.length}市が人数の表に入っています。`, `${kenName}のうち、人口が増えたのは${kenUp.length}市です。`),
     );
     if (kenUp.length) yosu.push(inRate.length ? `割合の表に入っている県庁所在地は${inRate.length}市です。` : '割合の表には、県庁所在地は入っていません。');
   }
   // 東京23区と、町と村の数
   const ku = up.filter((x) => /^131\d\d$/.test(x.code) && x.code !== '13100').length;
-  if (ku) yosu.push(`東京23区のうち人口が増えたのは${ku}区で、人数の表の${byCount.filter((x) => /^131\d\d$/.test(x.code)).length}の街が区です。`);
+  if (ku) yosu.push(`東京23区のうち人口が増えたのは${ku}区で、人数の表の${byCount.filter((x) => /^131\d\d$/.test(x.code)).length}市区町村が23区の区です。`);
   const choson = up.filter((x) => /[町村]$/.test(x.name)).length;
-  if (choson) yosu.push(`増えた${n0(up.length)}市区町村のうち、町と村は合わせて${choson}あります。`);
+  if (choson) yosu.push(`増えた${n0(up.length)}市区町村のうち、町と村は合わせて${choson}町村です。`);
   // 街の大きさと、人数の表が占める分
   const big = up.filter((x) => x.pop >= 100000).length;
   const small = up.filter((x) => x.pop < MIN_POP).length;
-  yosu.push(`増えた街のうち、人口10万人以上は${big}で、${MIN_POP / 10000}万人未満の街は${small}です。`);
+  yosu.push(`増えた市区町村のうち、人口10万人以上は${big}市区町村、${MIN_POP / 10000}万人未満は${small}市区町村です。`);
   const total = up.reduce((s, x) => s + x.popChange, 0);
   const top = byCount.reduce((s, x) => s + x.popChange, 0);
-  if (total > 0) yosu.push(fit60(`増えた人数を全部足すと${n0(total)}人で、そのうち${Math.round((top / total) * 100)}%が人数の表の${byCount.length}の街の分です。`));
+  if (total > 0) yosu.push(fit60(`増えた人数を全部足すと${n0(total)}人で、そのうち${Math.round((top / total) * 100)}%が人数の表の${byCount.length}市区町村の分です。`));
   return { yomikata, yosu };
 }
 
 export function rankingPages({ munis, list, urlOf, kencho = new Set() }) {
   const { up, prefUp, byRate, byCount } = rankingData({ munis, list });
+  const txt = rankingText({ list, kencho });
   const cells = Math.round((up.length / list.length) * 100);
   const link = (x) => {
     const pref = prefOf(x.code);
@@ -119,7 +126,7 @@ export function rankingPages({ munis, list, urlOf, kencho = new Set() }) {
 <div class="masu" role="img" aria-label="100マスのうち${cells}マス">${Array.from({ length: 100 }, (_, i) => `<i${i < cells ? ' class="on"' : ''}></i>`).join('')}</div>
 <p class="note">全国の市区町村を100マスにすると、増えた街は${cells}マス</p>
 ${srcKokusei(munis)}
-<p>${rankingText({ list, kencho }).yomikata.map(esc).join('')}</p>
+<p>${txt.yomikata.map(esc).join('')}</p>
 ${h2(`増えた割合が大きい街`)}
 <p class="note">人口${MIN_POP / 10000}万人以上の市区町村。2020年の人口とくらべた増え方</p>
 ${rows(byRate, (x) => x.rate, rateText)}
@@ -127,7 +134,7 @@ ${h2('増えた人数が多い街')}
 ${rows(byCount, (x) => x.popChange, (x) => `+${fmt(x.popChange)}人`)}
 <p class="note">${NOTE_KUMIKAE}政令市は市全体で数えています。住みやすさの順位ではありません。</p>
 ${h2('増えた街のようす')}
-<p>${rankingText({ list, kencho }).yosu.map(esc).join('')}</p>
+<p>${txt.yosu.map(esc).join('')}</p>
 ${srcKokusei(munis)}`;
   return [
     {

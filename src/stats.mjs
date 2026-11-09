@@ -490,16 +490,16 @@ export function prefReadText(list, p) {
     while (k < n && s * 2 <= p.pop) s += all[k++].pop;
     const rest = ((p.pop - s) / p.pop) * 100;
     if (k === 1) jinko.push(`${pn}の人口の半分より多くが、${all[0].name}1つの街に住んでいます。`);
-    else if (k <= 3) jinko.push(fit60(`人口の多い${all.slice(0, k).map((x) => x.name).join('と')}の${k}つの街を合わせると、${pn}の人口の半分をこえます。`, `人口の多い${k}つの街を合わせると、${pn}の人口の半分をこえます。`));
-    else jinko.push(fit60(`${NAMES(all.slice(0, 3))}から人口の多い順に${k}の市区町村を足すと、${pn}の人口の半分をこえます。`, `人口の多い順に${k}の市区町村を足すと、${pn}の人口の半分をこえます。`));
+    else if (k <= 3) jinko.push(fit60(`人口の多い${all.slice(0, k).map((x) => x.name).join('と')}の${k}市区町村を合わせると、${pn}の人口の半分をこえます。`, `人口の多い${k}市区町村を合わせると、${pn}の人口の半分をこえます。`));
+    else jinko.push(fit60(`${NAMES(all.slice(0, 3))}から人口の多い順に${k}市区町村を足すと、${pn}の人口の半分をこえます。`, `人口の多い順に${k}市区町村を足すと、${pn}の人口の半分をこえます。`));
     if (n - k >= 2) {
       jinko.push(
         rest >= 45
           ? `残りの${n - k}市区町村にも、${pn}の人口の${p1(rest)}が住んでいます。`
           : rest >= 40
-          ? `${pn}の人口の${p1(rest)}は、ほかの${n - k}の市区町村に住む人です。`
+          ? `${pn}の人口の${p1(rest)}は、ほかの${n - k}市区町村に住む人です。`
           : rest >= 25
-            ? `残る${n - k}の市区町村に住む人は、合わせて${pn}の人口の${p1(rest)}です。`
+            ? `残る${n - k}市区町村に住む人は、合わせて${pn}の人口の${p1(rest)}です。`
             : `ほかの${n - k}市区町村の人口は、合わせても${pn}の${p1(rest)}です。`,
       );
     }
@@ -507,8 +507,8 @@ export function prefReadText(list, p) {
   // 5年で人口が増えた街（全部の市区町村。増えた割合の大きい順に3つまで）。ないときは文を出さない
   const up = all.filter((x) => x.rate > 0).sort((x, y) => y.rate - x.rate || (x.code < y.code ? -1 : 1));
   const upText = [];
-  if (up.length === 1) upText.push(`町や村もふくめて、2020年より人口が増えた市区町村は${up[0].name}の1つです。`);
-  else if (up.length <= 3 && up.length) upText.push(fit60(`2020年より人口が増えたのは、増えた割合の大きい順に${NAMES(up)}の${up.length}つです。`, `2020年より人口が増えたのは${NAMES(up)}の${up.length}つです。`));
+  if (up.length === 1) upText.push(`町や村もふくめて、2020年より人口が増えた市区町村は${up[0].name}だけです。`);
+  else if (up.length <= 3 && up.length) upText.push(fit60(`2020年より人口が増えたのは、増えた割合の大きい順に${NAMES(up)}の${up.length}市区町村です。`, `2020年より人口が増えたのは${NAMES(up)}の${up.length}市区町村です。`));
   else if (up.length) {
     const small = up.filter((x) => x.pop < HABA_MIN).length;
     upText.push(
