@@ -4,7 +4,7 @@ import { rmSync, mkdirSync, writeFileSync, readFileSync, readdirSync, statSync, 
 import { createHash } from 'node:crypto';
 import { dirname } from 'node:path';
 import { SITE } from '../src/site.mjs';
-import { readYaml, checkSources, checkItems, checkShogo, readBichiku, bichikuMap, checkBichiku } from '../src/data.mjs';
+import { readYaml, checkSources, checkItems, checkShogo, readBichiku, bichikuMap, checkBichiku, readKenBichiku, kenBichikuMap, checkKenBichiku } from '../src/data.mjs';
 import { page, esc } from '../src/layout.mjs';
 import { readMunis, checkMunis } from '../src/munis.mjs';
 import { PREFS, resolveCities } from '../src/areas.mjs';
@@ -51,7 +51,8 @@ const items = readYaml('items.yml');
 const shogo = readYaml('shogo.yml');
 const koyomi = readYaml('koyomi.yml');
 const bichiku = readBichiku();
-const errors = [...checkSources(sources), ...checkItems(items, sources), ...checkShogo(shogo, sources), ...checkBichiku(bichiku), ...checkKoyomi(koyomi, items, sources)];
+const kenBichiku = readKenBichiku();
+const errors = [...checkSources(sources), ...checkItems(items, sources), ...checkShogo(shogo, sources), ...checkBichiku(bichiku), ...checkKenBichiku(kenBichiku), ...checkKoyomi(koyomi, items, sources)];
 const munis = readMunis();
 if (!munis) errors.push('data/estat/munis.json がない');
 else errors.push(...checkMunis(munis, shogo));
@@ -91,7 +92,8 @@ const kazu = kazuData(munis.areas, urlOf);
 const today = jstDate();
 const ima = SAIGAI ? null : koyomiPick(koyomi.periods, today);
 add(topPage({ cc, munis, hinanMeta, nMunis: list.length, ima: koyomiLine(ima, items) }));
-for (const pref of PREFS) add(prefPage({ pref, munis, list, z, cc, urlOf }));
+const kenBichikuOf = kenBichikuMap(kenBichiku);
+for (const pref of PREFS) add(prefPage({ pref, munis, list, z, cc, urlOf, hinan, hinanMeta, kenBichiku: kenBichikuOf.get(pref.slug) ?? null }));
 const bichikuOf = bichikuMap(bichiku);
 // 避難場所の一覧（顔ぶれの文に使う。ない街は null）
 const hinanList = (code) => (existsSync(`data/hinan/list/${code}.json`) ? JSON.parse(readFileSync(`data/hinan/list/${code}.json`, 'utf8')) : null);
@@ -106,7 +108,7 @@ for (const p of koyomiPages({ koyomi, items, sources, today })) if (p.raw != nul
 else add(p);
 for (const p of printPages({ cc, items, sources })) add(p);
 for (const p of kartePages({ cc, items, sources, munis, nat: nationalRates(list), z })) add(p);
-for (const p of rankingPages({ munis, list, urlOf })) add(p);
+for (const p of rankingPages({ munis, list, urlOf, kencho: new Set(cities.filter((c) => c.kind === 'kencho').map((c) => c.code)) })) add(p);
 for (const p of toolPages({ munis, kazu })) add(p);
 for (const p of manabiPages({ munis, list, nat: nationalRates(list), kazu, sources })) add(p);
 for (const p of hinmokuPages({ items, sources, products, ima: ima ? { item: ima.item, html: koyomiLine(ima, items, { item: false }) } : null })) add(p);

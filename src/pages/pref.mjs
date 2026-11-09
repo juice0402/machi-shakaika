@@ -1,17 +1,26 @@
 // 都道府県のページ（/都道府県/）。パソコンの広い画面では、1世帯の計算と「くわしく見られる街」が右の柱（.side）。県全体の数字と、県内の市区町村の一覧（人口の多い順）
-import { esc, fmt, h2, srcKokusei, fit } from '../layout.mjs';
-import { derive, r1, prefRangeText } from '../stats.mjs';
+import { esc, fmt, h2, srcKokusei, srcName, jpDate, fit } from '../layout.mjs';
+import { derive, r1, prefRangeText, prefReadText, prefHinanText } from '../stats.mjs';
 import { need } from '../calc.mjs';
 
 const signed = (v) => `${v > 0 ? '+' : ''}${r1(v).toFixed(1)}%`;
 
-export function prefPage({ pref, munis, list, z, cc, urlOf }) {
+// 県の備えのページの1行（data/ken-bichiku.yml の1件。11/9 夜 #72）。無い県は出さない
+export function kenBichikuLine(b) {
+  if (!b) return '';
+  return `<p class="why">${esc(b.publisher)}のページは、${esc(b.note)}<br><a href="${esc(b.url)}" rel="noopener">${srcName(b)}</a></p>`;
+}
+
+export function prefPage({ pref, munis, list, z, cc, urlOf, hinan = null, hinanMeta = null, kenBichiku = null }) {
   const a = derive(munis.areas[`${pref.code}000`]);
   const inPref = list.filter((x) => x.code.slice(0, 2) === pref.code).sort((x, y) => y.pop - x.pop);
   const up = inPref.filter((x) => x.rate > 0).length;
   const per = r1(a.per);
   const withPage = inPref.filter((x) => urlOf(x.code));
   const haba = prefRangeText(list, a);
+  const yomi = prefReadText(list, a);
+  const hn = hinan ? prefHinanText(hinan, pref.code) : null;
+  const para = (xs) => (xs.length ? `<p>${xs.map(esc).join('')}</p>\n` : '');
   const body = `<p class="crumb"><a href="/">トップ</a></p>
 <h1 class="city">${esc(pref.name)}</h1>
 <p class="big"><b>${fmt(a.pop)}</b>人</p>
@@ -28,6 +37,11 @@ ${inPref.map((x) => `<tr id="m${x.code}"><td>${urlOf(x.code) ? `<a href="${urlOf
 <p class="note">5年の増減は2020年から2025年。1世帯は一般世帯の平均人数（人）。</p>
 <p><a href="/ranking/jinko/">全国で人口が増えた市区町村</a>・<a href="/quiz/dobon/">都道府県ドボンクイズ</a></p>
 ${srcKokusei(munis)}
+${h2('県内の街の読み解き')}
+${para(yomi.jinko)}${para(yomi.up)}${yomi.setai.length ? `<p>${yomi.setai.map(esc).join('')}<br><a href="/sonae/hitorigurashi/">ひとり暮らしの備え</a>・<a href="/sonae/mansion/">マンション（共同住宅）の備え</a></p>\n` : ''}${yomi.koureisha.length ? `<p>${yomi.koureisha.map(esc).join('')}<br><a href="/sonae/akachan-koureisha/">高齢の家族がいる家の備え</a></p>\n` : ''}${srcKokusei(munis)}
+${hn?.text.length || kenBichiku ? `${h2(kenBichiku ? '県内の避難場所と県の備え' : '県内の避難場所')}
+${hn?.text.length ? `${para(hn.text)}<p class="note">1か所が複数の災害の種類に入ります。</p>
+<p class="src">出典：国土地理院「指定緊急避難場所データ」「指定避難所データ」を加工して作成（${hn.rows}市区町村の合計・${jpDate(hinanMeta.checked)}取得）</p>\n` : ''}${kenBichikuLine(kenBichiku)}` : ''}
 ${haba.length ? `${h2('県内の街の幅')}
 <p>${haba.map(esc).join('')}</p>
 <p class="note"><a href="/about/#keisan-ken">幅の見方</a></p>

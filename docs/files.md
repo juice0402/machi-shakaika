@@ -22,6 +22,7 @@
 | `src/lib/hinan.mjs` | 国土地理院の避難場所の全国CSV（hinanmap.gsi.go.jp）のURLと、市区町村ごと・災害の種類ごとの数え方 |
 | `data/sources.yml`・`items.yml`・`shogo.yml` | 出典台帳・備えの数字・照らし合わせ用の公式の数字 |
 | `data/bichiku.yml` | 自治体の備蓄の公表ページ（10/26 に57の街、10/28 に68の街）。市区町村ページの「この街の備え」に1行とリンク。ない街は行ごと出さない。年1回の公表なので題が変わることがある |
+| `data/ken-bichiku.yml` | 都道府県の備えのページ（11/9 夜 #72。県の備蓄の状況か、家庭に呼びかけている備え）。都道府県ページの「県内の避難場所と県の備え」に note とリンクの1行。ない県は出さない。点検は `checkKenBichiku`（note の決まりは bichiku.yml と同じ） |
 | `scripts/check-links.mjs`・`src/lib/links.mjs`・`linkcheck.mjs` | リンクの点検の本体・集め方・開き方（同じホストは2秒あけ、HEAD→GET、1回だけやり直し） |
 | `scripts/build.mjs`・`verify-dist.mjs`・`changed.mjs` | ビルド・全ページ点検・本番とのちがい |
 | `scripts/honbun.mjs` | 本文の字数と、市区町村の「どの街も同じ文」の割合（verify-dist が使う。`node scripts/honbun.mjs dist` で一覧） |

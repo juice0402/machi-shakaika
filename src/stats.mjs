@@ -477,3 +477,110 @@ export function prefRangeText(list, p) {
   out.push(`15歳未満の子どもの割合がいちばん高いのは${kid.name}の${p1(kid.p014)}で、${pn}全体は${p1(p.p014)}です。`);
   return out;
 }
+
+// 県内の街の読み解き（11/9 夜 #72）。県の中の街どうし・県の中の内訳だけを書く（県と県はくらべない・減り方と高齢化の順位は作らない）
+//   返すのは { jinko: [文], up: [文], koureisha: [文] }。増えた街がない県は up が空
+const NAMES = (xs) => xs.map((x) => x.name).join('・');
+export function prefReadText(list, p) {
+  const all = list.filter((x) => x.code.slice(0, 2) === p.code.slice(0, 2)).sort((x, y) => y.pop - x.pop || (x.code < y.code ? -1 : 1));
+  const pn = prefOf(p.code).name;
+  const n = all.length;
+  const jinko = [];
+  if (n >= 2) {
+    // 人口の多い順に足して、県の人口の半分をこえるまでの街の数
+    let k = 0;
+    let s = 0;
+    while (k < n && s * 2 <= p.pop) s += all[k++].pop;
+    const rest = ((p.pop - s) / p.pop) * 100;
+    if (k === 1) jinko.push(`${pn}の人口の半分より多くが、${all[0].name}1つの街に住んでいます。`);
+    else if (k <= 3) jinko.push(fit60(`人口の多い${all.slice(0, k).map((x) => x.name).join('と')}の${k}市区町村を合わせると、${pn}の人口の半分をこえます。`, `人口の多い${k}市区町村を合わせると、${pn}の人口の半分をこえます。`));
+    else jinko.push(fit60(`${NAMES(all.slice(0, 3))}から人口の多い順に${k}市区町村を足すと、${pn}の人口の半分をこえます。`, `人口の多い順に${k}市区町村を足すと、${pn}の人口の半分をこえます。`));
+    if (n - k >= 2) {
+      jinko.push(
+        rest >= 45
+          ? `残りの${n - k}市区町村にも、${pn}の人口の${p1(rest)}が住んでいます。`
+          : rest >= 40
+          ? `${pn}の人口の${p1(rest)}は、ほかの${n - k}市区町村に住む人です。`
+          : rest >= 25
+            ? `残る${n - k}市区町村に住む人は、合わせて${pn}の人口の${p1(rest)}です。`
+            : `ほかの${n - k}市区町村の人口は、合わせても${pn}の${p1(rest)}です。`,
+      );
+    }
+  }
+  // 5年で人口が増えた街（全部の市区町村。増えた割合の大きい順に3つまで）。ないときは文を出さない
+  const up = all.filter((x) => x.rate > 0).sort((x, y) => y.rate - x.rate || (x.code < y.code ? -1 : 1));
+  const upText = [];
+  if (up.length === 1) upText.push(`町や村もふくめて、2020年より人口が増えた市区町村は${up[0].name}だけです。`);
+  else if (up.length <= 3 && up.length) upText.push(fit60(`2020年より人口が増えたのは、増えた割合の大きい順に${NAMES(up)}の${up.length}市区町村です。`, `2020年より人口が増えたのは${NAMES(up)}の${up.length}市区町村です。`));
+  else if (up.length) {
+    const small = up.filter((x) => x.pop < HABA_MIN).length;
+    upText.push(
+      fit60(
+        small ? `人口1万人未満の小さな街もふくめると、人口が増えたのは${up.length}市区町村です。` : `${n}市区町村のうち、2020年より人口が増えたのは${up.length}です。`,
+      ),
+      fit60(`増えた割合が大きいのは${NAMES(up.slice(0, 3))}の順です。`, `増えた割合がいちばん大きいのは${up[0].name}です。`),
+    );
+  }
+  // 65歳以上の人がいる世帯（県の中の内訳。街の順位にはしない）→ 高齢の家族がいる家の備えへ
+  const koureisha = [];
+  if (p.pWith65 != null) {
+    const w = p.pWith65;
+    koureisha.push(
+      w >= 50
+        ? `${pn}では、一般世帯の半分をこえる${p1(w)}に65歳以上の人がいます。`
+        : w >= 42
+          ? `${pn}の一般世帯のうち${p1(w)}は、65歳以上の人がいる世帯です。`
+          : `65歳以上の人がいる世帯は、${pn}の一般世帯の${p1(w)}です。`,
+    );
+    if (p.single65 > 0) koureisha.push(p.single65 >= 300000 ? `ひとり暮らしの65歳以上の人も、${n0(p.single65)}人います。` : p.single65 >= 100000 ? `県内でひとり暮らしをしている65歳以上の人は${n0(p.single65)}人です。` : p.age65 > 0 && (p.single65 / p.age65) * 100 >= 20
+          ? `ひとり暮らしの65歳以上の人は${n0(p.single65)}人で、65歳以上の人の${p1((p.single65 / p.age65) * 100)}です。`
+          : `ひとり暮らしの65歳以上の人は、${pn}に${n0(p.single65)}人います。`);
+  }
+  // 県全体の世帯の内訳（ひとり暮らし・共同住宅）。言い回しは割合の大きさでえらぶ
+  const setai = [];
+  if (p.pSingle != null && p.pKyodo != null) {
+    setai.push(
+      p.pSingle >= 40
+        ? `${pn}では、一般世帯の${p1(p.pSingle)}がひとり暮らしです。`
+        : p.pSingle >= 33
+          ? `${pn}の一般世帯のうち、ひとり暮らしは${p1(p.pSingle)}です。`
+          : `ひとり暮らしの世帯は、${pn}の一般世帯の${p1(p.pSingle)}です。`,
+      p.pKyodo >= 50 ? `住宅に住む世帯の半分をこえる${p1(p.pKyodo)}が、共同住宅に住んでいます。` : p.pKyodo >= 30 ? `共同住宅に住む世帯は、住宅に住む世帯の${p1(p.pKyodo)}です。` : `住宅に住む世帯のうち、共同住宅は${p1(p.pKyodo)}で、ほかは一戸建てなどです。`,
+    );
+  }
+  return { jinko, up: upText, koureisha, setai };
+}
+
+// 県内の避難場所の顔ぶれ（data/hinan/counts.json の県内の市区町村の合計。11/9 夜 #72）
+//   人口あたり・順位・県どうしのくらべには使わない。0か所の災害の種類は書かない
+export function prefHinanText(hinan, prefCode) {
+  const rows = Object.entries(hinan.areas).filter(([c]) => c.slice(0, 2) === prefCode).map(([, r]) => r);
+  if (!rows.length) return null;
+  const basho = rows.reduce((s, r) => s + r[0], 0);
+  const hinanjo = rows.reduce((s, r) => s + r[1], 0);
+  const kinds = hinan.kinds.map(([k, name], i) => ({ k, name, v: rows.reduce((s, r) => s + (r[3 + i] || 0), 0) })).filter((x) => x.v > 0).sort((x, y) => y.v - x.v);
+  const pn = prefByCode.get(prefCode).name;
+  const out = [];
+  // 言い回しは、多い2つの種類の数の近さでえらぶ（書く数字は同じ）
+  if (basho > 0 && kinds.length >= 2) {
+    const [x, y] = kinds;
+    out.push(
+      y.v >= x.v * 0.85
+        ? fit60(`${pn}の指定緊急避難場所${n0(basho)}か所のうち、${x.name}に使える所は${n0(x.v)}か所で、${y.name}も${n0(y.v)}か所あります。`, `指定緊急避難場所${n0(basho)}か所のうち、${x.name}に使える所は${n0(x.v)}か所で、${y.name}も${n0(y.v)}か所です。`)
+        : fit60(`${pn}に${n0(basho)}か所ある指定緊急避難場所は、${x.name}に使える所が${n0(x.v)}か所、${y.name}が${n0(y.v)}か所です。`, `${n0(basho)}か所ある指定緊急避難場所は、${x.name}に使える所が${n0(x.v)}か所、${y.name}が${n0(y.v)}か所です。`),
+    );
+  }
+  else if (basho > 0 && kinds.length) out.push(`${pn}の指定緊急避難場所は${n0(basho)}か所で、${kinds[0].name}に使える所が${n0(kinds[0].v)}か所です。`);
+  // 火山・津波は、載っている県だけ
+  const kazan = kinds.find((x) => x.k === 'kazan');
+  const tsunami = kinds.find((x) => x.k === 'tsunami');
+  // 3番めに多い種類（火山・津波は、載っている県だけ別の言い回し）
+  const third = kinds[2];
+  if (kazan && kinds.indexOf(kazan) > 1) out.push(`火山の災害に使える所も、${n0(kazan.v)}か所が載っています。`);
+  else if (tsunami && kinds.indexOf(tsunami) > 1) out.push(`津波のときに使える所は${n0(tsunami.v)}か所です。`);
+  if (third && third !== kazan && third !== tsunami) out.push(`3番めに多いのは${third.name}で、${n0(third.v)}か所です。`);
+  if (hinanjo > basho) out.push(`家に戻れないときに過ごす指定避難所は${n0(hinanjo)}か所で、指定緊急避難場所より多く載っています。`);
+  else if (hinanjo >= basho * 0.75) out.push(`家に戻れないときに過ごす指定避難所は、${n0(hinanjo)}か所が載っています。`);
+  else if (hinanjo > 0) out.push(`指定避難所は${n0(hinanjo)}か所で、家に戻れないときに過ごす所です。`);
+  return { basho, hinanjo, rows: rows.length, text: out };
+}

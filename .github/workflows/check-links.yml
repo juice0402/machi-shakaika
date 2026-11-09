@@ -18,6 +18,7 @@ on:
     paths:
       - 'data/sources.yml'
       - 'data/bichiku.yml'
+      - 'data/ken-bichiku.yml'
       - 'data/estat/meta.json'
       - 'src/**'
       - 'scripts/check-links.mjs'
