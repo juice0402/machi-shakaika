@@ -225,6 +225,47 @@ sources:
     checked: 2026-10-26
     about: フードと水は最低5日分。環境省のガイドラインが改訂中なので、ペットのページを作る前に確かめ直す
 
+  # 品目ページの「えらび方の目安」「まちがえやすいところ」（夜 #74）
+  - id: nerima-kumioki
+    kind: sonae
+    publisher: 練馬区
+    title: 水道水のくみ置きを習慣にしましょう
+    url: https://www.city.nerima.tokyo.jp/kurashi/bosai/oshirase/kumioki.html
+    checked: 2026-11-09
+    about: くみ置きの水道水が飲食に使えるのは、直射日光を避けた涼しい所で約3日、冷蔵庫で約10日。清潔でふたのできる容器に口元まで入れる。過ぎたら掃除や洗濯に。2023年1月27日更新
+
+  - id: shinagawa-toilet
+    kind: sonae
+    publisher: 品川区
+    title: 携帯トイレの使用方法
+    url: https://www.city.shinagawa.tokyo.jp/ct/pdf/20240621153952_1.pdf
+    checked: 2026-11-09
+    about: 汚物を入れる袋は使うたびに替える。凝固剤は便器に直接入れない（つまる原因）。使った袋は口を結んで保管袋へ。処理は自治体の方法に従う
+
+  - id: nite-bombe
+    kind: sonae
+    publisher: 製品評価技術基盤機構（NITE）
+    title: カセットボンベの破裂に注意
+    url: https://www.nite.go.jp/data/000088248.pdf
+    checked: 2026-11-09
+    about: IH調理器の上に置かれて加熱され破裂した例。異常に熱くなる使い方をしない。室内に保管。正しく装着。古い製品は部品の劣化・破損・ゆるみに注意。使い切ってから捨てる
+
+  - id: tokyo-denchi
+    kind: sonae
+    publisher: 東京都
+    title: 電池で発火？！電池での事故に注意！
+    url: https://www.shouhiseikatu.metro.tokyo.lg.jp/attention/documents/kigai_denchi.pdf
+    checked: 2026-11-09
+    about: 種類・銘柄・新旧のちがう電池をまぜない（発熱・液漏れ・破裂）。むき出しでまぜて置かず、包装のままかケースに。交換のときばねなどで外装を傷つけてショートした事故。外装に傷のある電池は使わない。捨てるときはプラス極とマイナス極をテープで絶縁。2015年4月28日
+
+  - id: nishinomiya-battery
+    kind: sonae
+    publisher: 西宮市
+    title: 【西宮消防署】モバイルバッテリーの火災に注意してください！！
+    url: https://www.nishi.or.jp/kurashi/anshin/shobokyoku/nishinomiya/kasaiyobou/10234412024062920381.html
+    checked: 2026-11-09
+    about: 丸形PSEマークのついたものをえらび、取扱説明書をよく読む（マークのないものは国内で販売できない）。車内など高温の所に置かない。膨らんだものは使うのをやめる。満充電のあと充電を続けない・合った充電器。一般ごみで捨てない。2024年7月12日更新
+
   - id: tokyo-bichiku
     kind: sonae
     publisher: 東京都
