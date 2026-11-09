@@ -82,13 +82,6 @@ cities:
     url: https://www.city.bunkyo.lg.jp/b009/p000248.html
     checked: 2026-10-26
 
-  - city: tokyo/sumida
-    publisher: 墨田区
-    title: "防災備蓄倉庫"
-    url: https://www.city.sumida.lg.jp/anzen_anshin/bousai/ku-taisaku/bitiku.html
-    checked: 2026-11-08
-    note: "アルファ米や毛布などを置く防災備蓄倉庫の場所を載せています。"
-
   - city: tokyo/koto
     publisher: 江東区
     title: "備蓄物資の公表及び防災倉庫"
@@ -114,13 +107,6 @@ cities:
     title: "備蓄状況の公表"
     url: https://www.city.setagaya.lg.jp/02049/34052.html
     checked: 2026-10-26
-
-  - city: tokyo/shibuya
-    publisher: 渋谷区
-    title: "食料・日用品の備蓄"
-    url: https://www.city.shibuya.tokyo.jp/bosai/bosai/saigai-sonae/bitiku.html
-    checked: 2026-11-08
-    note: "毛布やマットなどの区の備蓄を、令和4年9月現在の表で載せています。"
 
   - city: tokyo/nakano
     publisher: 中野区
@@ -204,13 +190,6 @@ cities:
     url: https://www.city.toyama.lg.jp/bosai/bosai/1010655/1017500.html
     checked: 2026-11-08
     note: "毛布や飲料水などを置いている場所を、地域ごとの表で載せています。"
-
-  - city: fukui/fukui
-    publisher: 福井市
-    title: "防災備蓄倉庫"
-    url: https://www.city.fukui.lg.jp/kurasi/bosai/bosai/bichikusouko.html
-    checked: 2026-11-08
-    note: "非常食や毛布などを置く防災備蓄倉庫の場所を載せています。"
 
   - city: gifu/gifu
     publisher: 岐阜市
@@ -481,13 +460,6 @@ cities:
     checked: 2026-11-08
     note: "敷きマットや毛布など、指定緊急避難場所に置く物の数を載せています。"
 
-  - city: hiroshima/fukuyama
-    publisher: 福山市
-    title: "福山市災害備蓄方針を策定しました"
-    url: https://www.city.fukuyama.hiroshima.jp/soshiki/fukushisomu/293512.html
-    checked: 2026-11-08
-    note: "市の災害備蓄の方針を、2023年3月のPDFで載せています。"
-
   - city: fukuoka/kurume
     publisher: 久留米市
     title: "久留米市の備蓄状況について"
@@ -667,7 +639,7 @@ cities:
     publisher: 瀬戸市
     title: "瀬戸市防災備蓄計画"
     url: https://www.city.seto.aichi.jp/docs/2019/12/11/00054/
-    checked: 2026-11-08
+    checked: 2026-11-09
     note: "食料や飲料水、生活必需品などの防災備蓄の計画を載せています。"
 
   - city: mie/yokkaichi
