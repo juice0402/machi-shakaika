@@ -37,6 +37,13 @@ test('まちがったものはエラーになる', () => {
   assert.ok(bad({ url: null }).some((e) => e.includes('https')));
   assert.ok(bad({ checked: '2026/10/26' }).some((e) => e.includes('checked')));
   assert.ok(bad({ checked: null }).some((e) => e.includes('checked')));
+  // note（11/8 夜 #71）
+  assert.deepEqual(bad({ note: '避難所用の食料・水・毛布などの数を、区ごとに載せています。' }), []);
+  assert.ok(bad({ note: '' }).some((e) => e.includes('note')));
+  assert.ok(bad({ note: '食料の数を載せています' }).some((e) => e.includes('。')));
+  assert.ok(bad({ note: '食料を載せています。水も載せています。' }).some((e) => e.includes('。')));
+  assert.ok(bad({ note: 'あ'.repeat(60) + '。' }).some((e) => e.includes('60字')));
+  assert.ok(bad({ note: '食料は十分な数を載せています。' }).some((e) => e.includes('十分')));
   const dup = checkBichiku({ cities: [ok, ok] });
   assert.ok(dup.some((e) => e.includes('2回')));
   assert.ok(checkBichiku({ cities: 'x' }).length > 0);
@@ -53,6 +60,11 @@ test('「この街の備え」の1行：市は「市の備蓄」、東京23区�
   assert.ok(!k.includes('市の備蓄'));
   // 東京の市（八王子）は「市」
   assert.ok(bichikuLine(city('tokyo/hachioji'), ok).includes('市の備蓄は'));
+});
+
+test('「この街の備え」の1行：note があれば「◯◯市の備蓄のページは、」を頭に', () => {
+  const s = bichikuLine(city('hokkaido/sapporo'), { ...ok, note: '食料と水の数を<b>載せています。' });
+  assert.ok(s.startsWith('<p class="why">札幌市の備蓄のページは、食料と水の数を&lt;b&gt;載せています。<br>市の備蓄は避難所に来た人の分です。'));
 });
 
 test('「この街の備え」の1行：リンクがない街は行ごと出さない・題の中の記号は逃がす', () => {

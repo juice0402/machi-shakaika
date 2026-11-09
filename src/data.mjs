@@ -139,6 +139,8 @@ export function readBichiku() {
 export const bichikuMap = (b) => new Map((b?.cities ?? []).map((c) => [c.city, c]));
 
 // 備蓄の公表ページの形。街が areas.mjs にある・2回書かない・発行元は街の名前・題がある・https・確かめた日
+// note に使わない言葉（使わない言葉と、評価・あおりの言葉）
+const NOTE_NG = ['今すぐ', '手遅れ', 'しましょう', 'ぜひ', '便利', '簡単', '安心', 'おすすめ', 'ポイント', 'コツ', '——', '足りない', '不足', '十分', '多い', '少ない', 'ワースト']
 export function checkBichiku(b, cities = CITIES) {
   const errors = [];
   const names = new Map(cities.map((c) => [`${c.pref}/${c.slug}`, c.name]));
@@ -154,6 +156,17 @@ export function checkBichiku(b, cities = CITIES) {
     if (typeof c?.title !== 'string' || !c.title.trim()) errors.push(`${at}: title（ページの題）がありません`);
     if (!/^https:\/\/[^\s]+$/.test(c?.url ?? '')) errors.push(`${at}: url は https で`);
     if (!DATE.test(String(c?.checked))) errors.push(`${at}: checked（確かめた日）は 2026-10-26 の形で`);
+    // note：そのページに書いてあることを1文（11/8 夜 #71）。空でない・全角60字まで・使わない言葉なし・「。」で終わる
+    if (c && 'note' in c) {
+      const n = typeof c.note === 'string' ? c.note.trim() : '';
+      if (!n) errors.push(`${at}: note が空です`);
+      else {
+        if ([...n].length > 60) errors.push(`${at}: note は全角60字まで`);
+        if (!n.endsWith('。') || n.slice(0, -1).includes('。')) errors.push(`${at}: note は「。」で終わる1文で`);
+        const ng = NOTE_NG.find((w) => n.includes(w));
+        if (ng) errors.push(`${at}: note に使わない言葉「${ng}」`);
+      }
+    }
   }
   return errors;
 }
