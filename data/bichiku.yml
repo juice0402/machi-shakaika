@@ -66,7 +66,8 @@ cities:
     publisher: 中央区
     title: "食料・生活必需品の備蓄"
     url: https://www.city.chuo.lg.jp/a0011/bousaianzen/bousai/bousaitaisaku/kunotorikumi/saigaitaisaku/bitiku01.html
-    checked: 2026-10-26
+    checked: 2026-11-09
+    note: "避難者の想定数の4日分を備えていることと、食料や生活必需品の主な品目を載せています。"
 
   - city: tokyo/minato
     publisher: 港区
@@ -435,7 +436,8 @@ cities:
     publisher: 吹田市
     title: "吹田市備蓄計画"
     url: https://www.city.suita.osaka.jp/anzen/1017894/1017911/1004261.html
-    checked: 2026-10-28
+    checked: 2026-11-09
+    note: "重要11品目などの備蓄計画と、備蓄物資の現状の資料をPDFで載せています。"
 
   - city: osaka/hirakata
     publisher: 枚方市
@@ -667,3 +669,164 @@ cities:
     url: https://www.city.seto.aichi.jp/docs/2019/12/11/00054/
     checked: 2026-11-08
     note: "食料や飲料水、生活必需品などの防災備蓄の計画を載せています。"
+
+  - city: mie/yokkaichi
+    publisher: 四日市市
+    title: "災害に備えた備蓄"
+    url: https://bousai2.city.yokkaichi.mie.jp/preparedness/di-03/
+    checked: 2026-11-09
+    note: "指定避難所の防災備蓄倉庫に備えている毛布や簡易トイレなど、1か所あたりの数を載せています。"
+
+  - city: mie/ise
+    publisher: 伊勢市
+    title: "市の備蓄"
+    url: https://www.city.ise.mie.jp/bousai_kyukyu/bousai/torikumi/1015290.html
+    checked: 2026-11-09
+    note: "伊勢市備蓄計画と、令和8年4月1日時点の備蓄物資一覧をPDFで載せています。"
+
+  - city: mie/matsusaka
+    publisher: 松阪市
+    title: "市の災害用備蓄"
+    url: https://www.city.matsusaka.mie.jp/site/bousai/saigaibichiku.html
+    checked: 2026-11-09
+    note: "市の備蓄品の一覧と指定避難所ごとの一覧を、令和8年3月31日現在のPDFで載せています。"
+
+  - city: shiga/nagahama
+    publisher: 長浜市
+    title: "防災備蓄品の備蓄状況"
+    url: https://www.city.nagahama.lg.jp/0000016453.html
+    checked: 2026-11-09
+    note: "地震の被害の想定をもとに備えている防災備蓄品の一覧を、令和8年4月現在のPDFで載せています。"
+
+  - city: shiga/kusatsu
+    publisher: 草津市
+    title: "草津市の備蓄について"
+    url: https://www.city.kusatsu.shiga.jp/kurashi/bosai/saigainisonaete/kikikanri12025.html
+    checked: 2026-11-09
+    note: "広域避難所の小中学校などにある防災備蓄倉庫と、備えている資機材の種類を載せています。"
+
+  - city: kyoto/uji
+    publisher: 宇治市
+    title: "防災用備蓄品について"
+    url: https://www.city.uji.kyoto.jp/soshiki/25/1102.html
+    checked: 2026-11-09
+    note: "乾パンやアルファ化米、毛布などの備蓄品と、防災倉庫などの保管場所を載せています。"
+
+  - city: osaka/kishiwada
+    publisher: 岸和田市
+    title: "災害用の備蓄品について"
+    url: https://www.city.kishiwada.lg.jp/page/27-bichiku.html
+    checked: 2026-11-09
+    note: "非常食や毛布など、市の備蓄品の数量の一覧を令和8年4月1日現在で載せています。"
+
+  - city: osaka/ikeda
+    publisher: 池田市
+    title: "市の備蓄品について"
+    url: https://www.city.ikeda.osaka.jp/soshiki/sogoseisaku/kikikanri/bousai/sonae/19201.html
+    checked: 2026-11-09
+    note: "食料や飲料水、毛布など市の備蓄品を、令和8年7月7日時点のPDFで載せています。"
+
+  - city: osaka/tondabayashi
+    publisher: 富田林市
+    title: "富田林市の備蓄状況"
+    url: https://www.city.tondabayashi.lg.jp/soshiki/7/46545.html
+    checked: 2026-11-09
+    note: "防災倉庫と市内の避難所に分けて備えている備蓄品を、令和8年5月現在のPDFで載せています。"
+
+  - city: osaka/matsubara
+    publisher: 松原市
+    title: "市の備蓄品について"
+    url: https://www.city.matsubara.lg.jp/docs/page16555.html
+    checked: 2026-11-09
+    note: "アルファ化米や毛布など重点11品目の備蓄数を、令和8年4月1日時点で載せています。"
+
+  - city: hyogo/itami
+    publisher: 伊丹市
+    title: "伊丹市の災害用物資の備蓄状況について"
+    url: https://www.city.itami.lg.jp/SOSIKI/SOMU/KIKIKANRI/SAIGAINISONAETE/47664.html
+    checked: 2026-11-09
+    note: "アルファ化米や毛布、発電機などの数を、令和7年12月1日現在で載せています。"
+
+  - city: hyogo/takarazuka
+    publisher: 宝塚市
+    title: "災害用備蓄物資について"
+    url: https://www.city.takarazuka.hyogo.jp/1013056/1013225/1060418.html
+    checked: 2026-11-09
+    note: "食糧や飲料水、毛布、災害用トイレなどの数を、令和8年2月16日現在で載せています。"
+
+  - city: hyogo/sanda
+    publisher: 三田市
+    title: "避難所防災倉庫備蓄品について"
+    url: https://www.city.sanda.lg.jp/soshiki/8/gyomu/anzen_anshin/bousai/saigai_sonae/hinasyo_zyoho/3545.html
+    checked: 2026-11-09
+    note: "指定避難所の防災倉庫に備えている資機材の品目と、1か所ごとの数を載せています。"
+
+  - city: hiroshima/onomichi
+    publisher: 尾道市
+    title: "災害用物資の備蓄状況"
+    url: https://www.city.onomichi.hiroshima.jp/soshiki/8/88494.html
+    checked: 2026-11-09
+    note: "アルファ化米や毛布、簡易トイレなどの主な品目と、備蓄物資の一覧のPDFを載せています。"
+
+  - city: hiroshima/higashihiroshima
+    publisher: 東広島市
+    title: "市の備蓄状況"
+    url: https://www.city.higashihiroshima.lg.jp/bosai/6/42117.html
+    checked: 2026-11-09
+    note: "非常用食料や資機材の備蓄状況を、令和8年4月1日時点のPDFで載せています。"
+
+  - city: yamaguchi/ube
+    publisher: 宇部市
+    title: "災害備蓄物資"
+    url: https://www.city.ube.yamaguchi.jp/kurashi/bousai/bousai/1001229/1001255.html
+    checked: 2026-11-09
+    note: "避難所などに備えている物資の種類と配備先を、写真とPDFで載せています。"
+
+  - city: yamaguchi/hofu
+    publisher: 防府市
+    title: "防府市の災害用備蓄備品の状況を公表します"
+    url: https://www.city.hofu.yamaguchi.jp/soshiki/2/bitikubusshi.html
+    checked: 2026-11-09
+    note: "市が備える物資と機材の一覧を、令和8年4月時点のExcelとPDFで載せています。"
+
+  - city: yamaguchi/iwakuni
+    publisher: 岩国市
+    title: "災害備蓄物品"
+    url: https://www.city.iwakuni.lg.jp/soshiki/9/99020.html
+    checked: 2026-11-09
+    note: "食料や飲料水、生活必需品を防災備蓄倉庫などに分けて備えていることと、一覧のPDFを載せています。"
+
+  - city: ehime/imabari
+    publisher: 今治市
+    title: "災害用備蓄物資整備状況一覧表"
+    url: https://www.city.imabari.ehime.jp/bousai/bitiku/
+    checked: 2026-11-09
+    note: "災害用備蓄物資の整備状況の一覧を、令和8年4月1日現在のPDFで載せています。"
+
+  - city: ehime/niihama
+    publisher: 新居浜市
+    title: "新居浜市の備蓄物資について"
+    url: https://www.city.niihama.lg.jp/soshiki/kikikanri/bunsanbichiku.html
+    checked: 2026-11-09
+    note: "指定避難所などに分けて備えている飲料水や毛布などの数を、令和8年5月末時点で載せています。"
+
+  - city: fukuoka/iizuka
+    publisher: 飯塚市
+    title: "飯塚市における主な備蓄状況"
+    url: https://www.city.iizuka.lg.jp/uploaded/attachment/17031.pdf
+    checked: 2026-11-09
+    note: "飲料水や食料、毛布、簡易トイレなどの在庫数を、令和8年7月1日時点で載せています。"
+
+  - city: fukuoka/itoshima
+    publisher: 糸島市
+    title: "避難生活に必要な物資の備蓄状況"
+    url: https://www.city.itoshima.lg.jp/s004/010/010/010/040/itoshimashibichiku_20260624.pdf
+    checked: 2026-11-09
+    note: "飲料水や食料、毛布、簡易トイレなどの備蓄数量を、令和8年6月24日現在で載せています。"
+
+  - city: okinawa/urasoe
+    publisher: 浦添市
+    title: "災害用物資・機材等の備蓄状況"
+    url: https://www.city.urasoe.lg.jp/doc/2026072300075
+    checked: 2026-11-09
+    note: "主食や飲料水、携帯トイレ、毛布などの数を、令和8年7月1日時点で載せています。"
