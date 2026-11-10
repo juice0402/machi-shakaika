@@ -152,10 +152,13 @@ test('備えのページの街の例：くわしく見られる街から・デ�
   assert.equal(machiRei(null), null);
 });
 
-test('#85 75歳以上・人口密度・避難場所の種類の文：数字を固定した確かめ', () => {
-  const z = { age65: 1000, age75: 586 };
-  assert.equal(age75Text({ name: 'A市', age65: 100, age75: 70 }, z), 'A市の65歳以上の人のうち70.0%が75歳以上で、全国の58.6%より多い割合です。');
-  assert.equal(age75Text({ name: 'A市', age65: 1000, age75: 586 }, z), 'A市の75歳以上は586人で、65歳以上の人のうち58.6%にあたります。');
+test('#85 75歳以上・人口密度・避難場所の種類の文：数字を固定した確かめ', { skip }, () => {
+  const zz = { age65: 1000, age75: 586 };
+  assert.equal(age75Text({ name: 'A市', age65: 20000, age75: 14000 }, zz), 'A市の65歳以上の人のうち、75歳以上は70.0%で、全国は58.6%です。');
+  assert.equal(age75Text({ name: 'A市', age65: 100000, age75: 52100 }, zz), '75歳以上の人は52,100人で、65歳以上の人のうち52.1%です。全国は58.6%です。');
+  for (const a of list) assert.ok(!/より(多|少)/.test(age75Text(a, z)), a.name);
+  assert.equal(age75Text({ name: 'A市', age65: 1000, age75: 586 }, zz), 'A市の75歳以上は586人で、65歳以上の人の58.6%です。全国は58.6%です。');
+  assert.equal(densityText({ name: 'D村', code: '10999', density: 2 }, { density: 293.3 }), 'D村の1km²あたりの人口は2人で、群馬県全体の293人の1%に届かない数です。');
   assert.equal(densityText({ name: '館林市', code: '10207', density: 1193.7 }, { density: 293.3 }), '館林市の人口密度は1km²あたり1,194人で、群馬県全体の293人の約4.1倍です。');
   assert.equal(densityText({ name: 'B町', code: '10999', density: 100 }, { density: 293.3 }), 'B町の1km²あたりの人口は100人で、群馬県全体の293人の34%ほどです。');
   assert.deepEqual(hinanKindsText('館林市', 78, [['地震', 69], ['洪水', 45]]), ['地震の指定がある場所は69か所で、指定緊急避難場所の88%です。', 'ほかに洪水45か所の指定があります。']);
