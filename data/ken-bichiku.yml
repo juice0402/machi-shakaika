@@ -160,13 +160,6 @@ prefs:
     checked: 2026-11-10
     note: "家庭の食料と水は最低3日分、できれば1週間分程度をめやすにし、県と市町村の備蓄の一覧も載せています。"
 
-  - pref: mie
-    publisher: 三重県
-    title: "三重県備蓄・調達基本方針"
-    url: https://www.pref.mie.lg.jp/STAISAKU/HP/000199820.htm
-    checked: 2026-11-10
-    note: "県と市町が発災初期に備える物資について、公助の備蓄と調達の量と役割を定めた方針を載せています。"
-
   - pref: shiga
     publisher: 滋賀県
     title: "滋賀県内の自治体の備蓄量について"
@@ -176,10 +169,10 @@ prefs:
 
   - pref: kyoto
     publisher: 京都府
-    title: "特集1　9月は防災月間です 大規模災害に備える。"
-    url: https://www.pref.kyoto.jp/koho/dayori/202609/toku_01.html
+    title: "災害時の食に備えよう"
+    url: https://www.pref.kyoto.jp/tango/ho-tango/saigaijinoshokujinosonae.html
     checked: 2026-11-10
-    note: "大人2人の1週間分を例に、水や主食、携帯トイレなどの品目と数を載せています。"
+    note: "3日分程度の食の備えをめやすに、すぐ持ち出す物と、長引くときの主食や缶詰などを挙げています。"
 
   - pref: osaka
     publisher: 大阪府
@@ -194,13 +187,6 @@ prefs:
     url: https://web.pref.hyogo.lg.jp/kk41/jijyokyojyo.html
     checked: 2026-11-10
     note: "家庭の備蓄は最低3日分、できれば7日分をめやすにし、トイレは1人1日5回としています。"
-
-  - pref: nara
-    publisher: 奈良県
-    title: "災害用備蓄物資の保有状況について"
-    url: https://www.pref.nara.lg.jp/n010/p146029.html
-    checked: 2026-11-10
-    note: "災害対策基本法にもとづいて、令和8年4月1日時点の県の災害用備蓄物資の保有状況を公表しています。"
 
   - pref: wakayama
     publisher: 和歌山県
@@ -232,10 +218,10 @@ prefs:
 
   - pref: yamaguchi
     publisher: 山口県
-    title: "梅雨期における備え"
-    url: https://www.pref.yamaguchi.lg.jp/press/261825.html
+    title: "地震・津波に備えましょう!"
+    url: https://www.pref.yamaguchi.lg.jp/soshiki/6/12623.html
     checked: 2026-11-10
-    note: "梅雨の時期に向けて、水や食料などを最低3日分、各家庭で用意するよう呼びかけています。"
+    note: "普段の食品などを少し多めに買って使った分を補う、ローリングストック法を紹介しています。"
 
   - pref: tokushima
     publisher: 徳島県
@@ -284,7 +270,7 @@ prefs:
     title: "災害備蓄"
     url: https://www.pref.nagasaki.jp/doc/page-769482.html
     checked: 2026-11-10
-    note: "県と市町の応急生活物資の備蓄状況の資料と、県の備蓄食料の寄附の手続きを載せています。"
+    note: "県と市町の応急生活物資の備蓄状況と、流通備蓄の協定の状況を資料で公表しています。"
 
   - pref: kumamoto
     publisher: 熊本県
