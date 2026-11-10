@@ -78,8 +78,8 @@ export const pageKind = (path) => (segs(path).length === 0 ? 'top' : isCityPage(
 
 // 地の文のめやす（11/8 しょーくん：案B「市区町村は残して街ごとに厚く」。claude/machi-adsense-plan.md）
 //   null のページ（クイズ・カルテ・プリント・街あつめ帳など広告を置かない道具、このサイトについて、プライバシーポリシー）はめやすなし
-//   JINOBUN_STRICT が false のあいだは verify-dist が知らせるだけ。夜の直しが全部入ったら true にして止める
-export const JINOBUN_STRICT = false;
+//   JINOBUN_STRICT が true なので、めやす・めあてに足りないページで verify-dist が止まる（夜 #75 で true にした。めやすを下げて通さない）
+export const JINOBUN_STRICT = true;
 // 型の割合のめあて：ためしに測ると、中央50%は水増ししないと届かない（足す文の3割ほどは決まった言い回しになる）ので、中央55%・最大60%
 export const KATA_GOAL = { cityMedian: 0.55, cityMax: 0.6, prefMax: 0.6 };
 const MEYASU_600 = new Set(['/', '/ranking/jinko/', '/sonae/', '/hinmoku/', '/dougu/check/', '/dougu/keisan/', '/dougu/kigen/', '/kurabe/', '/niteru/', '/koyomi/']);

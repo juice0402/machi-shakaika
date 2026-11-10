@@ -147,7 +147,7 @@ const HONBUN_EXCEPT = {};
   for (const [p, v] of kata) if (v > KATA_MAX && !(p in HONBUN_EXCEPT)) fail(`${DIST}${p}`, `どの街も同じ文の割合が${Math.round(v * 100)}%（${Math.round(KATA_MAX * 100)}%以下にする）`);
   if (Object.keys(HONBUN_EXCEPT).length > 5) fail(`${DIST}/`, '本文の例外が5ページをこえている');
 
-  // 地の文のめやすと、型の割合のめあて（11/8 AdSense のやり直し。JINOBUN_STRICT が false のあいだは知らせるだけ）
+  // 地の文のめやすと、型の割合のめあて（11/8 AdSense のやり直し。夜 #75 から足りないと止める。届かないページは水増しせず HONBUN_EXCEPT に理由つきで）
   const short = [];
   for (const p of pages) {
     const m = jinobunMeyasu(p.path);
