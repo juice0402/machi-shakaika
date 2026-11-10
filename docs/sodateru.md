@@ -126,7 +126,7 @@
 
 ### [ ] 品目ページ（水・主食・携帯トイレ）に、わが家の人数の量と2Lボトルの本数
 - やること
-  - `calc: true` の品目ページ3つ（/hinmoku/mizu/・shushoku/・keitai-toilet/。`src/pages/hinmoku.mjs`）の上の `<p><a class="go" href="/dougu/keisan/">わが家の人数で計算</a></p>` を、計算カード `calcHtml(cc, { ans: false })` と、その品目だけの答えの1行（`<p class="ans">`。水は「水 ◯L（2Lボトル◯本）」、主食は「主食 ◯食」、携帯トイレは「携帯トイレ ◯回分」）に置きかえる。ページの script は、商品があるときは `SHOP_JS + CALC_JS`、ないときも `CALC_JS` を入れる
+  - `calc: true` の品目ページ3つ（/hinmoku/mizu/・shushoku/・keitai-toilet/。`src/pages/hinmoku.mjs`）の上の `<p><a class="go" href="/dougu/keisan/">わが家の人数で計算</a></p>` を、計算カード `calcHtml(cc, { ans: false })` と、その品目だけの答えの1行（`<p class="ans">`。水は「水 ◯L（2Lボトル◯本）」、主食は「主食 ◯食」、携帯トイレは「携帯トイレ ◯回分」）に置きかえる。`cc` は `scripts/build.mjs` の `calcConf(items)` の値を、`hinmokuPages({ ... })` の引数に足して渡す。ページの script は、商品があるときは `SHOP_JS + CALC_JS`、ないときも `CALC_JS` を入れる
   - ボトルの本数は、L を items.yml の `bottle.liters` で割って切り上げた数（防災カルテの「あと◯本」と同じ数え方）。`CALC_JS` に、`data-ceil` のような印のついた出力だけ切り上げて書く形を小さく足す（今の出力の数え方は変えない）
   - 計算のページ（/dougu/keisan/）の「この人数でチェックリストを見る」の下に、3つの品目ページへの `data-keep` のリンクを1行（「備蓄の水」「備蓄の主食」「携帯トイレ」）。/sonae/bichiku/ のいちばん下の3つの品目のリンクにも `data-keep` をつける（人数と日数をつけたまま品目ページが開く）
 - できあがりの条件：`npm run check` が緑（作業場から e-Stat・国土地理院にはつながらないので `ALLOW_MISSING_HINAN_LIST=1 npm run check`。データは Actions が取って data/ にコミットしたものを使う。楽天の商品はない形でビルドされる）。テストで、本数（例：4人・3日なら水36Lで18本、1人・7日なら21Lで11本）と、3つの品目ページに `id="calc"` が1つだけあること、品目ページに楽天以外の外のリンクが増えていないことを見張る。/dougu/keisan/ で人数と日数を変えてから水のリンクを押すと、品目ページに同じ人数と日数の量が出る。gas・light・battery のページは今と同じ。スマホとパソコンのスクショ（水のページ・計算のページ）を並べて1枚で PR に
@@ -140,7 +140,7 @@
 ### [ ] 備えの読みものの新着を RSS で（呼び戻せる入口）
 - やること
   - `src/pages/sonae-yomimono.mjs` の `YOMIMONO`、`src/pages/sonae-soto.mjs` の `SOTO`、`src/pages/sonae-fuyu.mjs` の `FUYU` の各行に `date: 'YYYY-MM-DD'` を足す。日付は、その読みものの path が main に初めて入った日（`git fetch --unshallow` のあと `git log --reverse --format=%cs -S"<path>" origin/main -- src/pages` のいちばん上）
-  - ビルド（`scripts/build.mjs`。`/robots.txt` を書く `out()` と同じ形）で `/sonae/feed.xml` を作る。RSS 2.0。channel は title「まちの社会科 備えの読みもの」・link `${SITE.url}/sonae/`・description 1文・language ja。item は `allYomimono()` の全部を date の新しい順に、title（name）・link と guid（`${SITE.url}${path}`）・pubDate（date の日本時間0時、+0900）・description（そのページの meta description）。& < > はエスケープする
+  - ビルド（`scripts/build.mjs`。`/robots.txt` を書く `out()` と同じ形）で `/sonae/feed.xml` を作る。RSS 2.0。channel は title「まちの社会科 備えの読みもの」・link `${SITE.url}/sonae/`・description 1文・language ja。item は `allYomimono()` の全部を date の新しい順に、title（name）・link と guid（`${SITE.url}${path}`）・pubDate（date の日本時間0時、+0900）・description（そのページの meta description。`build.mjs` で作ったページの一覧から path で引く）。& < > はエスケープする
   - /sonae/ と読みもののページ全部の head に `<link rel="alternate" type="application/rss+xml" title="まちの社会科 備えの読みもの" href="/sonae/feed.xml">`。/sonae/ の出典の見出しのすぐ前に1行 `<p><a href="/sonae/feed.xml">読みものの新着をRSSで受け取る</a></p>`
   - `docs/yomimono-neta.md` の「足す所」の1の `{ key, path, name, group }` を `{ key, path, name, group, date }` にし、date は PR を作る日と書き足す。docs/files.md の sonae-yomimono の行に、feed.xml を作ることを1文
 - できあがりの条件：`npm run check` が緑（作業場から e-Stat・国土地理院にはつながらないので `ALLOW_MISSING_HINAN_LIST=1 npm run check`。データは Actions が取って data/ にコミットしたものを使う）。テストで、`allYomimono()` の全部に date（YYYY-MM-DD）があること、feed.xml の item の数が `allYomimono()` と同じで新しい順なこと、エスケープされていることを見張る。同じデータで2回ビルドしたとき feed.xml が1バイトも変わらない（毎朝のビルドで本番の fingerprint が変わらないように）。サイトマップには入れない。PR に feed.xml の頭の数行
