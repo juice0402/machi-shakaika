@@ -1,10 +1,11 @@
 // 市区町村ページ「県内と全国でくらべると」・都道府県ページ「県内の街の幅」・備えのページの街の例（10/31 夜 #47）
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { readMunis } from '../src/munis.mjs';
 import { resolveCities, PREFS } from '../src/areas.mjs';
 import {
-  derive, muniList, feature, kurabeText, prefRanks, prefRangeText, prefScaleText, nearText, niteruText, setaiText, hitori65Text, villageText, similar, bai, RANK_BY,
+  derive, muniList, feature, kurabeText, prefRanks, prefRangeText, prefScaleText, nearText, niteruText, setaiText, hitori65Text, villageText, similar, bai, RANK_BY, age75Text, densityText, hinanKindsText,
 } from '../src/stats.mjs';
 import { kazuData, village } from '../src/machi-tools.mjs';
 import { mtNear } from '../src/machi-core.mjs';
@@ -16,6 +17,8 @@ const list = m ? muniList(m.areas) : [];
 const z = m ? derive(m.areas['00000']) : null;
 const cities = m ? resolveCities(m.areas).cities : [];
 const kazu = m ? kazuData(m.areas, () => 0) : null;
+const hn = JSON.parse(readFileSync(new URL('../data/hinan/counts.json', import.meta.url), 'utf8'));
+const kindsOf = (code) => { const h = hn.areas[code]; return hn.kinds.map(([, name], i) => [name, h ? h[3 + i] : 0]).filter(([, v]) => v > 0).sort((x, y) => y[1] - x[1]); };
 // 新しい文では「ふえ・へる」のひらがなを使わない（1画面めに合わせて「増え・減り」）
 const BAN = ['しましょう', 'ぜひ', '便利', '簡単', '安心', 'おすすめ', 'ポイント', 'コツ', '今すぐ', '手遅れ', 'ワースト', '住みにくい', '——', '—', '›', '→', 'ふえ', 'へっ', 'へる', 'へり'];
 
@@ -42,7 +45,7 @@ test('全国の市区町村（1,741）で、新しい文がエラーなく作れ
     const { kurabe, meRow, nr } = textsOf(a);
     assert.ok(kurabe.length >= 1 && kurabe.length <= 4, `${a.name}：${kurabe.length}文`);
     const p = derive(m.areas[`${a.code.slice(0, 2)}000`]);
-    rules(a.name, [...kurabe, nearText(a, similar(list, a)), niteruText(meRow, nr, kazu.s), setaiText(a), hitori65Text(a, z), villageText(a.name, village(a), village(z)), ...prefScaleText(list, a, p)]);
+    rules(a.name, [...kurabe, nearText(a, similar(list, a)), niteruText(meRow, nr, kazu.s), setaiText(a), hitori65Text(a, z), villageText(a.name, village(a), village(z)), ...prefScaleText(list, a, p), age75Text(a, z), densityText(a, p), ...hinanKindsText(a.name, hn.areas[a.code]?.[0], kindsOf(a.code))]);
   }
 });
 
@@ -147,4 +150,19 @@ test('備えのページの街の例：くわしく見られる街から・デ�
   assert.ok(cities.some((c) => c.code === r.kyodo.code) && cities.some((c) => c.code === r.single.code));
   assert.notEqual(r.kyodo.code, r.single.code);
   assert.equal(machiRei(null), null);
+});
+
+test('#85 75歳以上・人口密度・避難場所の種類の文：数字を固定した確かめ', { skip }, () => {
+  const zz = { age65: 1000, age75: 586 };
+  assert.equal(age75Text({ name: 'A市', age65: 20000, age75: 14000 }, zz), 'A市の65歳以上の人のうち、75歳以上は70.0%で、全国は58.6%です。');
+  assert.equal(age75Text({ name: 'A市', age65: 100000, age75: 52100 }, zz), '75歳以上の人は52,100人で、65歳以上の人のうち52.1%です。全国は58.6%です。');
+  for (const a of list) assert.ok(!/より(多|少)/.test(age75Text(a, z)), a.name);
+  assert.equal(age75Text({ name: 'A市', age65: 1000, age75: 586 }, zz), 'A市の75歳以上は586人で、65歳以上の人の58.6%です。全国は58.6%です。');
+  assert.equal(densityText({ name: 'D村', code: '10999', density: 2 }, { density: 293.3 }), 'D村の1km²あたりの人口は2人で、群馬県全体の293人の1%に届かない数です。');
+  assert.equal(densityText({ name: '館林市', code: '10207', density: 1193.7 }, { density: 293.3 }), '館林市の人口密度は1km²あたり1,194人で、群馬県全体の293人の約4.1倍です。');
+  assert.equal(densityText({ name: 'B町', code: '10999', density: 100 }, { density: 293.3 }), 'B町の1km²あたりの人口は100人で、群馬県全体の293人の34%ほどです。');
+  assert.deepEqual(hinanKindsText('館林市', 78, [['地震', 69], ['洪水', 45]]), ['地震の指定がある場所は69か所で、指定緊急避難場所の88%です。', 'ほかに洪水45か所の指定があります。']);
+  assert.deepEqual(hinanKindsText('C市', 10, [['地震', 10]]), ['C市の指定緊急避難場所は、10か所のすべてが地震の指定を受けています。', 'ほかの種類の指定は、このデータには載っていません。']);
+  assert.deepEqual(hinanKindsText('C市', 0, []), []);
+  assert.deepEqual(hinanKindsText('D市', 100, [['地震', 60], ['洪水', 30]])[0], 'D市の指定緊急避難場所100か所のうち、地震の指定は60か所です。');
 });
