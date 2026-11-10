@@ -1,7 +1,7 @@
 // 市区町村のページ（/都道府県/市区町村/）。上が「この街の数字」、下が「この街の備え」
 // 見出し（h2）ごとに section。パソコンの広い画面では「この街の備え」が右の柱（.side）
 import { esc, fmt, h2, scale, srcName, srcKokusei, jpDate, RIVER, fit } from '../layout.mjs';
-import { derive, feature, prefRank, similar, sonaeLinks, prefOf, r1, kurabeText, villageText, nearText, niteruText, setaiText, prefScaleText, hitori65Text } from '../stats.mjs';
+import { derive, feature, prefRank, similar, sonaeLinks, prefOf, r1, kurabeText, villageText, nearText, niteruText, setaiText, prefScaleText, hitori65Text, age75Text, hinanKindsText, densityText } from '../stats.mjs';
 import { need } from '../calc.mjs';
 import { machiQuiz } from '../quiz.mjs';
 import { machiQuizHtml, MACHI_JS } from './quiz.mjs';
@@ -64,7 +64,7 @@ ${srcKokusei(munis)}
 
 <section>${h2('この街の数字')}
 ${scales.map(([t, sub, s]) => `<div class="g"><p><b>${t}</b>　${sub}</p>${scale(s)}</div>`).join('\n')}
-<p>${prefScaleText(list, a, prefA).concat(setaiText(a)).map(esc).join('')}</p>
+<p>${prefScaleText(list, a, prefA).concat(setaiText(a), densityText(a, prefA), age75Text(a, z)).map(esc).join('')}</p>
 <p class="note"><a href="/about/#keisan-memori">目盛りの見方</a></p>
 ${srcKokusei(munis)}</section>
 
@@ -105,7 +105,7 @@ ${
 <p class="note">指定緊急避難場所のうち、災害の種類ごとの数（1か所が複数の種類に入ります）</p>
 <div class="kinds">${kinds.map(([k, v]) => `<span>${k}</span><i style="width:${((v / h[0]) * 100).toFixed(1)}%"></i><span class="num">${fmt(v)}</span>`).join('')}</div>
 ${(() => {
-  const k = kaobureText(hinanList);
+  const k = [...hinanKindsText(a.name, h[0], kinds), ...kaobureText(hinanList)];
   return k.length ? `<p>${k.map(esc).join('')}</p>\n` : '';
 })()}<ul class="notes"><li>指定緊急避難場所は危険が迫ったときに逃げる所、指定避難所は家に戻れないときに過ごす所です。</li><li>ここに載っていない場所が、無いとはかぎりません。</li><li>最新は${esc(a.name)}の情報とハザードマップで確かめてください。</li></ul>
 <details id="hl" data-src="/hinan/${city.code}.json"><summary>一覧を開く（指定緊急避難場所${fmt(h[0])}・指定避難所${fmt(h[1])}）</summary><ul class="hl"></ul></details>

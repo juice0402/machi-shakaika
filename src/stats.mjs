@@ -196,6 +196,57 @@ export function hitori65Text(a, z) {
   return `65歳以上でひとり暮らしの人は${n0(a.single65)}人で、65歳以上の人のうち${p1(r)}です。`;
 }
 
+// 65歳以上の人のうち75歳以上の割合（#85。小さい街でもその街の数字が1文入るように）。全国との差と人数で言い回しをえらぶ。順位にはしない
+export function age75Text(a, z) {
+  if (!(a.age65 > 0) || !(a.age75 >= 0) || !(z.age65 > 0)) return '';
+  const r = (a.age75 / a.age65) * 100;
+  const zr = (z.age75 / z.age65) * 100;
+  const nm = a.name;
+  if (r >= zr + 3) return fit60(`${nm}の65歳以上の人のうち${p1(r)}が75歳以上で、全国の${p1(zr)}より多い割合です。`, `65歳以上の人のうち${p1(r)}が75歳以上で、全国の${p1(zr)}より多い割合です。`);
+  if (r <= zr - 3) return fit60(`${nm}では75歳以上の人が65歳以上の${p1(r)}で、全国の${p1(zr)}より少ない割合です。`, `75歳以上の人は65歳以上の${p1(r)}で、全国の${p1(zr)}より少ない割合です。`);
+  if (a.age75 >= 50000) return `75歳以上の人は${n0(a.age75)}人いて、65歳以上の人の${p1(r)}です。`;
+  return fit60(`${nm}の75歳以上は${n0(a.age75)}人で、65歳以上の人のうち${p1(r)}にあたります。`, `75歳以上は${n0(a.age75)}人で、65歳以上の人のうち${p1(r)}にあたります。`);
+}
+
+// 人口密度を県全体とくらべる文（#85）。倍率で言い回しをえらぶ。順位にはしない
+export function densityText(a, p) {
+  if (!(a.density > 0) || !(p?.density > 0)) return '';
+  const pn = prefOf(a.code).name;
+  const d = n0(a.density);
+  const pd = n0(p.density);
+  const r = a.density / p.density;
+  if (r >= 1.25) {
+    const b = bai(r);
+    return fit60(`${a.name}の人口密度は1km²あたり${d}人で、${pn}全体の${pd}人の${b}です。`, `人口密度は1km²あたり${d}人で、${pn}全体の${b}です。`);
+  }
+  if (r <= 0.8) return fit60(`${a.name}の1km²あたりの人口は${d}人で、${pn}全体の${pd}人の${Math.round(r * 100)}%ほどです。`, `1km²あたりの人口は${d}人で、${pn}全体の${pd}人の${Math.round(r * 100)}%ほどです。`);
+  return fit60(`${a.name}の1km²あたりの人口は${d}人で、${pn}全体の${pd}人に近い数です。`, `1km²あたりの人口は${d}人で、${pn}全体の${pd}人に近い数です。`);
+}
+
+// 避難場所の災害の種類ごとの数から作る文（#85）。kinds は [種類の名前, 数] を多い順に（0は除く）、h0 は指定緊急避難場所の数
+//   その街の中の数だけを書く。人口あたり・順位・街どうしのくらべにはしない
+export function hinanKindsText(name, h0, kinds) {
+  if (!(h0 > 0) || !kinds.length) return [];
+  const [[t, v]] = kinds;
+  const sh = Math.round((v / h0) * 100);
+  const out = [
+    v >= h0
+      ? fit60(`${name}の指定緊急避難場所は、${n0(h0)}か所のすべてが${t}の指定を受けています。`, `${n0(h0)}か所のすべてが${t}の指定を受けています。`)
+      : sh >= 80
+        ? `${t}の指定がある場所は${n0(v)}か所で、指定緊急避難場所の${sh}%です。`
+        : sh >= 50
+          ? fit60(`${name}の指定緊急避難場所${n0(h0)}か所のうち、${t}の指定は${n0(v)}か所です。`, `指定緊急避難場所${n0(h0)}か所のうち、${t}の指定は${n0(v)}か所です。`)
+          : `種類ごとでいちばん多い${t}でも${n0(v)}か所で、全体の${sh}%です。`,
+  ];
+  const rest = kinds.slice(1);
+  const [lt, lv] = kinds[kinds.length - 1];
+  if (!rest.length) out.push('ほかの種類の指定は、このデータには載っていません。');
+  else if (rest.length <= 2) out.push(`ほかに${rest.map(([k, x]) => `${k}${n0(x)}か所`).join('・')}の指定があります。`);
+  else if (kinds.length >= 6) out.push(`${kinds.length}つの種類に指定があり、いちばん少ないのは${lt}の${n0(lv)}か所です。`);
+  else out.push(fit60(`ほかの${rest.length}つの種類では、${rest[0][0]}が${n0(rest[0][1])}か所、${lt}が${n0(lv)}か所です。`, `${lt}の指定は${n0(lv)}か所です。`));
+  return out;
+}
+
 // 100人の村の全国とのちがい（v・n は machi-tools の village の答え）。2人以上ちがうものを大きい順に2つまで
 export function villageText(name, v, n) {
   const L = [['kids', '子ども'], ['work', '働く世代'], ['old', 'お年寄り'], ['alone', 'ひとり暮らし']];
