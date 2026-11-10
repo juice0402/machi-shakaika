@@ -114,3 +114,38 @@
 - 順番：「小さい街でも、その街だけの文が出るように」のあと（そのブランチがマージ待ちなら、その上に作る）
 - 読むファイル：CLAUDE.md・src/areas.mjs・src/stats.mjs・scripts/fetch-hinan.mjs・src/lib/hinan.mjs・.github/workflows/update.yml・scripts/honbun.mjs
 - マージ：する
+
+### [ ] 備蓄の量のめやす（/sonae/bichiku/）で、わが家の人数の量をその場で出す（連絡 C-026）
+- やること：/sonae/bichiku/（`src/pages/sonae.mjs` の `path: '/sonae/bichiku/'`）の1つめの段落のすぐ下（h2「1人1日の量」の前）に、計算のページと同じ計算カード `calcHtml(cc)` を置き、ページに `script: CALC_JS` を足す（prose の div はカードの前で閉じて、あとで開き直す）。早見表の下の `<a class="go" href="/dougu/keisan/">わが家の人数で計算する</a>` は、計算のページと同じ `<a class="go" data-keep href="/dougu/check/">この人数でチェックリストを見る</a>` に置きかえる（カードの人数と日数がチェックリストに引きつがれる）。ほかの文・早見表・出典は変えない
+- できあがりの条件：`npm run check` が緑（作業場から e-Stat・国土地理院にはつながらないので `ALLOW_MISSING_HINAN_LIST=1 npm run check`。データは Actions が取って data/ にコミットしたものを使う）。テストで、/sonae/bichiku/ に `id="calc"` が1つだけあり、`CALC_JS` が入っていることを見張る（ビルドの結果を見ている今のテストの形をまねる）。スマホ 390×660 で計算の答えの行（水・食事・携帯トイレ）が1画面めに入る。`?n=2&d=7` で開くと2人・7日分の数になる。地の文の字数（`node scripts/honbun.mjs dist --pages`）がめやすの900字を下回らない。スマホとパソコンのスクショを並べて1枚で PR に
+- 決まったこと：連絡 C-026（11/6）の machi の行「備え（/sonae/bichiku/ 7位）は自分の家の人数で量を出す形を」。答えのページは消さない・下げない（C-026）。1行で済む答えはページの上に書いてよく、そのすぐ下に道具を置く（site-principles「AIの検索の答えに負けない作り」）。/sonae/bichiku/ は検索で表示の多い備えのページ（search-data-machi.md 11/6 の回：6表示・7.17位）。計算の部品と数字は今の `calcHtml`・`CALC_JS` と data/items.yml のまま（数字を本文に直接書かない・CLAUDE.md）。AdSense の置き場所は今のまま（新しい置き場所は合格のあと・machi-adsense-plan.md）。利用者のデータを集めない（CLAUDE.md）ので、入れた人数と日数は URL の ? だけ
+- 迷ったら：カードを1つめの段落の下に置くと答えの行が1画面めに入らないときは、h1 のすぐ下（段落の前）に置く。カードの問いの文は `calcHtml` のはじめからの文のまま。人数と日数のはじめの値も `calcHtml` のはじめの値（4人・最低の日数）のまま
+- 読むファイル：CLAUDE.md・src/pages/sonae.mjs の /sonae/bichiku/ と /dougu/keisan/ の所・src/calc.mjs・scripts/honbun.mjs
+- マージ：する
+- 足した：育てる山の補充（自動・2026-11-10）
+
+### [ ] 品目ページ（水・主食・携帯トイレ）に、わが家の人数の量と2Lボトルの本数
+- やること
+  - `calc: true` の品目ページ3つ（/hinmoku/mizu/・shushoku/・keitai-toilet/。`src/pages/hinmoku.mjs`）の上の `<p><a class="go" href="/dougu/keisan/">わが家の人数で計算</a></p>` を、計算カード `calcHtml(cc, { ans: false })` と、その品目だけの答えの1行（`<p class="ans">`。水は「水 ◯L（2Lボトル◯本）」、主食は「主食 ◯食」、携帯トイレは「携帯トイレ ◯回分」）に置きかえる。`cc` は `scripts/build.mjs` の `calcConf(items)` の値を、`hinmokuPages({ ... })` の引数に足して渡す。ページの script は、商品があるときは `SHOP_JS + CALC_JS`、ないときも `CALC_JS` を入れる
+  - ボトルの本数は、L を items.yml の `bottle.liters` で割って切り上げた数（防災カルテの「あと◯本」と同じ数え方）。`CALC_JS` に、`data-ceil` のような印のついた出力だけ切り上げて書く形を小さく足す（今の出力の数え方は変えない）
+  - 計算のページ（/dougu/keisan/）の「この人数でチェックリストを見る」の下に、3つの品目ページへの `data-keep` のリンクを1行（「備蓄の水」「備蓄の主食」「携帯トイレ」）。/sonae/bichiku/ のいちばん下の3つの品目のリンクにも `data-keep` をつける（人数と日数をつけたまま品目ページが開く）
+- できあがりの条件：`npm run check` が緑（作業場から e-Stat・国土地理院にはつながらないので `ALLOW_MISSING_HINAN_LIST=1 npm run check`。データは Actions が取って data/ にコミットしたものを使う。楽天の商品はない形でビルドされる）。テストで、本数（例：4人・3日なら水36Lで18本、1人・7日なら21Lで11本）と、3つの品目ページに `id="calc"` が1つだけあること、品目ページに楽天以外の外のリンクが増えていないことを見張る。/dougu/keisan/ で人数と日数を変えてから水のリンクを押すと、品目ページに同じ人数と日数の量が出る。gas・light・battery のページは今と同じ。スマホとパソコンのスクショ（水のページ・計算のページ）を並べて1枚で PR に
+- 決まったこと：二大テーマの両方に当たるもの（遊びに来た人に、いまの買う理由を渡す・site-principles「買いに来る理由がある人を集める」11/6）。買う理由は「わが家に要る数」。新しい売り場のページは作らず、今の品目ページ6つへの内部リンクだけ。楽天を呼ぶ回数・A8・AdSense の置き場所は今のまま（引き継ぎの「買いに来る理由」C-025 の決め）。品目ページは AdSense なし・楽天以外へのリンクなし・「おすすめ」「最安値」「定価」は使わない・商品名を本文に書かない（CLAUDE.md・machi-adsense-plan.md）。利用者のデータを集めない（CLAUDE.md）ので、入れた人数と日数は URL の ? だけ
+- 迷ったら：答えの1行の言い方は、ページの上の `p.feat` の量の書き方（単位）に合わせる。calc: false の品目（カセットコンロ・明かり・電池）には何も足さない（家族の人数での数え方を出典で確かめていないため・`shelfText` の文）。カードで品目ページの1画面めがのびても、商品の並びは今の場所のまま（早見表の上下を入れかえない）。災害時モード（`SAIGAI`）のときも計算はそのまま出す（商品が出ないだけ）
+- 順番：「備蓄の量のめやす（/sonae/bichiku/）で、わが家の人数の量をその場で出す」のあと（そのブランチがマージ待ちなら、その上に作る）
+- 読むファイル：CLAUDE.md・src/pages/hinmoku.mjs・src/calc.mjs・src/pages/sonae.mjs の /dougu/keisan/ と /sonae/bichiku/ の所・src/karte-core.mjs の本数の数え方・data/items.yml の mizu
+- マージ：する
+- 足した：育てる山の補充（自動・2026-11-10）
+
+### [ ] 備えの読みものの新着を RSS で（呼び戻せる入口）
+- やること
+  - `src/pages/sonae-yomimono.mjs` の `YOMIMONO`、`src/pages/sonae-soto.mjs` の `SOTO`、`src/pages/sonae-fuyu.mjs` の `FUYU` の各行に `date: 'YYYY-MM-DD'` を足す。日付は、その読みものの path が main に初めて入った日（`git fetch --unshallow` のあと `git log --reverse --format=%cs -S"<path>" origin/main -- src/pages` のいちばん上）
+  - ビルド（`scripts/build.mjs`。`/robots.txt` を書く `out()` と同じ形）で `/sonae/feed.xml` を作る。RSS 2.0。channel は title「まちの社会科 備えの読みもの」・link `${SITE.url}/sonae/`・description 1文・language ja。item は `allYomimono()` の全部を date の新しい順に、title（name）・link と guid（`${SITE.url}${path}`）・pubDate（date の日本時間0時、+0900）・description（そのページの meta description。`build.mjs` で作ったページの一覧から path で引く）。& < > はエスケープする
+  - /sonae/ と読みもののページ全部の head に `<link rel="alternate" type="application/rss+xml" title="まちの社会科 備えの読みもの" href="/sonae/feed.xml">`。/sonae/ の出典の見出しのすぐ前に1行 `<p><a href="/sonae/feed.xml">読みものの新着をRSSで受け取る</a></p>`
+  - `docs/yomimono-neta.md` の「足す所」の1の `{ key, path, name, group }` を `{ key, path, name, group, date }` にし、date は PR を作る日と書き足す。docs/files.md の sonae-yomimono の行に、feed.xml を作ることを1文
+- できあがりの条件：`npm run check` が緑（作業場から e-Stat・国土地理院にはつながらないので `ALLOW_MISSING_HINAN_LIST=1 npm run check`。データは Actions が取って data/ にコミットしたものを使う）。テストで、`allYomimono()` の全部に date（YYYY-MM-DD）があること、feed.xml の item の数が `allYomimono()` と同じで新しい順なこと、エスケープされていることを見張る。同じデータで2回ビルドしたとき feed.xml が1バイトも変わらない（毎朝のビルドで本番の fingerprint が変わらないように）。サイトマップには入れない。PR に feed.xml の頭の数行
+- 決まったこと：呼び戻せる入口はホーム画面に追加・カレンダーの購読（.ics）・RSS。運営の SNS の発信はしない（site-principles「楽しさで、わざわざ来てもらう」・連絡 C-016 の②）。machi はホーム画面（街あつめ帳）とカレンダー（備えのごよみ）は済で、RSS はまだない。読みものは予約タスク「読みもの書き」が火・土に1本ずつ足す（docs/yomimono-neta.md）。本番は fingerprint が同じなら公開しない（docs/shikumi.md の「公開と運用」）。外のスクリプトや数える画像は入れない（利用者のデータを集めない・CLAUDE.md）
+- 迷ったら：`lastBuildDate` は入れない（ビルドのたびに変わるため）。日付が git で分からない読みものは、/sonae/ の棚に出ている今の読みものの中でいちばん古い日にそろえ、PR にその名前を書く。品目ページ・道具・市区町村ページは feed に入れない（読みものだけ）。head の link を入れるのが難しいページがあれば、/sonae/ だけでよい
+- 読むファイル：CLAUDE.md・docs/yomimono-neta.md の「足す所」・src/pages/sonae-yomimono.mjs・src/pages/sonae-soto.mjs・src/pages/sonae-fuyu.mjs・src/pages/sonae.mjs の /sonae/ の所・scripts/build.mjs の robots.txt と sitemap の所・docs/shikumi.md の「公開と運用」
+- マージ：する
+- 足した：育てる山の補充（自動・2026-11-10）
