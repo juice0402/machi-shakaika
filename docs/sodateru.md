@@ -102,7 +102,7 @@
 - 読むファイル：CLAUDE.md・scripts/honbun.mjs・src/stats.mjs・src/pages/city.mjs・src/areas.mjs の頭のコメント
 - マージ：する
 
-### [ ] ページを作る街を、データの条件で自動にえらぶしくみ
+### [x] ページを作る街を、データの条件で自動にえらぶしくみ（#87）
 - やること
   - `src/areas.mjs` に `AUTO_MIN_POP = 100000` と `slugOf(読みがな)` を足す。slugOf は読みがな（data/yomi.json）からヘボン式・長音は書かない（ou・oo→o、uu→u）・末尾の「し」「く」を外す。テストで CITIES の全部の英字と一致させる
   - `data/auto-cities.json`（`[[市区町村コード, 都道府県の英字, 英字], ...]`）を作り、`resolveCities()` が CITIES とこのファイルを合わせて返す（種類 `auto`）

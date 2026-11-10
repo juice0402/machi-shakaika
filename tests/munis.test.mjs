@@ -4,7 +4,7 @@ import { existsSync, readFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { readMunis, writeMunis, checkMunis, FIELDS } from '../src/munis.mjs';
-import { resolveCities, CITIES, PREFS } from '../src/areas.mjs';
+import { resolveCities, readAutoCities, CITIES, PREFS } from '../src/areas.mjs';
 import { readYaml } from '../src/data.mjs';
 import { missingLists } from '../src/lib/hinan.mjs';
 
@@ -42,7 +42,8 @@ test('国勢調査の数字が公式の発表と合う（data/estat/munis.json �
 test('ページを作る街が e-Stat の地域に1つずつある（データがあるとき）', { skip: !munis && 'データがまだない' }, () => {
   const { cities, errors } = resolveCities(munis.areas);
   assert.deepEqual(errors, []);
-  assert.equal(cities.length, CITIES.length);
+  // 自動でえらんだ街（data/auto-cities.json・#87）も1つずつ
+  assert.equal(cities.length, CITIES.length + readAutoCities().length);
   // 人口10万人以上の市（11/4）：今の国勢調査で10万人を下回ったら、ページを残すか決める（英字は変えない）
   const low = cities.filter((c) => c.kind === 'shi' && !(munis.areas[c.code].pop >= 100000)).map((c) => c.name);
   assert.deepEqual(low, []);
