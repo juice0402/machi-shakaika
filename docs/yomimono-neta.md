@@ -64,7 +64,7 @@
 上から順に書く。行の「／」のあとは使う資料（出典の id は data/sources.yml にあるもの。ないものは WebSearch で公式のページを探す）。
 
 - [x] 年に2回の備えの見直し（PR #66・2026-11-07）
-- [x] 火事の備え（PR #PRNO・2026-11-10）
+- [x] 火事の備え（PR #84・2026-11-10）
 - [ ] 断水の備え（英字 dansui）— 飲み水のほかに、トイレや体をふく生活用水をどう用意するか／miyagi-mizu・chiba-zaitaku・hiroshima-toilet・kanagawa-toilet。くみ置きのしかたは自治体の公式で確かめる
 - [ ] 非常用持ち出し袋と家の備蓄のちがい（英字 mochidashi）— 袋に入れるものと家に置くものをどう分けるか／nagasaki-mochidashi・osaka-bichiku・kantei-sonae。チェックリスト（持ち出す袋）へつなぐ
 - [ ] 家族の連絡のしかた（英字 renraku）— 家族がばらばらの時間に起きたら、どう連絡して、どこで会うか（災害用伝言ダイヤル171・集まる場所）／NTT東日本・西日本の災害用伝言ダイヤルの公式ページ（WebSearch）・kantei-sonae。体験できる日は出典の言い方のまま
