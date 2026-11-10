@@ -27,7 +27,7 @@ test('読みもの：本文の数字は items.yml とそこから計算したも
   const { min, better } = items.days;
   const y = items.yohairyo_days;
   const m = cc.by.shushoku.per_day;
-  const allowed = new Set([1, 2, 4, min, better, w, t, m, y, need(w, 4, better), need(t, 4, better), need(w, 2, y), ...[w, m, t].flatMap((v) => [need(v, 1, min), need(v, 1, better)]), ...Object.values(items.minaoshi.hi).flatMap((d) => d.match(/\d+/g).map(Number))]);
+  const allowed = new Set([1, 2, 4, min, better, w, t, m, y, need(w, 4, better), need(t, 4, better), need(w, 2, y), ...[w, m, t].flatMap((v) => [need(v, 1, min), need(v, 1, better)]), ...Object.values(items.minaoshi.hi).flatMap((d) => d.match(/\d+/g).map(Number)), ...[items.kasai.tenken, items.kasai.koukan].flatMap((d) => d.match(/\d+/g).map(Number))]);
   for (const p of pages) {
     const nums = (text(p.body).replace(/（\d{4}年\d{1,2}月\d{1,2}日確認）/g, '').match(/\d+/g) ?? []).map(Number);
     assert.ok(nums.length >= 3, p.path);

@@ -80,6 +80,30 @@ sources:
     checked: 2026-10-26
     about: 暖房用に電気を使わないポータブルストーブ・毛布・寝袋・使い捨てカイロ。ストーブは使い方を確かめて定期的に換気。水道管の凍結防止。備蓄は最低3日分、できれば7日分。飲料水は1人1日3L
 
+  - id: fdma-jukeiki-qa
+    kind: sonae
+    publisher: 消防庁
+    title: 住宅用火災警報器Q＆A
+    url: https://www.fdma.go.jp/relocation/html/life/yobou_contents/qa/
+    checked: 2026-11-10
+    about: 寝室と寝室がある階の階段上部に設置（1階の階段は除く）。台所などにも市町村の火災予防条例で必要な地域がある。煙式と熱式、単独型と連動型。点検ボタンを押して作動確認、ほこりの掃除は取扱説明書で
+
+  - id: fdma-bouka-dokuhon
+    kind: sonae
+    publisher: 消防庁
+    title: 住宅防火読本 火災から命を守る
+    url: https://www.fdma.go.jp/relocation/html/life/yobou_contents/materials/pdf/33_kasai.pdf
+    checked: 2026-11-10
+    about: 警報器は1か月に1回程度の点検、交換の目安は設置後10年で本体ごと。消火器の置き場所と使い方を家族で確認。寝具・衣類・カーテンは防炎品。こんろ・ストーブ・たばこ・コンセントのほこり
+
+  - id: tfd-jukeiki
+    kind: sonae
+    publisher: 東京消防庁
+    title: 鳴りますか？住宅用火災警報器
+    url: https://www.tfd.metro.tokyo.lg.jp/lfe/topics/jyuukeiki/p1_9.html
+    checked: 2026-11-10
+    about: 東京都では常時使う全ての部屋・台所・階段に設置。台所にも煙式をすすめる。本体交換の目安は設置から10年。聞こえにくい人には光や振動で知らせる補助警報装置
+
   - id: hokkaido-gas-teiden
     kind: sonae
     publisher: 北海道ガス

@@ -48,6 +48,12 @@ minaoshi:
     bichiku: 11月19日
   sources: [bousai-week, tokyo-bichiku-toilet, maff-sonae, maff-guide, maff-shuno, nerima-yohairyo, hiroshima-toilet, kanagawa-toilet, asahikawa-sonae]
 
+# 火事の備え（/sonae/kasai/。11/10）。点検と交換の言い方は出典のまま（tenken：fdma-bouka-dokuhon、koukan：fdma-bouka-dokuhon・tfd-jukeiki）
+kasai:
+  tenken: 1か月に1回程度
+  koukan: 10年
+  sources: [fdma-jukeiki-qa, fdma-bouka-dokuhon, tfd-jukeiki, tfd-jishin]
+
 # 家の外の備え2本（/sonae/kuruma-taisetsu/・/sonae/kitaku-konnan/。10/28 #19）。sources はページの出典に並べる id（この順）
 #   車のページは数字を出さない（積んでおく量の目安を公的な資料で確かめていないため）
 #   職場のページの数字は kitaku と mizu・shushoku の per_day（内閣府のガイドラインの水1人1日3L・主食3食と同じ）と、そこから計算した量だけ
