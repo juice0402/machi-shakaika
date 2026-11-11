@@ -128,6 +128,9 @@ ${rei ? srcKokusei(rei.munis) : ''}`,
 <h1 class="city">備蓄の量のめやす</h1>
 <div class="prose">
 <p>大きな災害のあとは、支援の物資が届くまで数日かかったり、店に品物が並ばない日が続いたりします。農林水産省は、家の食品の備えを最低${days.min}日分から1週間分、家族の人数分そろえることを勧めています。</p>
+</div>
+${calcHtml(cc)}
+<div class="prose">
 ${h2('1人1日の量')}
 <p>水は1人1日およそ${w}L。飲む水と、調理に使う水を合わせた量です。トイレを流したり体をふいたりする生活用水は、これとは別に要ります。</p>
 <p>食事は1人1日${m}食で数えます。携帯トイレは1人1日${t}回がめやすで、くわしくは<a href="/sonae/keitai-toilet/">携帯トイレの備え</a>にまとめました。</p>
@@ -135,7 +138,7 @@ ${h2('人数と日数の早見表')}
 <h3>水</h3>${hayami(cc, 'mizu', 'L')}
 <h3>食事</h3>${hayami(cc, 'shushoku', '食')}
 <h3>携帯トイレ</h3>${hayami(cc, 'keitai-toilet', '回分')}
-<p><a class="go" href="/dougu/keisan/">わが家の人数で計算する</a></p>
+<p><a class="go" data-keep href="/dougu/check/">この人数でチェックリストを見る</a></p>
 ${h2('高齢の家族や小さな子どもがいる家', 'yohairyo')}
 <p>乳幼児、妊娠中の人、高齢の人、持病や食物アレルギーのある人は、ふだんの食事や薬が手に入りにくくなると困りやすい人です。こうした家族がいる家では、少なくとも${y}日分の備えが勧められています。</p>
 <p>${y}日分は、${w}L×人数×${y}日。2人なら水は${need(w, 2, y)}Lです。</p>
@@ -154,6 +157,7 @@ ${h2('住まいでちがうこと')}
 </div>
 ${h2('出典')}
 ${sourceList([...new Set([...days.sources, ...by.mizu.sources, ...by.shushoku.sources, ...items.yohairyo_sources, 'kantei-sonae', 'tfd-jishin'])], sources)}`,
+    script: CALC_JS,
   });
 
   out.push({

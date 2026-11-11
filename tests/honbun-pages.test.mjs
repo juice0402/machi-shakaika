@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readYaml } from '../src/data.mjs';
 import { readMunis } from '../src/munis.mjs';
-import { calcConf, need } from '../src/calc.mjs';
+import { calcConf, need, CALC_JS } from '../src/calc.mjs';
 import { muniList } from '../src/stats.mjs';
 import { kazuData } from '../src/machi-tools.mjs';
 import { mtDiff } from '../src/machi-core.mjs';
@@ -178,4 +178,16 @@ test('夜 #74：品目ページの足した節は商品の一覧のあと・水�
   assert.ok(m.body.includes(`約${km.suzushii}日、冷蔵庫なら約${km.reizouko}日`));
   // 足した節の出典は、ページの下の出典にも並ぶ
   for (const id of ['nerima-kumioki']) assert.ok(m.body.includes(sources.sources.find((x) => x.id === id).title), id);
+});
+
+// 夜 #91（C-026）：/sonae/bichiku/ で、わが家の人数の量をその場で出す。計算のカードは1つめの段落の下・1つだけ、スクリプトは計算のページと同じ
+test('夜 #91：/sonae/bichiku/ に計算のカードと CALC_JS・地の文はめやす以上', () => {
+  const p = sonaePages({ cc, items, sources }).find((x) => x.path === '/sonae/bichiku/');
+  const html = page(p);
+  assert.equal((html.match(/id="calc"/g) ?? []).length, 1, 'id="calc" は1つだけ');
+  assert.ok(html.includes(`<script>${CALC_JS}</script>`), 'CALC_JS が入っていない');
+  assert.ok(p.body.indexOf('id="calc"') < p.body.indexOf('1人1日の量</h2>'), 'カードは「1人1日の量」の前');
+  assert.ok(p.body.includes('<a class="go" data-keep href="/dougu/check/">この人数でチェックリストを見る</a>'));
+  assert.ok(!p.body.includes('<a class="go" href="/dougu/keisan/">'));
+  assert.ok(jinobunCount(html) >= jinobunMeyasu(p.path), `地の文${jinobunCount(html)}字`);
 });
