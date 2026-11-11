@@ -7,7 +7,52 @@
 //     みたさない29市（柏・豊田・岡崎・豊橋・川越・所沢・越谷・春日井・茅ヶ崎・太田など）・町村・政令市の区（避難場所の数が市でまとまる）は入れない。
 //     5万人以上（+193・442街）は、11/4 のためしで50ページが「どの街も同じ文」65%をこえた。#85 で文を足し、ためしで最大61%・こえる0（AdSense の審査に通ってから考える）
 //     英字は読みがな（data/yomi.json）からヘボン式・長音は書かない・末尾の「し」は外す（上の103もこの規則で同じになる）
+//   自動でえらぶ街（#87）：scripts/pick-cities.mjs が、人口 AUTO_MIN_POP 以上で条件5・6をみたし「どの街も同じ文」がめあて以下の市を
+//     data/auto-cities.json に足す（種類 auto）。一度入った街は消さない・英字を変えない
 // URL は /都道府県/市区町村/（同じ名前の市があるので都道府県の下に置く）。英字は一度公開したら変えない
+import { existsSync, readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+// 自動でページを作る市の人口の下限（令和7年国勢調査）。5万人以上にするときは、ここを 50000 にするだけ（AdSense の審査に通ってから。11/4 しょーくん）
+export const AUTO_MIN_POP = 100000;
+export const AUTO_PATH = fileURLToPath(new URL('../data/auto-cities.json', import.meta.url));
+// data/auto-cities.json：[[市区町村コード, 都道府県の英字, 英字], ...]
+export function readAutoCities(path = AUTO_PATH) {
+  return existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : [];
+}
+
+// 読みがな（ひらがな・data/yomi.json）→ URL の英字：ヘボン式・長音は書かない（ou・oo→o、uu→u）・末尾の「し」「く」を外す
+const KANA = {
+  あ: 'a', い: 'i', う: 'u', え: 'e', お: 'o', か: 'ka', き: 'ki', く: 'ku', け: 'ke', こ: 'ko', さ: 'sa', し: 'shi', す: 'su', せ: 'se', そ: 'so',
+  た: 'ta', ち: 'chi', つ: 'tsu', て: 'te', と: 'to', な: 'na', に: 'ni', ぬ: 'nu', ね: 'ne', の: 'no', は: 'ha', ひ: 'hi', ふ: 'fu', へ: 'he', ほ: 'ho',
+  ま: 'ma', み: 'mi', む: 'mu', め: 'me', も: 'mo', や: 'ya', ゆ: 'yu', よ: 'yo', ら: 'ra', り: 'ri', る: 'ru', れ: 're', ろ: 'ro', わ: 'wa', ゐ: 'i', ゑ: 'e', を: 'o', ん: 'n',
+  が: 'ga', ぎ: 'gi', ぐ: 'gu', げ: 'ge', ご: 'go', ざ: 'za', じ: 'ji', ず: 'zu', ぜ: 'ze', ぞ: 'zo', だ: 'da', ぢ: 'ji', づ: 'zu', で: 'de', ど: 'do',
+  ば: 'ba', び: 'bi', ぶ: 'bu', べ: 'be', ぼ: 'bo', ぱ: 'pa', ぴ: 'pi', ぷ: 'pu', ぺ: 'pe', ぽ: 'po', ゔ: 'vu',
+  ぁ: 'a', ぃ: 'i', ぅ: 'u', ぇ: 'e', ぉ: 'o', ゎ: 'wa',
+};
+const YOON = { ゃ: 'a', ゅ: 'u', ょ: 'o' };
+export function slugOf(yomi) {
+  const k = [...String(yomi ?? '').replace(/[しく]$/, '')];
+  let out = '';
+  for (let i = 0; i < k.length; i++) {
+    const c = k[i];
+    if (c === 'ー') continue;
+    if (c === 'っ') {
+      const next = KANA[k[i + 1]] ?? '';
+      out += next.startsWith('ch') ? 't' : next[0] ?? '';
+      continue;
+    }
+    let r = KANA[c];
+    if (r == null) return null;
+    if (YOON[k[i + 1]]) {
+      r = /^(shi|chi|ji)$/.test(r) ? r.slice(0, -1) + YOON[k[i + 1]] : r.slice(0, -1) + 'y' + YOON[k[i + 1]];
+      i++;
+    }
+    out += r;
+  }
+  out = out.replace(/ou/g, 'o').replace(/oo/g, 'o').replace(/uu/g, 'u');
+  return /^[a-z]+$/.test(out) ? out : null;
+}
 
 export const PREFS = [
   ['hokkaido', '北海道'], ['aomori', '青森県'], ['iwate', '岩手県'], ['miyagi', '宮城県'], ['akita', '秋田県'],
@@ -24,6 +69,7 @@ export const PREFS = [
 
 // [都道府県の英字, 名前（e-Stat の地域名と同じ）, 英字, 種類]
 // 種類：kencho 県庁所在地／seirei 政令市（県庁所在地でない）／ku 東京23区／chukaku 中核市（県庁所在地でない）／shi 人口10万人以上の市（上のどれでもない）
+//   ／auto 自動でえらんだ市（data/auto-cities.json。resolveCities で足す）
 export const CITIES = [
   ['hokkaido', '札幌市', 'sapporo', 'kencho'], ['aomori', '青森市', 'aomori', 'kencho'], ['iwate', '盛岡市', 'morioka', 'kencho'],
   ['miyagi', '仙台市', 'sendai', 'kencho'], ['akita', '秋田市', 'akita', 'kencho'], ['yamagata', '山形市', 'yamagata', 'kencho'],
@@ -116,9 +162,9 @@ export const CITIES = [
 export const prefBySlug = new Map(PREFS.map((p) => [p.slug, p]));
 export const prefByCode = new Map(PREFS.map((p) => [p.code, p]));
 
-// e-Stat の地域の一覧（munis.json の areas）から、CITIES の市区町村コードを引く
+// e-Stat の地域の一覧（munis.json の areas）から、CITIES の市区町村コードを引き、data/auto-cities.json の街（種類 auto）を足す
 // 見つからない・2つ以上あるときはエラー（合併などで名前が変わったら気づけるように）
-export function resolveCities(areas) {
+export function resolveCities(areas, auto = readAutoCities()) {
   const out = [];
   const errors = [];
   for (const c of CITIES) {
@@ -126,6 +172,19 @@ export function resolveCities(areas) {
     const hit = Object.entries(areas).filter(([code, a]) => code.startsWith(pc) && a.level === '4' && a.name === c.name);
     if (hit.length !== 1) errors.push(`${c.pref} ${c.name}：e-Stat の地域が ${hit.length} 件`);
     else out.push({ ...c, code: hit[0][0] });
+  }
+  const seen = new Set(out.map((c) => c.code));
+  const urls = new Set(out.map((c) => `${c.pref}/${c.slug}`));
+  for (const [code, pref, slug] of auto) {
+    const a = areas[code];
+    const pc = prefBySlug.get(pref)?.code;
+    if (!a || a.level !== '4' || code.slice(0, 2) !== pc) errors.push(`auto-cities.json ${code} ${pref}/${slug}：e-Stat の市とあわない`);
+    else if (seen.has(code) || urls.has(`${pref}/${slug}`)) errors.push(`auto-cities.json ${code} ${pref}/${slug}：街か英字が重なっている`);
+    else {
+      out.push({ pref, name: a.name, slug, kind: 'auto', code });
+      seen.add(code);
+      urls.add(`${pref}/${slug}`);
+    }
   }
   return { cities: out, errors };
 }
