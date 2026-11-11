@@ -124,7 +124,7 @@
 - マージ：する
 - 足した：育てる山の補充（自動・2026-11-10）
 
-### [ ] 品目ページ（水・主食・携帯トイレ）に、わが家の人数の量と2Lボトルの本数
+### [x] 品目ページ（水・主食・携帯トイレ）に、わが家の人数の量と2Lボトルの本数（#93）
 - やること
   - `calc: true` の品目ページ3つ（/hinmoku/mizu/・shushoku/・keitai-toilet/。`src/pages/hinmoku.mjs`）の上の `<p><a class="go" href="/dougu/keisan/">わが家の人数で計算</a></p>` を、計算カード `calcHtml(cc, { ans: false })` と、その品目だけの答えの1行（`<p class="ans">`。水は「水 ◯L（2Lボトル◯本）」、主食は「主食 ◯食」、携帯トイレは「携帯トイレ ◯回分」）に置きかえる。`cc` は `scripts/build.mjs` の `calcConf(items)` の値を、`hinmokuPages({ ... })` の引数に足して渡す。ページの script は、商品があるときは `SHOP_JS + CALC_JS`、ないときも `CALC_JS` を入れる
   - ボトルの本数は、L を items.yml の `bottle.liters` で割って切り上げた数（防災カルテの「あと◯本」と同じ数え方）。`CALC_JS` に、`data-ceil` のような印のついた出力だけ切り上げて書く形を小さく足す（今の出力の数え方は変えない）

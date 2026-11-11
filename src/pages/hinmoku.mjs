@@ -2,7 +2,7 @@
 // 楽天の商品を出すページは、AdSense を置かない・楽天以外へのリンクを置かない（楽天ウェブサービス規約 第8条4項・第10条1項4号）
 //   出典はリンクにせず名前と確認日だけ（リンクは備えの知識のページにある）。フッターに楽天のクレジット（layout.mjs）
 import { esc, fmt, h2, jpDate, fit, priceBand, srcName } from '../layout.mjs';
-import { need } from '../calc.mjs';
+import { need, bottles, calcConf, calcHtml, CALC_JS } from '../calc.mjs';
 import { SHOW, cleanName } from '../rakuten.mjs';
 import { SAIGAI } from '../mode.mjs';
 import { KIGEN_NOTICE_DAYS } from './kigen.mjs';
@@ -290,9 +290,22 @@ function amountDesc(it, days, sources) {
   return `${it.page}。${it.page_note}。`;
 }
 
+// 量を出せる品目（calc: true）の計算カードと、その品目だけの答えの1行（夜 #93）。人数と日数は URL の ?n=&d= だけ（data-keep のリンクから）
+//   単位は p.feat と同じ。水は2Lボトルの本数も（L をボトルの L で割って切り上げ。CALC_JS の data-ceil）
+function calcPart(it, cc) {
+  const k = cc.out[it.id];
+  if (!it.calc || !k) return '';
+  const n = 4;
+  const d = cc.days.min;
+  const bt = it.bottle;
+  const extra = bt ? `（${bt.liters}Lボトル<b data-out="${k}" data-ceil="${bt.liters}">${fmt(bottles(cc.per[k], n, d, bt.liters))}</b>本）` : '';
+  return `${calcHtml(cc, { n, d, q: `わが家に要る${it.name}は？`, ans: false })}
+<p class="ans">${esc(it.name)}<b data-out="${k}">${fmt(need(cc.per[k], n, d))}</b>${esc(it.unit)}${extra}</p>`;
+}
+
 // 災害時モード（saigai）のときは、楽天の商品を出さない（題・説明文からも楽天を外す）。AdSense も置かない（layout.mjs）
 // ima：備えのごよみの今の期間 { item, html }（#64）。その品目のページだけ、量のめやすの下に1行
-export function hinmokuPages({ items, sources, products, saigai = SAIGAI, ima = null }) {
+export function hinmokuPages({ items, sources, products, saigai = SAIGAI, ima = null, cc = calcConf(items) }) {
   if (saigai) ima = null;
   if (saigai) products = null;
   const days = items.days;
@@ -336,7 +349,7 @@ ${sourceText([...new Set([...days.sources, ...items.yohairyo_sources, ...list.fl
       body: `<p class="crumb"><a href="/">トップ</a> / <a href="/hinmoku/">備えの品目</a></p>
 <h1 class="city">${esc(it.page)}</h1>
 <p class="feat">${esc(amount(it, days))}</p>
-${ima?.item === it.id ? ima.html : ''}${it.calc ? '<p><a class="go" href="/dougu/keisan/">わが家の人数で計算</a></p>' : ''}
+${ima?.item === it.id ? ima.html : ''}${calcPart(it, cc)}
 ${own.html}
 ${shopList(shop, products?.fetchedAt)}
 ${own.after}
@@ -344,7 +357,7 @@ ${h2('あわせて')}
 <ul class="list"><li><a href="/dougu/check/">チェックリスト</a></li>${rel ? `<li><a href="${rel[0]}">${esc(rel[1])}</a></li>` : ''}<li><a href="/hinmoku/">ほかの品目</a></li></ul>
 ${h2('出典')}
 ${sourceText([...new Set([...it.sources, ...own.src])], sources)}`,
-      script: shop?.length ? SHOP_JS : '',
+      script: (shop?.length ? SHOP_JS : '') + (calcPart(it, cc) ? CALC_JS : ''),
     });
   }
   return out;
