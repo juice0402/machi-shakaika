@@ -2,6 +2,8 @@
 import { esc, fmt, h2, srcKokusei, srcName, jpDate, fit } from '../layout.mjs';
 import { derive, r1, prefRangeText, prefReadText, prefHinanText } from '../stats.mjs';
 import { need } from '../calc.mjs';
+import { PREFS } from '../areas.mjs';
+import { qChiho, qChihoName } from '../quiz-core.mjs';
 
 const signed = (v) => `${v > 0 ? '+' : ''}${r1(v).toFixed(1)}%`;
 
@@ -9,6 +11,15 @@ const signed = (v) => `${v > 0 ? '+' : ''}${r1(v).toFixed(1)}%`;
 export function kenBichikuLine(b) {
   if (!b) return '';
   return `<p class="why">${esc(b.publisher)}のページは、${esc(b.note)}<br><a href="${esc(b.url)}" rel="noopener">${srcName(b)}</a></p>`;
+}
+
+// 本文のいちばん最後の「<地方>のほかの都道府県」（#98）。県のコードの順に名前だけ。北海道は地方にほかの県がないので東北の6県
+export function hokaKen(pref) {
+  const c = qChiho(pref.code);
+  const to = c === 0 ? 1 : c;
+  const xs = PREFS.filter((p) => p.code !== pref.code && qChiho(p.code) === to);
+  return `${h2(c === 0 ? '東北の県' : `${qChihoName(c)}のほかの都道府県`)}
+<ul class="list cols">${xs.map((p) => `<li><a href="/${p.slug}/">${esc(p.name)}</a></li>`).join('')}</ul>`;
 }
 
 export function prefPage({ pref, munis, list, z, cc, urlOf, hinan = null, hinanMeta = null, kenBichiku = null }) {
@@ -45,7 +56,8 @@ ${hn?.text.length ? `${para(hn.text)}<p class="note">1か所が複数の災害�
 ${haba.length ? `${h2('県内の街の幅')}
 <p>${haba.map(esc).join('')}</p>
 <p class="note"><a href="/about/#keisan-ken">幅の見方</a></p>
-${srcKokusei(munis)}` : ''}`;
+${srcKokusei(munis)}` : ''}
+${hokaKen(pref)}`;
   return {
     path: `/${pref.slug}/`,
     title: `${pref.name}の市区町村の人口と備え`,
