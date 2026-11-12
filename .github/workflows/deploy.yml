@@ -104,6 +104,26 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: node scripts/cleanup-deployments.mjs
 
+      - name: 前に知らせたページの記録を読む（IndexNow）
+        if: steps.diff.outputs.changed == 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: .indexnow
+          key: indexnow-${{ github.run_id }}
+          restore-keys: indexnow-
+
+      - name: 変わったページを検索エンジンに知らせる（IndexNow。Bing など）
+        if: steps.diff.outputs.changed == 'true'
+        continue-on-error: true
+        run: node scripts/indexnow.mjs
+
+      - name: 記録をとっておく（IndexNow）
+        if: always() && steps.diff.outputs.changed == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .indexnow
+          key: indexnow-${{ github.run_id }}
+
       - name: PRにプレビューURLをコメント
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         env:

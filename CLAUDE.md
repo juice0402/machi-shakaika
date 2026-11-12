@@ -21,7 +21,7 @@
 ## しくみ
 - 依存パッケージなしの Node 22 だけ（`scripts/build.mjs`）。npm の部品を足さない
 - コマンド：`npm run check`（テスト → ビルド → 全ページ点検）。PR前に必ず緑にする
-- 公開：`deploy.yml` が Cloudflare Pages（`machi-shakaika`）へ Direct Upload。Cloudflare 側のビルドは使わない。PR → プレビュー／main → 本番。毎朝6:17にも動く
+- 公開：`deploy.yml` が Cloudflare Pages（`machi-shakaika`）へ Direct Upload。Cloudflare 側のビルドは使わない。PR → プレビュー／main → 本番。毎朝6:17にも動く。本番に公開したときは、中身が変わったページだけを IndexNow（Bing など）に知らせる（`scripts/indexnow.mjs`・鍵は `static/<32けた>.txt`・前に知らせた印は Actions の cache。anzen と同じ形。11/12 司令塔）
 - Secrets：`ESTAT_APP_ID`・`CLOUDFLARE_API_TOKEN`・`CLOUDFLARE_ACCOUNT_ID`・`RAKUTEN_APPLICATION_ID`・`RAKUTEN_ACCESS_KEY`・`RAKUTEN_AFFILIATE_ID`。値はチャット・ログ・コメント・ファイルに出さない
 - `SITE.launched` が false のあいだは全ページ noindex。pages.dev はいつも noindex
 - AdSense（`SITE.adsense`）：空のリンク・「準備中」のページ・中身のない棚の入口を作らない。運営者情報・プライバシーポリシー・ナビを全ページに
