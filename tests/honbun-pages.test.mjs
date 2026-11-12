@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readYaml } from '../src/data.mjs';
 import { readMunis } from '../src/munis.mjs';
-import { calcConf, need } from '../src/calc.mjs';
+import { calcConf, need, CALC_JS } from '../src/calc.mjs';
 import { muniList } from '../src/stats.mjs';
 import { kazuData } from '../src/machi-tools.mjs';
 import { mtDiff } from '../src/machi-core.mjs';
@@ -178,4 +178,100 @@ test('夜 #74：品目ページの足した節は商品の一覧のあと・水�
   assert.ok(m.body.includes(`約${km.suzushii}日、冷蔵庫なら約${km.reizouko}日`));
   // 足した節の出典は、ページの下の出典にも並ぶ
   for (const id of ['nerima-kumioki']) assert.ok(m.body.includes(sources.sources.find((x) => x.id === id).title), id);
+});
+
+// 夜 #91（C-026）：/sonae/bichiku/ で、わが家の人数の量をその場で出す。計算のカードは1つめの段落の下・1つだけ、スクリプトは計算のページと同じ
+test('夜 #91：/sonae/bichiku/ に計算のカードと CALC_JS・地の文はめやす以上', () => {
+  const p = sonaePages({ cc, items, sources }).find((x) => x.path === '/sonae/bichiku/');
+  const html = page(p);
+  assert.equal((html.match(/id="calc"/g) ?? []).length, 1, 'id="calc" は1つだけ');
+  assert.ok(html.includes(`<script>${CALC_JS}</script>`), 'CALC_JS が入っていない');
+  assert.ok(p.body.indexOf('id="calc"') < p.body.indexOf('1人1日の量</h2>'), 'カードは「1人1日の量」の前');
+  assert.ok(p.body.includes('<a class="go" data-keep href="/dougu/check/">この人数でチェックリストを見る</a>'));
+  assert.ok(!p.body.includes('<a class="go" href="/dougu/keisan/">'));
+  assert.ok(jinobunCount(html) >= jinobunMeyasu(p.path), `地の文${jinobunCount(html)}字`);
+});
+
+// 夜 #93：品目ページ（水・主食・携帯トイレ）に計算のカードと、その品目だけの答えの1行。水は2Lボトルの本数（切り上げ）
+// CALC_JS を小さなにせの DOM で動かし、?n=&d= で開いたときの出力とリンクを見る
+function runCalc(body, search = '') {
+  const attrs = (s) => Object.fromEntries([...s.matchAll(/data-([a-z]+)(?:=(?:"([^"]*)"|'([^']*)'))?/g)].map((m) => [m[1], m[2] ?? m[3] ?? '']));
+  const outs = [...body.matchAll(/<b ([^>]*data-out=[^>]*)>[^<]*<\/b>/g)].map((m) => ({ dataset: attrs(m[1]), textContent: '' }));
+  const keeps = [...body.matchAll(/<a ([^>]*data-keep[^>]*)>/g)].map((m) => {
+    const h = m[1].match(/href="([^"]+)"/)[1];
+    return { pathname: h.split('?')[0], href: h };
+  });
+  const sec = body.match(/<section id="calc"([^>]*)>/);
+  const c = { dataset: attrs(sec[1]), querySelectorAll: () => [], addEventListener() {} };
+  const doc = {
+    getElementById: (id) => (id === 'calc' ? c : null),
+    querySelectorAll: (q) => {
+      const k = q.match(/data-out="([^"]+)"/);
+      if (k) return outs.filter((o) => o.dataset.out === k[1]);
+      return q === 'a[data-keep]' ? keeps : [];
+    },
+  };
+  new Function('document', 'location', CALC_JS)(doc, { search });
+  return { outs: outs.map((o) => [o.dataset.out, o.dataset.ceil ?? null, o.textContent]), keeps: keeps.map((a) => a.href) };
+}
+
+test('夜 #93：品目ページ3つに計算のカードと答えの1行・水は2Lボトルの本数', () => {
+  const pages = hinmokuPages({ items, sources, products: null, saigai: false, cc });
+  const want = { mizu: ['水', 'L'], shushoku: ['主食', '食'], 'keitai-toilet': ['携帯トイレ', '回分'] };
+  for (const it of items.items.filter((x) => x.hinmoku)) {
+    const p = pages.find((x) => x.path === `/hinmoku/${it.id}/`);
+    const html = page(p);
+    if (!want[it.id]) {
+      // gas・light・battery は今と同じ（カードもスクリプトもない）
+      assert.ok(!html.includes('id="calc"') && !p.body.includes('class="ans"') && !p.script, it.id);
+      continue;
+    }
+    assert.equal((html.match(/id="calc"/g) ?? []).length, 1, `${it.id}：id="calc" は1つだけ`);
+    assert.ok(html.includes(`<script>${CALC_JS}</script>`), `${it.id}：CALC_JS`);
+    assert.ok(!p.body.includes('href="/dougu/keisan/"'), `${it.id}：計算のページへのリンクはカードに置きかえ`);
+    const [nm, unit] = want[it.id];
+    const ans = p.body.match(/<p class="ans">([\s\S]*?)<\/p>/)[1].replace(/<[^>]+>/g, '');
+    const k = cc.out[it.id];
+    const base = `${nm}${need(cc.per[k], 4, items.days.min)}${unit}`;
+    assert.equal(ans, it.id === 'mizu' ? `${base}（2Lボトル${Math.ceil(need(cc.per[k], 4, items.days.min) / 2)}本）` : base, it.id);
+    // カードは量のめやすの下・早見表の上。商品の並びは今の場所のまま
+    assert.ok(p.body.indexOf('class="feat"') < p.body.indexOf('id="calc"') && p.body.indexOf('id="calc"') < p.body.indexOf('人数と日数の早見表</h2>'), it.id);
+  }
+  // 本数（4人・3日 → 36L・18本、1人・7日 → 21L・11本）。?n=&d= で開いたとき
+  const mz = pages.find((x) => x.path === '/hinmoku/mizu/').body;
+  assert.equal(items.items.find((x) => x.id === 'mizu').bottle.liters, 2);
+  assert.deepEqual(runCalc(mz, '?n=4&d=3').outs, [['mizu', null, '36'], ['mizu', '2', '18']]);
+  assert.deepEqual(runCalc(mz, '?n=1&d=7').outs, [['mizu', null, '21'], ['mizu', '2', '11']]);
+  assert.deepEqual(runCalc(mz, '').outs, [['mizu', null, '36'], ['mizu', '2', '18']]);
+  const sh = pages.find((x) => x.path === '/hinmoku/shushoku/').body;
+  assert.deepEqual(runCalc(sh, '?n=2&d=7').outs, [['shoku', null, String(need(cc.per.shoku, 2, 7))]]);
+});
+
+test('夜 #93：商品があるときも計算のカードは1つ・スクリプトは SHOP_JS と CALC_JS・楽天以外の外のリンクなし', () => {
+  const one = { url: 'https://item.rakuten.co.jp/x/', img: 'https://thumbnail.image.rakuten.co.jp/x.jpg', name: 'x', price: 1000, reviews: 10, rating: 4 };
+  const products = { fetchedAt: '2026-11-09T00:00:00Z', items: Object.fromEntries(items.items.map((it) => [it.id, [one]])) };
+  for (const saigai of [false, true]) {
+    for (const p of hinmokuPages({ items, sources, products, saigai, cc }).filter((x) => x.path !== '/hinmoku/')) {
+      const id = p.path.split('/')[2];
+      const calc = ['mizu', 'shushoku', 'keitai-toilet'].includes(id);
+      assert.equal((p.body.match(/id="calc"/g) ?? []).length, calc ? 1 : 0, p.path);
+      assert.equal(p.script.includes(CALC_JS), calc, p.path);
+      for (const m of p.body.matchAll(/href="([^"]+)"/g)) assert.ok(m[1].startsWith('/') || m[1].startsWith('https://item.rakuten.co.jp/'), `${p.path}：外へのリンク ${m[1]}`);
+      // 商品の並びは早見表のあと（入れかえない）
+      if (!saigai) assert.ok(p.body.indexOf('class="shopb"') > p.body.indexOf('id="calc"'), p.path);
+    }
+  }
+});
+
+test('夜 #93：計算のページと /sonae/bichiku/ から、人数と日数をつけたまま品目ページへ', () => {
+  const ps = sonaePages({ cc, items, sources });
+  const ks = ps.find((p) => p.path === '/dougu/keisan/').body;
+  const bi = ps.find((p) => p.path === '/sonae/bichiku/').body;
+  const three = '<a data-keep href="/hinmoku/mizu/">備蓄の水</a>・<a data-keep href="/hinmoku/shushoku/">備蓄の主食</a>・<a data-keep href="/hinmoku/keitai-toilet/">携帯トイレ</a>';
+  for (const b of [ks, bi]) assert.ok(b.includes(three));
+  assert.ok(ks.indexOf(three) > ks.indexOf('この人数でチェックリストを見る'));
+  assert.deepEqual(runCalc(ks, '?n=2&d=7').keeps, ['/dougu/check/?n=2&d=7', '/hinmoku/mizu/?n=2&d=7', '/hinmoku/shushoku/?n=2&d=7', '/hinmoku/keitai-toilet/?n=2&d=7']);
+  // 品目ページを同じ ?n=&d= で開くと、計算のページと同じ量
+  const mz = hinmokuPages({ items, sources, products: null, saigai: false, cc }).find((x) => x.path === '/hinmoku/mizu/').body;
+  assert.equal(runCalc(mz, '?n=2&d=7').outs[0][2], runCalc(ks, '?n=2&d=7').outs.find((o) => o[0] === 'mizu')[2]);
 });

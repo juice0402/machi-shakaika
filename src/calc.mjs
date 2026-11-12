@@ -15,6 +15,8 @@ export function calcConf(items) {
 }
 
 export const need = (per, n, d) => Math.round(per * n * d);
+// ボトルの本数：量を1本の L で割って切り上げ（防災カルテの「あと◯本」と同じ数え方）
+export const bottles = (per, n, d, liters) => Math.ceil((per * n * d) / liters);
 
 export function calcHtml(cc, { n = 4, d = cc.days.min, q = 'わが家の備えは、どれだけ？', id = 'calc', ans = true } = {}) {
   const days = cc.days.choices
@@ -29,11 +31,11 @@ ${ans ? `<p class="ans">水<b data-out="mizu">${need(cc.per.mizu, n, d)}</b>L　
 }
 
 // ?n=1&d=7 で人数と日数を入れて開ける（市区町村ページの「1人分」など）
-// data-out はページのどこにあっても書きかえる（チェックリストの量）。a[data-keep] は人数と日数をつけたURLにする
+// data-out はページのどこにあっても書きかえる（チェックリストの量）。data-ceil="2" の出力は、量を2で割って切り上げた数（2Lボトルの本数。夜 #93）。a[data-keep] は人数と日数をつけたURLにする
 export const CALC_JS = `(()=>{const c=document.getElementById('calc');if(!c)return;const per=JSON.parse(c.dataset.per);let n=+c.dataset.n,d=+c.dataset.d;
 const u=new URLSearchParams(location.search);if(+u.get('n')>=1)n=Math.min(10,+u.get('n')|0);if(u.get('d')==='3'||u.get('d')==='7')d=+u.get('d');
 const f=v=>Math.round(v).toLocaleString('ja-JP');
 function draw(){c.querySelectorAll('[data-num]').forEach(e=>e.textContent=n);c.querySelectorAll('[data-day]').forEach(b=>{const on=+b.dataset.day===d;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
-for(const k in per)document.querySelectorAll('[data-out="'+k+'"]').forEach(e=>e.textContent=f(per[k]*n*d));
+for(const k in per)document.querySelectorAll('[data-out="'+k+'"]').forEach(e=>{const v=per[k]*n*d;e.textContent=e.dataset.ceil?f(Math.ceil(v/e.dataset.ceil)):f(v)});
 document.querySelectorAll('a[data-keep]').forEach(a=>a.href=a.pathname+'?n='+n+'&d='+d)}
 c.addEventListener('click',e=>{const s=e.target.closest('[data-step]'),y=e.target.closest('[data-day]');if(s){n=Math.min(10,Math.max(1,n+ +s.dataset.step));draw()}else if(y){d=+y.dataset.day;draw()}});draw()})();`;
