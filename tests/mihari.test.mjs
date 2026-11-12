@@ -147,3 +147,10 @@ test('mihari.yml の workflows: に、見張る workflow の name がそろっ�
     assert.ok(listed.includes(name), `${file}（${name}）`);
   }
 });
+
+test('3時間ごとにも見る（GITHUB_TOKEN で動かした公開は、終わっても workflow_run が来ないため。2026-11-13）', () => {
+  const wf = readFileSync('.github/workflows/mihari.yml', 'utf8');
+  assert.match(wf, /^\s*schedule:\s*\n\s*- cron: '29 \*\/3 \* \* \*'/m);
+  // schedule のときは、手で動かしたときと同じく、見張る workflow ごとのいちばん新しい実行を見る
+  assert.match(readFileSync('scripts/mihari.mjs', 'utf8'), /if \(process\.env\.GITHUB_EVENT_NAME === 'workflow_run'\)/);
+});
