@@ -115,7 +115,7 @@
 - 読むファイル：CLAUDE.md・src/areas.mjs・src/stats.mjs・scripts/fetch-hinan.mjs・src/lib/hinan.mjs・.github/workflows/update.yml・scripts/honbun.mjs
 - マージ：する
 
-### [ ] 備蓄の量のめやす（/sonae/bichiku/）で、わが家の人数の量をその場で出す（連絡 C-026）
+### [x] 備蓄の量のめやす（/sonae/bichiku/）で、わが家の人数の量をその場で出す（連絡 C-026）（#91）
 - やること：/sonae/bichiku/（`src/pages/sonae.mjs` の `path: '/sonae/bichiku/'`）の1つめの段落のすぐ下（h2「1人1日の量」の前）に、計算のページと同じ計算カード `calcHtml(cc)` を置き、ページに `script: CALC_JS` を足す（prose の div はカードの前で閉じて、あとで開き直す）。早見表の下の `<a class="go" href="/dougu/keisan/">わが家の人数で計算する</a>` は、計算のページと同じ `<a class="go" data-keep href="/dougu/check/">この人数でチェックリストを見る</a>` に置きかえる（カードの人数と日数がチェックリストに引きつがれる）。ほかの文・早見表・出典は変えない
 - できあがりの条件：`npm run check` が緑（作業場から e-Stat・国土地理院にはつながらないので `ALLOW_MISSING_HINAN_LIST=1 npm run check`。データは Actions が取って data/ にコミットしたものを使う）。テストで、/sonae/bichiku/ に `id="calc"` が1つだけあり、`CALC_JS` が入っていることを見張る（ビルドの結果を見ている今のテストの形をまねる）。スマホ 390×660 で計算の答えの行（水・食事・携帯トイレ）が1画面めに入る。`?n=2&d=7` で開くと2人・7日分の数になる。地の文の字数（`node scripts/honbun.mjs dist --pages`）がめやすの900字を下回らない。スマホとパソコンのスクショを並べて1枚で PR に
 - 決まったこと：連絡 C-026（11/6）の machi の行「備え（/sonae/bichiku/ 7位）は自分の家の人数で量を出す形を」。答えのページは消さない・下げない（C-026）。1行で済む答えはページの上に書いてよく、そのすぐ下に道具を置く（site-principles「AIの検索の答えに負けない作り」）。/sonae/bichiku/ は検索で表示の多い備えのページ（search-data-machi.md 11/6 の回：6表示・7.17位）。計算の部品と数字は今の `calcHtml`・`CALC_JS` と data/items.yml のまま（数字を本文に直接書かない・CLAUDE.md）。AdSense の置き場所は今のまま（新しい置き場所は合格のあと・machi-adsense-plan.md）。利用者のデータを集めない（CLAUDE.md）ので、入れた人数と日数は URL の ? だけ
