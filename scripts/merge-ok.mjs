@@ -20,6 +20,7 @@ export const MSG = {
   fail: (names) => `点検が通らなかったのでマージしなかった（${names.join('・')}）`,
   conflict: 'main とぶつかったのでマージしなかった。司令塔で main を取りこむ',
   error: (status, why = '') => `マージできなかった（GitHub API HTTP ${status}${why ? `：${why}` : ''}）`,
+  closed: (n, sha = '') => `PR #${n} でマージ済み${sha ? `（${sha.slice(0, 7)}）` : ''}。閉じます（マージの印）`,
 };
 
 const norm = (s) => String(s ?? '')
@@ -96,6 +97,8 @@ export const mergeableAction = (v) => (v === true ? 'merge' : v === false ? 'con
 export const mergeTitle = (p) => `${p.title} (#${p.number})`;
 // squash の本文は空にしない（空だと GitHub がブランチのコミットの一覧を入れることがある）
 export const mergeMessage = (p) => `マージの印（merge-ok）で #${p.number} をマージ`;
+// 本文の「Closes #12」「Fixes #12」「Resolves #12」の番号（GITHUB_TOKEN の squash では GitHub が issue を閉じないので、マージの印が閉じる）
+export const closesOf = (body) => [...new Set([...norm(body).matchAll(/\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s*:?\s*#(\d+)(?!\d)/gi)].map((m) => Number(m[1])))];
 export const hasLabel = (p, name = LABEL) => (p.labels || []).some((l) => (l.name ?? l) === name);
 // 見る PR：印の付いた開いている PR を番号の小さい順に（only があればその PR だけ。印がなければ見ない）
 export const pickTargets = (open, only = null) => open.filter((p) => hasLabel(p) && (!only || p.number === only)).sort((a, b) => a.number - b.number);
@@ -105,6 +108,7 @@ const API = process.env.GITHUB_API_URL || 'https://api.github.com';
 const REPO = process.env.GITHUB_REPOSITORY || 'juice0402/machi-shakaika';
 const DRY = process.env.DRY_RUN === 'true';
 const ONLY = Number(process.env.PR_NUMBER) || null; // 手で動かすときの pr（空ならぜんぶ）
+const SWEEP = process.env.SWEEP === 'true'; // 手で動かすときの sweep（この21日にマージされた PR の Closes の閉じ忘れを閉じる）
 const PUBLISH = process.env.PUBLISH_WORKFLOW || '';
 const RUN_URL = `${process.env.GITHUB_SERVER_URL || 'https://github.com'}/${REPO}/actions/runs/${process.env.GITHUB_RUN_ID || ''}`;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -162,6 +166,36 @@ async function block(p, msg) {
   console.log(`#${p.number}：${msg}`);
 }
 
+// マージした PR の本文の Closes #◯ の issue を、コメントをつけて閉じる（開いている issue だけ。PR・閉じた issue はさわらない。失敗してもマージは止めない）
+async function closeLinked(pr, sha = '') {
+  for (const n of closesOf(pr.body)) {
+    try {
+      const it = await gh(`issues/${n}`);
+      if (!it || it.pull_request || it.state !== 'open') continue;
+      if (DRY) {
+        log(`#${n} を閉じるはず（PR #${pr.number} の Closes）`);
+        continue;
+      }
+      await gh(`issues/${n}/comments`, { method: 'POST', body: { body: MSG.closed(pr.number, sha) } });
+      await gh(`issues/${n}`, { method: 'PATCH', body: { state: 'closed', state_reason: 'completed' } });
+      console.log(`#${n} を閉じた（PR #${pr.number} の Closes）`);
+    } catch (e) {
+      console.log(`#${n} を閉じられなかった（${e.message}）`);
+    }
+  }
+}
+
+// 掃除：この21日に main へマージされた PR の Closes #◯ で、まだ開いている issue を閉じる
+async function sweep() {
+  const since = Date.now() - 21 * 864e5;
+  const closed = await pages('pulls?state=closed&sort=updated&direction=desc', (x) => x, 3);
+  for (const p of closed) {
+    if (!p.merged_at || Date.parse(p.merged_at) < since || p.base?.ref !== 'main') continue;
+    await closeLinked(p, p.merge_commit_sha || '');
+  }
+  log('掃除が終わった');
+}
+
 // 1つの PR を見る。返すのは log の文と、もう一度見るまでの時間（retry）
 async function consider(p, open, merged) {
   if (p.base?.ref !== 'main') return { say: `base が ${p.base?.ref} なので見ない` };
@@ -202,8 +236,9 @@ async function consider(p, open, merged) {
     merged.push(p.number);
     return { say: `squash でマージするはず（${title}・sha ${sha.slice(0, 7)}）` };
   }
+  let done = null;
   try {
-    await gh(`pulls/${p.number}/merge`, { method: 'PUT', body: { merge_method: 'squash', sha, commit_title: title, commit_message: mergeMessage(fresh) } });
+    done = await gh(`pulls/${p.number}/merge`, { method: 'PUT', body: { merge_method: 'squash', sha, commit_title: title, commit_message: mergeMessage(fresh) } });
   } catch (e) {
     if (e.status === 409) return { say: 'head が変わったので、次の点検の終わりで見直す' };
     if (!e.status) throw e;
@@ -211,6 +246,7 @@ async function consider(p, open, merged) {
     return { say: 'マージできなかった' };
   }
   merged.push(p.number);
+  await closeLinked(fresh, done?.sha || '');
   return { say: `squash でマージした（${title}）` };
 }
 
@@ -232,6 +268,7 @@ async function pass(merged) {
 }
 
 async function main() {
+  if (SWEEP) return sweep();
   if (!DRY) await ensureLabel(LABEL);
   const merged = [];
   // 点検がまだ1つもない PR・ぶつかりの計算がまだの PR は、ほかに見直すきっかけがないので、少し待ってから見直す（11分まで）
