@@ -25,6 +25,10 @@ on:
         description: 'この番号の PR だけを見る（空なら印の付いた PR をぜんぶ。印がない PR は見ない）'
         type: number
         required: false
+      sweep:
+        description: 'true のときはマージせず、この21日にマージした PR の Closes #◯ で開いたままの issue を閉じる（掃除）'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -52,9 +56,10 @@ jobs:
         id: marked
         env:
           GH_TOKEN: ${{ github.token }}
+          SWEEP: ${{ github.event_name == 'workflow_dispatch' && inputs.sweep }}
         run: |
           # 印が付いた回は数えずに見に行く（付けた直後は issues?labels= の一覧が0のことがある。11/4 sakutto #128）。ほかの回は PR の一覧のラベルで数える
-          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ] || [ "$SWEEP" = "true" ]; then
             n=1
           else
             n=$(gh api "repos/$GITHUB_REPOSITORY/pulls?state=open&per_page=100" --jq '[.[] | select(any(.labels[]; .name == "merge-ok"))] | length')
@@ -78,5 +83,6 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
           PR_NUMBER: ${{ inputs.pr }}
+          SWEEP: ${{ github.event_name == 'workflow_dispatch' && inputs.sweep }}
           PUBLISH_WORKFLOW: deploy.yml
         run: node scripts/merge-ok.mjs

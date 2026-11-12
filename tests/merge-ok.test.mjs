@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { orderDeps, waitingOn, evaluateChecks, mergeableAction, mergeTitle, mergeMessage, hasLabel, pickTargets, MSG, GRACE_MS, SELF_JOB } from '../scripts/merge-ok.mjs';
+import { orderDeps, waitingOn, evaluateChecks, mergeableAction, mergeTitle, mergeMessage, hasLabel, pickTargets, MSG, GRACE_MS, SELF_JOB, closesOf } from '../scripts/merge-ok.mjs';
 
 const pr = (number, extra = {}) => ({ number, head: { ref: `claude/x-${number}` }, body: '', ...extra });
 
@@ -109,4 +109,17 @@ test('見る PR：印の付いたものだけを番号の小さい順に。pr �
   assert.deepEqual(pickTargets(open, 30).map((p) => p.number), [30]);
   assert.deepEqual(pickTargets(open, 20), []); // 印がない PR は、番号を入れても見ない
   assert.deepEqual(pickTargets([]), []);
+});
+
+test('本文の Closes #◯ の番号（マージのあとに閉じる issue）', () => {
+  assert.deepEqual(closesOf('Closes #150'), [150]);
+  assert.deepEqual(closesOf('⚠️ #106 の PR #109 のあとにマージ\n\nCloses #107'), [107]);
+  assert.deepEqual(closesOf('closed #3, fixes: #4\nResolves #5 close #6'), [3, 4, 5, 6]);
+  assert.deepEqual(closesOf('Closes #150\nCloses #150'), [150]);
+  assert.deepEqual(closesOf('Closes ＃１５２'), [152]);
+  // 一部・とちゅう・順番の指定だけの本文は閉じない
+  assert.deepEqual(closesOf('夜 #72 の一部（マージしても issue は閉じない）'), []);
+  assert.deepEqual(closesOf('#12 のあとにマージ'), []);
+  assert.deepEqual(closesOf(''), []);
+  assert.deepEqual(closesOf(null), []);
 });
