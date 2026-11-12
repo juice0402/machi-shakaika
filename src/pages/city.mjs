@@ -8,6 +8,7 @@ import { machiQuizHtml, MACHI_JS } from './quiz.mjs';
 import { mtNear, mtNearHtml } from '../machi-core.mjs';
 import { village, villageHtml, VILLAGE_CSS } from '../machi-tools.mjs';
 import { kaobureText } from '../lib/kaobure.mjs';
+import { qChiho, qChihoName } from '../quiz-core.mjs';
 
 const pct = (v) => `${r1(v).toFixed(1)}%`;
 const signed = (v) => `${v > 0 ? '+' : ''}${r1(v).toFixed(1)}%`;
@@ -20,6 +21,29 @@ export function bichikuLine(city, b) {
   // note があれば「◯◯市の備蓄のページは、＜note＞」を頭に（11/8 夜 #71）
   const head = b.note ? `${esc(b.publisher)}の備蓄のページは、${esc(b.note)}<br>` : '';
   return `<p class="why">${head}${who}の備蓄は避難所に来た人の分です。<br>家の分は家で備えます。<br><a href="${esc(b.url)}" rel="noopener">${srcName(b)}</a></p>`;
+}
+
+// 本文のいちばん最後の「<県名>のほかの街」（#98 案A「県の中を歩く」）。同じ県のくわしく見られる街を人口の差が小さい順に4つまで。
+// 県に2つより少ないときは同じ地方から足し、見出しを「<地方>のほかの街」に。差が同じなら人口の多い方を先に
+export function hokaMachi(a, list, urlOf) {
+  const pref = prefOf(a.code);
+  const byDiff = (x, y) => Math.abs(x.pop - a.pop) - Math.abs(y.pop - a.pop) || y.pop - x.pop;
+  const cand = list.filter((x) => x.code !== a.code && urlOf(x.code));
+  const same = cand.filter((x) => x.code.slice(0, 2) === a.code.slice(0, 2)).sort(byDiff);
+  let title = `${pref.name}のほかの街`;
+  let rows = same.slice(0, 4);
+  if (same.length < 2) {
+    const c = qChiho(a.code);
+    title = `${qChihoName(c)}のほかの街`;
+    rows = same.concat(cand.filter((x) => x.code.slice(0, 2) !== a.code.slice(0, 2) && qChiho(x.code) === c).sort(byDiff)).slice(0, 4);
+  }
+  const li = rows.map((x) => {
+    const other = x.code.slice(0, 2) !== a.code.slice(0, 2) ? `${esc(prefOf(x.code).name)}・` : '';
+    return `<li><a href="${urlOf(x.code)}">${esc(x.name)}</a><small class="sub">${other}人口 ${fmt(x.pop)}人</small></li>`;
+  });
+  return `<section>${h2(title)}
+<ul class="list">${li.join('')}</ul>
+<p><a class="go" href="/${pref.slug}/">${esc(pref.name)}の市区町村をぜんぶ見る</a></p></section>`;
 }
 
 export function cityPage({ city, munis, list, z, cc, hinan, hinanMeta, urlOf, kazu, bichiku = null, hinanList = null }) {
@@ -114,7 +138,8 @@ ${(() => {
 }
 ${hitori65 ? `<p class="why">${esc(hitori65)}</p>` : ''}
 <div class="links"><a href="https://disaportal.gsi.go.jp/">ハザードマップポータルサイト（国土交通省）</a></div>
-</section>`;
+</section>
+${hokaMachi(a, list, urlOf)}`;
 
   const script = MACHI_JS + (h
     ? `(()=>{const d=document.getElementById('hl');if(!d)return;const K=${JSON.stringify(hinan.kinds.map(([, n]) => n))};let done=0;d.addEventListener('toggle',()=>{if(!d.open||done)return;done=1;const ul=d.querySelector('ul');ul.textContent='読み込み中';fetch(d.dataset.src).then(r=>r.json()).then(j=>{ul.textContent='';const add=(n,a,t)=>{const li=document.createElement('li');li.textContent=n;const s=document.createElement('small');s.textContent=a+(t?'　'+t:'');li.append(s);ul.append(li)};
