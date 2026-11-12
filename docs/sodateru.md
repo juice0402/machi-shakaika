@@ -115,7 +115,7 @@
 - 読むファイル：CLAUDE.md・src/areas.mjs・src/stats.mjs・scripts/fetch-hinan.mjs・src/lib/hinan.mjs・.github/workflows/update.yml・scripts/honbun.mjs
 - マージ：する
 
-### [ ] 備蓄の量のめやす（/sonae/bichiku/）で、わが家の人数の量をその場で出す（連絡 C-026）
+### [x] 備蓄の量のめやす（/sonae/bichiku/）で、わが家の人数の量をその場で出す（連絡 C-026）（#91）
 - やること：/sonae/bichiku/（`src/pages/sonae.mjs` の `path: '/sonae/bichiku/'`）の1つめの段落のすぐ下（h2「1人1日の量」の前）に、計算のページと同じ計算カード `calcHtml(cc)` を置き、ページに `script: CALC_JS` を足す（prose の div はカードの前で閉じて、あとで開き直す）。早見表の下の `<a class="go" href="/dougu/keisan/">わが家の人数で計算する</a>` は、計算のページと同じ `<a class="go" data-keep href="/dougu/check/">この人数でチェックリストを見る</a>` に置きかえる（カードの人数と日数がチェックリストに引きつがれる）。ほかの文・早見表・出典は変えない
 - できあがりの条件：`npm run check` が緑（作業場から e-Stat・国土地理院にはつながらないので `ALLOW_MISSING_HINAN_LIST=1 npm run check`。データは Actions が取って data/ にコミットしたものを使う）。テストで、/sonae/bichiku/ に `id="calc"` が1つだけあり、`CALC_JS` が入っていることを見張る（ビルドの結果を見ている今のテストの形をまねる）。スマホ 390×660 で計算の答えの行（水・食事・携帯トイレ）が1画面めに入る。`?n=2&d=7` で開くと2人・7日分の数になる。地の文の字数（`node scripts/honbun.mjs dist --pages`）がめやすの900字を下回らない。スマホとパソコンのスクショを並べて1枚で PR に
 - 決まったこと：連絡 C-026（11/6）の machi の行「備え（/sonae/bichiku/ 7位）は自分の家の人数で量を出す形を」。答えのページは消さない・下げない（C-026）。1行で済む答えはページの上に書いてよく、そのすぐ下に道具を置く（site-principles「AIの検索の答えに負けない作り」）。/sonae/bichiku/ は検索で表示の多い備えのページ（search-data-machi.md 11/6 の回：6表示・7.17位）。計算の部品と数字は今の `calcHtml`・`CALC_JS` と data/items.yml のまま（数字を本文に直接書かない・CLAUDE.md）。AdSense の置き場所は今のまま（新しい置き場所は合格のあと・machi-adsense-plan.md）。利用者のデータを集めない（CLAUDE.md）ので、入れた人数と日数は URL の ? だけ
@@ -124,7 +124,7 @@
 - マージ：する
 - 足した：育てる山の補充（自動・2026-11-10）
 
-### [ ] 品目ページ（水・主食・携帯トイレ）に、わが家の人数の量と2Lボトルの本数
+### [x] 品目ページ（水・主食・携帯トイレ）に、わが家の人数の量と2Lボトルの本数（#93）
 - やること
   - `calc: true` の品目ページ3つ（/hinmoku/mizu/・shushoku/・keitai-toilet/。`src/pages/hinmoku.mjs`）の上の `<p><a class="go" href="/dougu/keisan/">わが家の人数で計算</a></p>` を、計算カード `calcHtml(cc, { ans: false })` と、その品目だけの答えの1行（`<p class="ans">`。水は「水 ◯L（2Lボトル◯本）」、主食は「主食 ◯食」、携帯トイレは「携帯トイレ ◯回分」）に置きかえる。`cc` は `scripts/build.mjs` の `calcConf(items)` の値を、`hinmokuPages({ ... })` の引数に足して渡す。ページの script は、商品があるときは `SHOP_JS + CALC_JS`、ないときも `CALC_JS` を入れる
   - ボトルの本数は、L を items.yml の `bottle.liters` で割って切り上げた数（防災カルテの「あと◯本」と同じ数え方）。`CALC_JS` に、`data-ceil` のような印のついた出力だけ切り上げて書く形を小さく足す（今の出力の数え方は変えない）
@@ -196,3 +196,30 @@
 - 読むファイル：CLAUDE.md・data/ken-bichiku.yml と data/bichiku.yml の頭の決まり・src/data.mjs の noteErrors と checkBichiku
 - マージ：する
 - 足した：育てる山の補充（自動・2026-11-11）
+
+### [ ] リンクの点検で消えた出典2つを差しかえる（issue #90：品川区と東京都の携帯トイレの PDF）
+- やること
+  - issue #90「リンクの点検：消えたリンクがあります」（2026-11-11 の点検）の消えた2つを、同じ発行元の新しいページに差しかえる（CLAUDE.md「消えたリンクは同じ発行元の新しいページに差しかえる」）。どちらも `data/sources.yml` の行で、ページは id で指している
+  - `tokyo-bichiku-toilet`（東京都「携帯トイレ・簡易トイレ」lief_r5_8.pdf・404）：使っている所は `src/pages/hinmoku.mjs` の携帯トイレのページ（「そろえる数は家族の人数や住まいでちがう」の1文と afterSrc）と、`data/items.yml` の akachan・hitori・minaoshi の sources。11/12 に WebSearch で見つけた差しかえの候補は、東京都防災ホームページの https://www.bousai.metro.tokyo.lg.jp/_res/common/bichiku/pamph_r6_7.pdf （令和6年7月版。11/12 に開いて、表紙に「必要な備蓄品・数量は家族構成やお住まいにより異なります。」、本文に断水でトイレが流せないことと携帯トイレ・簡易トイレの用意があった。11月19日の「備蓄の日」の記述はなかった）。このPDFを開き直して、title は1ページめの題そのもの・about は開いて読んだことだけ・checked は開いた日に直す
+  - 11月19日の「備蓄の日」の出典は、すでにある `tokyo-bichiku`（東京備蓄ナビ。about が「11月19日を「備蓄の日」としている」。備えのごよみの 11/16〜30 もこれ）に寄せる：`data/items.yml` の minaoshi の sources と、その上のコメント「bichiku：東京都の備蓄の日（tokyo-bichiku-toilet）」、`src/pages/sonae-yomimono.mjs` の見直しの日のコメントを `tokyo-bichiku` にする。ページの文で tokyo-bichiku-toilet を出典にして備蓄の日を書いている所があれば、そこも `tokyo-bichiku` に
+  - `shinagawa-toilet`（品川区「携帯トイレの使用方法」20240621153952_1.pdf・404）：使っている所は `src/pages/hinmoku.mjs` の携帯トイレのページの「汚物を入れる袋は使うたびに替えます。固める薬は、便器の中に直接入れません。」の1文と afterSrc。品川区のホームページの中で、同じことが書いてあるページを WebSearch で探す（11/12 に見た品川区の 20240621153952_5.pdf と「品川区災害時トイレ確保・管理計画」20250328141204_2.pdf には、凝固剤を便器に直接入れないことの記述はなかった）
+  - 断られた3つ（松山市・今治市・愛媛県。どれも 403）は、WebFetch で開けるかだけ見る。開けて中身が今の行と同じなら変えない
+- できあがりの条件：`npm run check` が緑（`ALLOW_MISSING_HINAN_LIST=1 npm run check`）。`node scripts/check-links.mjs --list` で、差しかえたURLが点検の対象に入っている。PR の check（リンクの点検）の注記で、差しかえた出典が「消えた」に出ない。地の文の字数（`node scripts/honbun.mjs dist --pages`）で、携帯トイレの品目ページ・赤ちゃんと高齢の家族・ひとり暮らし・年に2回の見直しがめやすの900字を下回らない。PR の本文に、出典ごとの結果（差しかえた先の URL と題・見つからなかった・断られたままで変えなかった）と「refs #90」（closes にしない）
+- 決まったこと：消えたリンクは同じ発行元の新しいページに差しかえる・403・429 は消えたとは限らない（CLAUDE.md の「リンクの点検」）。出典は `data/sources.yml`。title はページの題そのもの・checked は開いて確かめた日・出典の about にない事実は書かない（CLAUDE.md「データの決まり」・引き継ぎ「大事な決めごと」）。備えの数字は `data/items.yml` だけ（数字を本文に直接書かない）。WebFetch は検索結果に出た URL だけ開ける（引き継ぎ）
+- 迷ったら：品川区のページで同じことが見つからないときは、品川区の行は今のまま残し、hinmoku.mjs の1文は、同じ発行元でなくても今の `data/sources.yml` にある公的な出典（`kanagawa-toilet`・`hiroshima-toilet` など）の about に書いてあることだけに言いかえて、その id を出典にする。about に合う1文がなければ、その1文を外す（地の文が900字を下回るときは外さずに今のまま残し、PR に「見つからなかった」と書く）。今の行のままにした出典の id は消さない。東京都の候補の PDF が開けないときは、東京都防災ホームページの中で家庭の備蓄の案内（携帯トイレをふくむもの）を WebSearch で1回だけ探し、なければ今の行のまま PR に書く。WebSearch は1つの出典につき2回まで
+- 読むファイル：CLAUDE.md・data/sources.yml の頭の決まりと tokyo-bichiku・tokyo-bichiku-toilet・shinagawa-toilet・kanagawa-toilet・hiroshima-toilet の行・data/items.yml の akachan・hitori・minaoshi・src/pages/hinmoku.mjs の携帯トイレの所・src/pages/sonae-yomimono.mjs の見直しの所・scripts/check-links.mjs の頭のコメント・issue #90 の本文
+- マージ：する
+- 足した：育てる山の補充（自動・2026-11-12）
+
+### [ ] 品目ページの「期限メモ」のリンクから、その品目をえらんだ形で期限メモを開く
+- やること
+  - 期限メモ（/dougu/kigen/。`src/pages/kigen.mjs` の `KIGEN_JS`）で、URL の `?k=<記号>`（items.yml の checklists の `kigen` の記号。w 水・s 主食・k 缶詰・t 携帯トイレ・g カセットボンベ・d 乾電池 など）で開いたら、品目の欄にその名前を入れ、並んだ品目の札（`.kw button`）の同じ名前に丸をつける（今の札を押したときの動き `nm.value=…;pick()` と同じ）。知らない記号は何もしない。メモの中身（# の後ろ・localStorage）は読みも書きもしない（期限は使う人が入れる）
+  - 品目ページ（`src/pages/hinmoku.mjs` の `kigen()` と、ライトのページの乾電池の1文）の `<a href="/dougu/kigen/">期限メモ</a>` を、その品目の記号つき（`/dougu/kigen/?k=w` など）にする。記号は items.yml の checklists から引く（`kigenChoices()` と同じ引き方。手で書かない）。品目に記号がないときは今のリンクのまま
+- 順番：「品目ページ（水・主食・携帯トイレ）に、わが家の人数の量と2Lボトルの本数」（PR #94）のあと（同じ hinmoku.mjs をさわるので、マージ待ちならその枝の上に作る）
+- できあがりの条件：`npm run check` が緑（`ALLOW_MISSING_HINAN_LIST=1 npm run check`）。テストで、品目ページの期限メモのリンクの記号が items.yml の checklists の kigen と合っていること、/dougu/kigen/ の HTML が `KIGEN_JS` の所のほかは今と同じことを見張る（今のテストの形をまねる）。playwright で、/hinmoku/mizu/ の期限メモのリンクを押すと品目の欄が「水」になって札に丸がつく・`?k=zz` では何も起きない・# つきのメモの URL に `?k=w` をつけて開いてもメモが今と同じに読める、を確かめる。スマホ 390×660 の /dougu/kigen/ の1画面めは、`?k=` なしでは今と同じ（main のビルドと画素までくらべる）。スクショ（水のページから開いたとき、スマホとパソコン）を並べて1枚で PR に
+- 決まったこと：二大テーマの両方に当たるもの（site-principles「買いに来る理由がある人を集める」11/6）。買う理由は「季節の備えと買いかえの時期」（site-principles の買う理由の例）、楽しさは「積み上がる」（期限のメモが端末に残る・site-principles「楽しさで、わざわざ来てもらう」）。期限メモのメモは localStorage と URL の # の後ろだけで、どこにも送らない（kigen.mjs の頭のコメント・CLAUDE.md「利用者のデータを集めない」）。期限メモに AdSense は置かない（kigen.mjs の頭のコメント）。お知らせは30日前（引き継ぎ「期限メモ（10/26 しょーくん）」）。品目ページは楽天以外へのリンクなし・AdSense なし（CLAUDE.md）で、足すのは内部リンクだけ。入れかえの時期の数字は書かない（kigen.mjs の「公的な目安が見つからない」）
+- 迷ったら：品目の札がない品目（名前だけの記号）は、欄に名前を入れるだけにする。`?k=` で開いたあと、URL から `?k=` を消すかは、「URLを送る」で作る URL に `?k=` が入らない（今の `link()` は pathname だけ）なら消さない。品目ページの文は変えず、href だけを変える。ライトのページの乾電池は、乾電池の記号（d）にする（品目ページ「モバイルバッテリー」とは別の品目なので、items.yml は変えない）
+- 読むファイル：CLAUDE.md・src/pages/kigen.mjs（kigenChoices と KIGEN_JS の pick・load の所）・src/pages/hinmoku.mjs の kigen() と乾電池の所・data/items.yml の checklists・tests/kigen.test.mjs
+- マージ：する
+- 足した：育てる山の補充（自動・2026-11-12）
+
