@@ -111,7 +111,7 @@ for (const p of kartePages({ cc, items, sources, munis, nat: nationalRates(list)
 for (const p of rankingPages({ munis, list, urlOf, kencho: new Set(cities.filter((c) => c.kind === 'kencho').map((c) => c.code)) })) add(p);
 for (const p of toolPages({ munis, kazu })) add(p);
 for (const p of manabiPages({ munis, list, nat: nationalRates(list), kazu, sources })) add(p);
-for (const p of hinmokuPages({ items, sources, products, ima: ima ? { item: ima.item, html: koyomiLine(ima, items, { item: false }) } : null })) add(p);
+for (const p of hinmokuPages({ items, sources, products, cc, ima: ima ? { item: ima.item, html: koyomiLine(ima, items, { item: false }) } : null })) add(p);
 const yomi = readYomi();
 const machi = machiData(munis.areas, urlOf, yomi);
 for (const p of quizPages({ munis, items, sources, machi })) add(p);
