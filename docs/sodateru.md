@@ -183,3 +183,38 @@
 - 読むファイル：CLAUDE.md・data/ken-bichiku.yml と data/bichiku.yml の頭の決まり・src/data.mjs の noteErrors と checkBichiku
 - マージ：する
 - 足した：育てる山の補充（自動・2026-11-11）
+
+### [ ] リンクの点検で消えた出典2つを差しかえる（issue #90：品川区と東京都の携帯トイレの PDF）
+- やること
+  - issue #90「リンクの点検：消えたリンクがあります」（2026-11-11 の点検）の消えた2つを、同じ発行元の新しいページに差しかえる（CLAUDE.md「消えたリンクは同じ発行元の新しいページに差しかえる」）。どちらも `data/sources.yml` の行で、ページは id で指している
+  - `tokyo-bichiku-toilet`（東京都「携帯トイレ・簡易トイレ」lief_r5_8.pdf・404）：使っている所は `src/pages/hinmoku.mjs` の携帯トイレのページ（「そろえる数は家族の人数や住まいでちがう」の1文と afterSrc）と、`data/items.yml` の akachan・hitori・minaoshi の sources。11/12 に WebSearch で見つけた差しかえの候補は、東京都防災ホームページの https://www.bousai.metro.tokyo.lg.jp/_res/common/bichiku/pamph_r6_7.pdf （令和6年7月版。11/12 に開いて、表紙に「必要な備蓄品・数量は家族構成やお住まいにより異なります。」、本文に断水でトイレが流せないことと携帯トイレ・簡易トイレの用意があった。11月19日の「備蓄の日」の記述はなかった）。このPDFを開き直して、title は1ページめの題そのもの・about は開いて読んだことだけ・checked は開いた日に直す
+  - 11月19日の「備蓄の日」の出典は、すでにある `tokyo-bichiku`（東京備蓄ナビ。about が「11月19日を「備蓄の日」としている」。備えのごよみの 11/16〜30 もこれ）に寄せる：`data/items.yml` の minaoshi の sources と、その上のコメント「bichiku：東京都の備蓄の日（tokyo-bichiku-toilet）」、`src/pages/sonae-yomimono.mjs` の見直しの日のコメントを `tokyo-bichiku` にする。ページの文で tokyo-bichiku-toilet を出典にして備蓄の日を書いている所があれば、そこも `tokyo-bichiku` に
+  - `shinagawa-toilet`（品川区「携帯トイレの使用方法」20240621153952_1.pdf・404）：使っている所は `src/pages/hinmoku.mjs` の携帯トイレのページの「汚物を入れる袋は使うたびに替えます。固める薬は、便器の中に直接入れません。」の1文と afterSrc。品川区のホームページの中で、同じことが書いてあるページを WebSearch で探す（11/12 に見た品川区の 20240621153952_5.pdf と「品川区災害時トイレ確保・管理計画」20250328141204_2.pdf には、凝固剤を便器に直接入れないことの記述はなかった）
+  - 断られた3つ（松山市・今治市・愛媛県。どれも 403）は、WebFetch で開けるかだけ見る。開けて中身が今の行と同じなら変えない
+- できあがりの条件：`npm run check` が緑（`ALLOW_MISSING_HINAN_LIST=1 npm run check`）。`node scripts/check-links.mjs --list` で、差しかえたURLが点検の対象に入っている。PR の check（リンクの点検）の注記で、差しかえた出典が「消えた」に出ない。地の文の字数（`node scripts/honbun.mjs dist --pages`）で、携帯トイレの品目ページ・赤ちゃんと高齢の家族・ひとり暮らし・年に2回の見直しがめやすの900字を下回らない。PR の本文に、出典ごとの結果（差しかえた先の URL と題・見つからなかった・断られたままで変えなかった）と「refs #90」（closes にしない）
+- 決まったこと：消えたリンクは同じ発行元の新しいページに差しかえる・403・429 は消えたとは限らない（CLAUDE.md の「リンクの点検」）。出典は `data/sources.yml`。title はページの題そのもの・checked は開いて確かめた日・出典の about にない事実は書かない（CLAUDE.md「データの決まり」・引き継ぎ「大事な決めごと」）。備えの数字は `data/items.yml` だけ（数字を本文に直接書かない）。WebFetch は検索結果に出た URL だけ開ける（引き継ぎ）
+- 迷ったら：品川区のページで同じことが見つからないときは、品川区の行は今のまま残し、hinmoku.mjs の1文は、同じ発行元でなくても今の `data/sources.yml` にある公的な出典（`kanagawa-toilet`・`hiroshima-toilet` など）の about に書いてあることだけに言いかえて、その id を出典にする。about に合う1文がなければ、その1文を外す（地の文が900字を下回るときは外さずに今のまま残し、PR に「見つからなかった」と書く）。今の行のままにした出典の id は消さない。東京都の候補の PDF が開けないときは、東京都防災ホームページの中で家庭の備蓄の案内（携帯トイレをふくむもの）を WebSearch で1回だけ探し、なければ今の行のまま PR に書く。WebSearch は1つの出典につき2回まで
+- 読むファイル：CLAUDE.md・data/sources.yml の頭の決まりと tokyo-bichiku・tokyo-bichiku-toilet・shinagawa-toilet・kanagawa-toilet・hiroshima-toilet の行・data/items.yml の akachan・hitori・minaoshi・src/pages/hinmoku.mjs の携帯トイレの所・src/pages/sonae-yomimono.mjs の見直しの所・scripts/check-links.mjs の頭のコメント・issue #90 の本文
+- マージ：する
+- 足した：育てる山の補充（自動・2026-11-12）
+
+### [ ] 品目ページの「期限メモ」のリンクから、その品目をえらんだ形で期限メモを開く
+- やること
+  - 期限メモ（/dougu/kigen/。`src/pages/kigen.mjs` の `KIGEN_JS`）で、URL の `?k=<記号>`（items.yml の checklists の `kigen` の記号。w 水・s 主食・k 携帯トイレ・g カセットボンベ・d 乾電池 など）で開いたら、品目の欄にその名前を入れ、並んだ品目の札（`.kw button`）の同じ名前に丸をつける（今の札を押したときの動き `nm.value=…;pick()` と同じ）。知らない記号は何もしない。メモの中身（# の後ろ・localStorage）は読みも書きもしない（期限は使う人が入れる）
+  - 品目ページ（`src/pages/hinmoku.mjs` の `kigen()` と、ライトのページの乾電池の1文）の `<a href="/dougu/kigen/">期限メモ</a>` を、その品目の記号つき（`/dougu/kigen/?k=w` など）にする。記号は items.yml の checklists から引く（`kigenChoices()` と同じ引き方。手で書かない）。品目に記号がないときは今のリンクのまま
+- できあがりの条件：`npm run check` が緑（`ALLOW_MISSING_HINAN_LIST=1 npm run check`）。テストで、品目ページの期限メモのリンクの記号が items.yml の checklists の kigen と合っていること、/dougu/kigen/ の HTML が `KIGEN_JS` の所のほかは今と同じことを見張る（今のテストの形をまねる）。playwright で、/hinmoku/mizu/ の期限メモのリンクを押すと品目の欄が「水」になって札に丸がつく・`?k=zz` では何も起きない・# つきのメモの URL に `?k=w` をつけて開いてもメモが今と同じに読める、を確かめる。スマホ 390×660 の /dougu/kigen/ の1画面めは、`?k=` なしでは今と同じ（main のビルドと画素までくらべる）。スクショ（水のページから開いたとき、スマホとパソコン）を並べて1枚で PR に
+- 決まったこと：二大テーマの両方に当たるもの（site-principles「買いに来る理由がある人を集める」11/6）。買う理由は「季節の備えと買いかえの時期」（site-principles の買う理由の例）、楽しさは「積み上がる」（期限のメモが端末に残る・site-principles「楽しさで、わざわざ来てもらう」）。期限メモのメモは localStorage と URL の # の後ろだけで、どこにも送らない（kigen.mjs の頭のコメント・CLAUDE.md「利用者のデータを集めない」）。期限メモに AdSense は置かない（kigen.mjs の頭のコメント）。お知らせは30日前（引き継ぎ「期限メモ（10/26 しょーくん）」）。品目ページは楽天以外へのリンクなし・AdSense なし（CLAUDE.md）で、足すのは内部リンクだけ。入れかえの時期の数字は書かない（kigen.mjs の「公的な目安が見つからない」）
+- 迷ったら：品目の札がない品目（名前だけの記号）は、欄に名前を入れるだけにする。`?k=` で開いたあと、URL から `?k=` を消すかは、「URLを送る」で作る URL に `?k=` が入らない（今の `link()` は pathname だけ）なら消さない。品目ページの文は変えず、href だけを変える。ライトのページの乾電池は、乾電池の記号（d）にする（品目ページ「モバイルバッテリー」とは別の品目なので、items.yml は変えない）
+- 順番：「品目ページ（水・主食・携帯トイレ）に、わが家の人数の量と2Lボトルの本数」（PR #94）のあと（同じ hinmoku.mjs をさわるので、マージ待ちならその枝の上に作る）
+- 読むファイル：CLAUDE.md・src/pages/kigen.mjs（kigenChoices と KIGEN_JS の pick・load の所）・src/pages/hinmoku.mjs の kigen() と乾電池の所・data/items.yml の checklists・tests/kigen.test.mjs
+- マージ：する
+- 足した：育てる山の補充（自動・2026-11-12）
+
+### [ ] まなびプリントA（小学生の紙）の「マンションは停電でポンプの給水が…」に出典をつける
+- やること：まなびプリントA（`src/manabi-core.mjs`）の小学生の紙で、共同住宅の割合が50%以上の街に出るヒント「ヒント：マンションは停電でポンプの給水が止まることがあります」（388行あたり）と、答えの紙の5の例「例：停電でポンプの給水が止まることがあるので、家に水を置いておく」（271行あたり）は出典が出ていない（夜 #34 の報告）。この2つが出る紙だけ、紙の足（`mbFoot`）の出典の行の下に、まなびプリントB と同じ `C.mansion.src`（`src/pages/manabi.mjs` の `MANSION_SRC`＝`chiba-pref-mansion`）を1行足す。ヒントと例の文は変えない
+- できあがりの条件：`npm run check` が緑（`ALLOW_MISSING_HINAN_LIST=1 npm run check`）。`tests/manabi.test.mjs` で、共同住宅が50%以上の街の小学生の紙と答えの紙に `C.mansion.src` が1つずつ出ること、50%未満の街では出ないことを見張る。印刷の PDF（playwright の page.pdf）が今と同じく A4 1枚ずつにおさまる（`/dougu/manabi/?k=a&m=<街のコード>&g=s&a=1` のような URL〔k・m・g・a の意味は manabi-core.mjs の頭のコメント〕で、共同住宅が50%以上の街と50%未満の街の両方）。少ない街の紙は main と画素までくらべて同じ。多い街の紙の印刷のスクショを PR に
+- 決まったこと：引き継ぎ claude/machi-handoff.md の「気になる点」の「直すならそれ（data/sources.yml の chiba-pref-mansion・suginami-mansion）を出典にする（#47 で品目の水のページはそう直した）」。数字・事実は出典と時点を必ず出す（CLAUDE.md）。出典は `srcName()` の形で 発行元「題」（CLAUDE.md「データの決まり」）。配る紙（印刷物）は A4 1枚（引き継ぎ「まなびプリント」）。小学生の紙のカードに「65歳以上」「5年の増減」は出さない（引き継ぎ）
+- 迷ったら：出典の id は、まなびプリントB と同じ `chiba-pref-mansion` だけにする（suginami-mansion は足さない）。足の行を足すと A4 からはみ出すときは、ヒントの行（`.mb-hint`）のすぐ後ろに小さい字で「（千葉県）」のように発行元だけを書く形にし、出典の題は紙の足の今の出典の行の後ろに「・」でつなぐ。中学・高校の紙で同じヒントが出る所があれば同じにする
+- 読むファイル：CLAUDE.md・src/manabi-core.mjs の mbFoot と小学生の紙（kyodo のヒント・答えの5）の所・src/pages/manabi.mjs の MANSION_SRC と manabiConf・tests/manabi.test.mjs・data/sources.yml の chiba-pref-mansion
+- マージ：する
+- 足した：育てる山の補充（自動・2026-11-12）
