@@ -12,6 +12,11 @@ on:
     workflows: [ビルドと公開, データの更新, 災害時モードの切りかえ, 地震の見張り]
     types: [completed]
     branches: [main]
+  # 3時間ごとにも、見張る workflow ごとのいちばん新しい実行を見る（2026-11-13）。
+  # マージの印（merge-ok.yml）などが GITHUB_TOKEN で動かした公開は、終わっても workflow_run が来ない（GitHub の決まり）。
+  # 同じ issue には1日1回しかコメントしない（notedToday）
+  schedule:
+    - cron: '29 */3 * * *'
   workflow_dispatch:
     inputs:
       dry_run:
