@@ -112,6 +112,7 @@ ${h2('人数と日数の例')}
 <p>ひとり暮らしの${days.better}日分は、水${need(w, 1, days.better)}Lと主食${need(m, 1, days.better)}食です。高齢の家族や小さな子どもがいる家は${y}日分がめやすで、2人なら水は${need(w, 2, y)}Lです。</p>
 <p>カセットコンロの燃料は、<a href="/hinmoku/gas/">カセットコンロとボンベ</a>に。${esc(gas.example_text)}${gas.example_qty}${esc(gas.unit)}です。</p>
 </div>
+<p><a href="/sonae/feed.xml">読みものの新着をRSSで受け取る</a></p>
 ${h2('出典')}
 ${sourceList([...new Set([...days.sources, ...by.mizu.sources, ...by.shushoku.sources, ...by['keitai-toilet'].sources, ...items.yohairyo_sources, ...gas.sources])], sources)}
 ${rei ? srcKokusei(rei.munis) : ''}`,

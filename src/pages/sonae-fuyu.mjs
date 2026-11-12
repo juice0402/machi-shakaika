@@ -6,7 +6,7 @@ import { sourceList } from './sonae.mjs';
 import { a8Ad } from '../a8.mjs';
 
 // /sonae/ の棚と、同じ group の読みものの末尾に出す1行（YOMIMONO と同じ形）
-export const FUYU = { key: 'fuyu', path: '/sonae/fuyu-teiden/', name: '冬の停電と寒さの備え', group: '災害の前に' };
+export const FUYU = { key: 'fuyu', path: '/sonae/fuyu-teiden/', name: '冬の停電と寒さの備え', group: '災害の前に', date: '2026-10-26' };
 
 // items.yml の fuyu と、そこから指す出典の形を確かめる（問題があれば文のリスト。空なら OK）
 export function checkFuyu(items, src) {

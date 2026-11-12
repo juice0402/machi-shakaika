@@ -9,14 +9,15 @@ import { SOTO } from './sonae-soto.mjs';
 import { FUYU } from './sonae-fuyu.mjs';
 
 // group は /sonae/ の棚の見出し（sonae.mjs の YOMI_GROUPS のどれか）。末尾の「ほかの読みもの」も同じ group から
+// date は main に入った日（YYYY-MM-DD）。/sonae/feed.xml（RSS）の新しい順と pubDate に使う
 export const YOMIMONO = [
-  { key: 'jishin', path: '/sonae/jishin/', name: '地震の前に足すもの', group: '災害の前に' },
-  { key: 'zaitaku', path: '/sonae/zaitaku-hinan/', name: '在宅避難の備え', group: '家族と住まい' },
-  { key: 'akachan', path: '/sonae/akachan-koureisha/', name: '赤ちゃん・高齢の家族がいる家の備え', group: '家族と住まい' },
-  { key: 'hitori', path: '/sonae/hitorigurashi/', name: 'ひとり暮らしの備え', group: '家族と住まい' },
-  { key: 'mansion', path: '/sonae/mansion/', name: 'マンション（共同住宅）の備え', group: '家族と住まい' },
-  { key: 'minaoshi', path: '/sonae/minaoshi/', name: '年に2回の備えの見直し', group: '量と品目' },
-  { key: 'kasai', path: '/sonae/kasai/', name: '火事の備え', group: '災害の前に' },
+  { key: 'jishin', path: '/sonae/jishin/', name: '地震の前に足すもの', group: '災害の前に', date: '2026-10-27' },
+  { key: 'zaitaku', path: '/sonae/zaitaku-hinan/', name: '在宅避難の備え', group: '家族と住まい', date: '2026-10-27' },
+  { key: 'akachan', path: '/sonae/akachan-koureisha/', name: '赤ちゃん・高齢の家族がいる家の備え', group: '家族と住まい', date: '2026-10-27' },
+  { key: 'hitori', path: '/sonae/hitorigurashi/', name: 'ひとり暮らしの備え', group: '家族と住まい', date: '2026-10-27' },
+  { key: 'mansion', path: '/sonae/mansion/', name: 'マンション（共同住宅）の備え', group: '家族と住まい', date: '2026-10-27' },
+  { key: 'minaoshi', path: '/sonae/minaoshi/', name: '年に2回の備えの見直し', group: '量と品目', date: '2026-11-07' },
+  { key: 'kasai', path: '/sonae/kasai/', name: '火事の備え', group: '災害の前に', date: '2026-11-10' },
 ];
 
 // 読みものの全部（YOMIMONO・家の外 SOTO・冬の停電）。/sonae/ の棚と末尾はここから

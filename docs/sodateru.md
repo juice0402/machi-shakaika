@@ -150,7 +150,7 @@
 - マージ：する
 - 足した：連絡 C-027（2026-11-12 しょーくんが案A を選んだ）
 
-### [ ] 備えの読みものの新着を RSS で（呼び戻せる入口）
+### [x] 備えの読みものの新着を RSS で（呼び戻せる入口）（#102）
 - やること
   - `src/pages/sonae-yomimono.mjs` の `YOMIMONO`、`src/pages/sonae-soto.mjs` の `SOTO`、`src/pages/sonae-fuyu.mjs` の `FUYU` の各行に `date: 'YYYY-MM-DD'` を足す。日付は、その読みものの path が main に初めて入った日（`git fetch --unshallow` のあと `git log --reverse --format=%cs -S"<path>" origin/main -- src/pages` のいちばん上）
   - ビルド（`scripts/build.mjs`。`/robots.txt` を書く `out()` と同じ形）で `/sonae/feed.xml` を作る。RSS 2.0。channel は title「まちの社会科 備えの読みもの」・link `${SITE.url}/sonae/`・description 1文・language ja。item は `allYomimono()` の全部を date の新しい順に、title（name）・link と guid（`${SITE.url}${path}`）・pubDate（date の日本時間0時、+0900）・description（そのページの meta description。`build.mjs` で作ったページの一覧から path で引く）。& < > はエスケープする
