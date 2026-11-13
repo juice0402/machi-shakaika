@@ -275,3 +275,21 @@ test('夜 #93：計算のページと /sonae/bichiku/ から、人数と日数�
   const mz = hinmokuPages({ items, sources, products: null, saigai: false, cc }).find((x) => x.path === '/hinmoku/mizu/').body;
   assert.equal(runCalc(mz, '?n=2&d=7').outs[0][2], runCalc(ks, '?n=2&d=7').outs.find((o) => o[0] === 'mizu')[2]);
 });
+
+// 夜 #104（C-026）：/sonae/keitai-toilet/ と /sonae/rolling-stock/ でも、わが家の人数の量をその場で出す。カードは1つめの段落の下・1つだけ
+test('夜 #104：携帯トイレの備え・ローリングストックに計算のカードと CALC_JS・地の文はめやす以上', () => {
+  const ps = sonaePages({ cc, items, sources });
+  for (const [path, firstH2] of [['/sonae/keitai-toilet/', 'どれだけ要るか</h2>'], ['/sonae/rolling-stock/', '災害用の食品とのちがい</h2>']]) {
+    const p = ps.find((x) => x.path === path);
+    const html = page(p);
+    assert.equal((html.match(/id="calc"/g) ?? []).length, 1, `${path} の id="calc" は1つだけ`);
+    assert.ok(html.includes(`<script>${CALC_JS}</script>`), `${path} に CALC_JS が入っていない`);
+    assert.ok(p.body.indexOf('id="calc"') < p.body.indexOf(firstH2), `${path} のカードは最初の h2 の前`);
+    assert.ok(p.body.includes('<a class="go" data-keep href="/dougu/check/">この人数でチェックリストを見る</a>'), path);
+    assert.ok(!p.body.includes('<a class="go" href="/dougu/keisan/">'), path);
+    assert.ok(jinobunCount(html) >= jinobunMeyasu(p.path), `${path} の地の文${jinobunCount(html)}字`);
+  }
+  const kt = ps.find((x) => x.path === '/sonae/keitai-toilet/');
+  assert.equal((kt.body.match(/<p class="pr">/g) ?? []).length, 1, 'A8 の広告は1つのまま');
+  assert.ok(kt.body.includes('<a data-keep href="/hinmoku/keitai-toilet/">携帯トイレの品目と商品</a>'));
+});

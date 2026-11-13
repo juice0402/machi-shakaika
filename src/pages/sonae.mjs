@@ -172,6 +172,9 @@ ${sourceList([...new Set([...days.sources, ...by.mizu.sources, ...by.shushoku.so
 <h1 class="city">ローリングストック</h1>
 <div class="prose">
 <p>ふだん食べている食品を少し多めに買っておき、食べたらその分を買い足す。これをくり返して、家にいつも一定の量がある状態にしておく備え方です。農林水産省の食品ストックガイドでも紹介されています。</p>
+</div>
+${calcHtml(cc)}
+<div class="prose">
 ${h2('災害用の食品とのちがい')}
 <p>しまいこむ非常食とちがって、ふだんの買い物の中で回すので、期限の近いものから食べていけば、むだになりにくくなります。災害のあとも、食べ慣れた味のものを食べられます。</p>
 ${h2('どれだけ置いておくか')}
@@ -189,10 +192,11 @@ ${h2('置き場所')}
 <p>ひとり暮らしで置き場所がせまいときは<a href="/sonae/hitorigurashi/">ひとり暮らしの備え</a>に。</p>
 ${h2('配慮のいる家族の食品')}
 <p>食物アレルギーに対応した食品や、やわらかい介護食品、ミルクは、家族によっては欠かせない食品です。練馬区の案内は、アレルギーに対応した食品をローリングストックで回しながら置くよう書いています。こうした家族がいる家では、少なくとも${y}日分がめやすです。</p>
-<p><a class="go" href="/dougu/keisan/">わが家の人数で計算する</a></p>
+<p><a class="go" data-keep href="/dougu/check/">この人数でチェックリストを見る</a></p>
 </div>
 ${h2('出典')}
 ${sourceList(['maff-guide', 'maff-sonae', 'maff-stock', 'maff-shuno', 'maff-tanshin', 'nerima-yohairyo', 'hepco-saigai'], sources)}`,
+    script: CALC_JS,
   });
 
   out.push({
@@ -206,6 +210,9 @@ ${sourceList(['maff-guide', 'maff-sonae', 'maff-stock', 'maff-shuno', 'maff-tans
 <h1 class="city">携帯トイレの備え</h1>
 <div class="prose">
 <p>大きな地震のあとは、断水や停電、配管や下水道の被害で、家の水洗トイレが使えなくなることがあります。食べ物や水と同じように、トイレも人数と日数で数えて備えます。</p>
+</div>
+${calcHtml(cc)}
+<div class="prose">
 ${h2('どれだけ要るか')}
 <p>内閣府の避難所のトイレのガイドラインでは、1人1日${t}回をめやすにしています。家の備えも同じ数で考えると、4人家族の${days.better}日分は${need(t, 4, days.better)}回分です。自治体の多くは、最低${days.min}日分、できれば${days.better}日分の備えを勧めています。</p>
 ${hayami(cc, 'keitai-toilet', '回分')}
@@ -229,13 +236,14 @@ ${
 <p>エレベーターや水のポンプが止まることは<a href="/sonae/mansion/">マンション（共同住宅）の備え</a>に、家で過ごすための水や明かりの備えは<a href="/sonae/zaitaku-hinan/">在宅避難の備え</a>に。</p>
 ${h2('いっしょに置くもの')}
 <p>首相官邸の備蓄の例には、携帯トイレといっしょにトイレットペーパーとティッシュペーパーが入っています。長崎市は、非常持出品の例にも携帯トイレを入れています。家に置く分と持ち出す袋に入れる分は、<a href="/dougu/check/">チェックリスト</a>で別々に印をつけられます。長崎市の例には、洗面用具やマスクなどの感染予防の用品、生理用品も入っていて、トイレのまわりで使うものとしていっしょにそろえられます。</p>
-<p><a href="/hinmoku/keitai-toilet/">携帯トイレの品目と商品</a></p>
-<p><a class="go" href="/dougu/keisan/">わが家の人数で計算する</a></p>
+<p><a data-keep href="/hinmoku/keitai-toilet/">携帯トイレの品目と商品</a></p>
+<p><a class="go" data-keep href="/dougu/check/">この人数でチェックリストを見る</a></p>
 </div>
 ${a8Ad('stoole')}
 ${h2('出典')}
 ${sourceList([...by['keitai-toilet'].sources, 'chiba-zaitaku', 'chiba-pref-mansion', 'kantei-sonae', 'nagasaki-mochidashi', 'miyagi-mizu'], sources)}
 ${rei ? srcKokusei(rei.munis) : ''}`,
+    script: CALC_JS,
   });
 
   out.push({
