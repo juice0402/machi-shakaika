@@ -15,7 +15,8 @@ import { prefPage } from '../src/pages/pref.mjs';
 import { cityPage } from '../src/pages/city.mjs';
 import { sonaePages } from '../src/pages/sonae.mjs';
 import { fuyuTeidenPages } from '../src/pages/sonae-fuyu.mjs';
-import { yomimonoPages } from '../src/pages/sonae-yomimono.mjs';
+import { yomimonoPages, allYomimono } from '../src/pages/sonae-yomimono.mjs';
+import { FEED_PATH, FEED_LINK, feedXml } from '../src/feed.mjs';
 import { sotoPages } from '../src/pages/sonae-soto.mjs';
 import { infoPages } from '../src/pages/info.mjs';
 import { douguPages } from '../src/pages/dougu.mjs';
@@ -75,7 +76,10 @@ const out = (path, text) => {
   mkdirSync(dirname(file), { recursive: true });
   writeFileSync(file, text);
 };
+// 備えの読みものの RSS（#102）：/sonae/ と読みもののページの head に入口の1行
+const feedPages = new Set(['/sonae/', ...allYomimono().map((y) => y.path)]);
 const add = (p) => {
+  if (feedPages.has(p.path)) p = { ...p, head: `${p.head ?? ''}${FEED_LINK}` };
   pages.push(p);
   out(p.path ?? '/404.html', page(p));
 };
@@ -121,6 +125,10 @@ add(kyouPage({ munis, machi, start: today, urlOfRow: (r) => r[2] || `/${PREFS.fi
 add(atsumePage({ machi, start: today }));
 for (const p of infoPages({ munis, estatMeta, hinanMeta })) add(p);
 add({ path: null, title: 'ページが見つかりません', description: 'ページが見つかりません。', noindex: true, noAds: true, body: '<h1 class="city">ページが見つかりません</h1><p><a href="/">トップへ</a></p>' });
+
+// 備えの読みものの新着（RSS 2.0。サイトマップには入れない）。説明文は作ったページの meta description
+const descOf = new Map(pages.map((p) => [p.path, p.description]));
+out(FEED_PATH, feedXml(allYomimono(), (path) => descOf.get(path)));
 
 // クイズの数字（どっちが多い・ドボンクイズを開いたときだけ読む）：都道府県47と全国の市区町村
 writeFileSync(`${DIST}/quiz/machi.json`, JSON.stringify(machi));
