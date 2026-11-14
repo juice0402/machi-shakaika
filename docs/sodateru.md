@@ -223,3 +223,43 @@
 - マージ：する
 - 足した：育てる山の補充（自動・2026-11-12）
 
+### [ ] 防災カルテを ? つきの URL で開いても、この端末に覚えた「家にある数」を消さない
+- やること
+  - 防災カルテ（/dougu/karte/。`src/pages/karte.mjs` の `KARTE_JS`）は、URL に `?m=` などがあると、URL の値だけで `o` を作り、はじめの `draw()` で `localStorage` の `karte` をその URL の値で上書きする（`moved=true` のため）。そのため、市区町村ページの「<街>のわが家の防災カルテを作る」（`src/pages/city.mjs` の `/dougu/karte/?m=<コード>`）から開くと、前に入れた「家にある数」（w・f・t）と住まい（s）・2週間分の人（y）が消える
+  - URL に値があるときは、まずこの端末に覚えた値（`localStorage` の `karte`）を読み、その上に URL にある値だけを重ねて `o` を作る（URL にないキーは覚えた値のまま）。URL がないとき・覚えた値がないときの動きは今のまま
+  - 「URLを送る」などで作る URL（`qs()`）・紙の中身・計算（`src/karte-core.mjs`）は変えない
+- できあがりの条件：`npm run check` が緑（作業場から e-Stat・国土地理院にはつながらないので `ALLOW_MISSING_HINAN_LIST=1 npm run check`。データは Actions が取って data/ にコミットしたものを使う）。playwright で、(1) /dougu/karte/ で家にある数（水・主食・携帯トイレ）と住まいを入れる → (2) `/dougu/karte/?m=<くわしく見られる街のコード>` を開く → 街が入り、家にある数と住まいが (1) のままで、紙の絵のぬりも同じ → (3) 開き直しても同じ、を確かめる。`?n=2&d=7` で開くと人数と日数だけが変わり、家にある数は残る。URL なしで開いたときのスマホ 390×660 の1画面めは今と同じ（main のビルドと画素までくらべる）。PR に (1)〜(3) のスクショを並べて1枚
+- 決まったこと：カルテに入れたものはブラウザの中だけ（URL の ? とこの端末におぼえるだけ。送らない。karte.mjs の頭のコメント・CLAUDE.md「利用者のデータを集めない」）。家にある数は連絡 C-025 案A（11/6 しょーくん。引き継ぎ「大事な決めごと」の「買いに来る理由」）で入れたもの。12/1 までは技術の直しはしてよい（連絡 C-028・sodatsu-spec「検索が落ちたあいだの決まり」）
+- 迷ったら：送られてきた URL に w・f・t がないときは、受け取った人の端末に覚えた家にある数を出す（家にある数はその家のものなので、それでよい）。URL に w・f・t があるときは URL の値を使う。覚えた値が読めない（localStorage が使えない）ときは、今と同じく URL の値だけで作る。直しは `KARTE_JS` の `o` を作る1か所だけにし、ほかのページ（まなびプリントの同じ形の `KS`）はさわらない
+- 読むファイル：CLAUDE.md・src/pages/karte.mjs の KARTE_JS（o を作る所と draw の保存）・src/karte-core.mjs の kaState・src/pages/city.mjs の /dougu/karte/?m= の行・tests/karte.test.mjs
+- マージ：する
+- 足した：育てる山の補充（自動・2026-11-14）
+
+### [ ] 備蓄の量を計算する（/dougu/keisan/）から、同じ人数と日数で防災カルテへ
+- やること：/dougu/keisan/（`src/pages/sonae.mjs` の `calcHtml(cc)` のすぐ下の `<p><a class="go" data-keep href="/dougu/check/">この人数でチェックリストを見る</a>…`）の「この人数でチェックリストを見る」の次の行に `<a class="go" data-keep href="/dougu/karte/">この人数で防災カルテを作る</a>` を足す（`<br>` でつなぐ）。カードの人数と日数を変えると、`CALC_JS` が `data-keep` の URL を `?n=&d=` つきに書きかえる。ほかの文・リンク・早見表・出典は変えない
+- 順番：「防災カルテを ? つきの URL で開いても、この端末に覚えた「家にある数」を消さない」のあと（その直しがないと、このリンクから開くと家にある数が消える。そのブランチがマージ待ちなら、その上に作る）
+- できあがりの条件：`npm run check` が緑（`ALLOW_MISSING_HINAN_LIST=1 npm run check`）。テストで、/dougu/keisan/ に `data-keep` つきの /dougu/karte/ へのリンクが1つあることを見張る（ビルドの結果か、ページを作る関数の出力を見る今のテストの形をまねる）。playwright で、計算のカードを2人・7日にしてリンクを押すと、カルテの人数が2・日数が7日になる。カルテに家にある数を入れておいてから押しても、家にある数が残る。スマホ 390×660 で計算の答えの行が今と同じく1画面めに入る（足したリンクで押し出さない）。地の文の字数（`node scripts/honbun.mjs dist --pages`）が今より減らない。スクショ（計算のページの下と、開いたカルテ。スマホとパソコン）を並べて1枚で PR に
+- 決まったこと：連絡 C-026（11/6）③「自分で計算できる・自分の数字が残る」と連絡 C-027（11/12）「サイトの中だけで渡り歩ける道・関連の理由が分かる形」。カルテは `?n=&d=` を読める（karte.mjs の `KS`）。日数のえらび方はカルテも計算も data/items.yml の `days.choices`（3・7）、人数は1〜10で同じ。人数と日数は URL の ? だけ（CLAUDE.md「利用者のデータを集めない」）。カルテは AdSense なし（karte.mjs の頭のコメント）で、AdSense と A8 の置き場所は今のまま（引き継ぎ「大事な決めごと」）。今ある部品（`a.go`）だけ
+- 迷ったら：/sonae/bichiku/ など、ほかの計算カードのページには足さない（この項目は /dougu/keisan/ だけ。1回1つの小さな足し・連絡 C-028）。リンクの文は「この人数で防災カルテを作る」のまま。カルテのはじめの人数（kaState の 3）は変えない
+- 読むファイル：CLAUDE.md・src/pages/sonae.mjs の /dougu/keisan/ の所・src/calc.mjs の CALC_JS（data-keep）・src/pages/karte.mjs の KARTE_JS の KS・src/karte-core.mjs の kaState
+- マージ：する
+- 足した：育てる山の補充（自動・2026-11-14）
+
+### [ ] 計算カードのはじめの人数（4人）を1か所に（品目ページの直書きをなくす）
+- やること：`src/pages/hinmoku.mjs` の `calcPart()` の `const n = 4;` は、`src/calc.mjs` の `calcHtml` のはじめの値 `n = 4` と同じ数の直書き。`src/calc.mjs` に `export const CALC_N = 4;`（はじめの人数）を置き、`calcHtml` の既定値と `calcPart()` の両方でそれを使う。ページの見た目・HTML の出力は1文字も変えない
+- できあがりの条件：`npm run check` が緑（`ALLOW_MISSING_HINAN_LIST=1 npm run check`）。直す前の main と直したあとで dist を作り、全ページの HTML が同じ（`diff -r` で差がない。fingerprint.json もふくめて同じ）ことを PR に書く。`grep -n "= 4" src/pages/hinmoku.mjs` で人数の直書きが残っていない
+- 決まったこと：引き継ぎ claude/machi-handoff.md の「夜のメモ」の「気になる点」と報告ファイル claude/reports/machi.md の「2026-11-12 朝の作業」（夜 #93 の点検の気づき「hinmoku.mjs の人数の既定値 4 は calc.mjs の既定値と同じ直書き」）。備えの数字は data/items.yml の1か所だけ（CLAUDE.md）。12/1 までは技術の直しはしてよい（連絡 C-028）
+- 迷ったら：はじめの人数を data/items.yml に移すことはしない（items.yml は出典つきの備えの数字の置き場で、人数のはじめの値は出典のある数字ではない）。防災カルテのはじめの人数（`src/karte-core.mjs` の kaState の 3）はカルテの紙の決めなので変えない。ブラウザ側の `CALC_JS` は `data-n` から読むので変えない
+- 読むファイル：CLAUDE.md・src/calc.mjs・src/pages/hinmoku.mjs の calcPart
+- マージ：する
+- 足した：育てる山の補充（自動・2026-11-14）
+
+### [ ] 人口が増えた市区町村（/ranking/jinko/）のいちばん下に「ほかの道具」
+- やること：/ranking/jinko/（`src/pages/ranking.mjs`）の本文のいちばん最後（「増えた街のようす」の段落と `srcKokusei(munis)` の後ろ）に、/kurabe/ と /niteru/ の最後と同じ形で `${h2('ほかの道具')}<ul class="list"><li><a href="/kurabe/">2つの街の数字をくらべる</a></li><li><a href="/niteru/">数字が似ている街をさがす</a></li></ul>` を足す。表・文・1画面め・説明文は変えない
+- できあがりの条件：`npm run check` が緑（`ALLOW_MISSING_HINAN_LIST=1 npm run check`）。テストで、/ranking/jinko/ の最後の h2 が「ほかの道具」で、/kurabe/ と /niteru/ へのリンクがあることを見張る（今のテストの形をまねる）。スマホ 390×660 の1画面めは今と同じ（main のビルドと画素までくらべる）。いちばん下のスクショ（スマホとパソコン）を並べて1枚で PR に
+- 決まったこと：連絡 C-027（11/12）「ページを読み終えた人が「戻る」を押さずに、関連の次のページへ進めるようにする・サイトの中だけ・数はしぼる・今ある部品だけ・表示の速さを落とさない」。11/14 の補充で main（7a9c6f5）を数えたら、/ranking/jinko/ は最後の見出し「増えた街のようす」のあとにリンクがなく（表の街へのリンクだけ）、/kurabe/ と /niteru/ はおたがいとランキングへ「ほかの道具」で進めるのに、ランキングからは戻れなかった。ランキングは増えた街だけ・「ワースト」を作らない（CLAUDE.md）。C-001 の「同じ四角いボタンを並べた切りかえ」「右はしの小さな見る」は使わない（`ul.list` の文字のリンク）
+- 迷ったら：クイズや備えのページへのリンクは足さない（2つだけ。/kurabe/・/niteru/ の「ほかの道具」と同じ数）。「ほかの道具」が出典の行より後ろになるのは /kurabe/・/niteru/ と同じなので、そのままでよい
+- 読むファイル：CLAUDE.md・src/pages/ranking.mjs の /ranking/jinko/ の body・src/pages/kurabe.mjs の「ほかの道具」の行
+- マージ：する
+- 足した：育てる山の補充（自動・2026-11-14）
+
