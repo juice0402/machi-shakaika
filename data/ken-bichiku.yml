@@ -66,7 +66,7 @@ prefs:
     publisher: 群馬県
     title: "「群馬県防災レシピ」について"
     url: https://www.pref.gunma.jp/page/199190.html
-    checked: 2026-11-09
+    checked: 2026-11-14
     note: "備蓄の食料で作れるレシピと炊き出しのレシピを、県と市町村の栄養士がまとめています。"
 
   - pref: saitama
@@ -108,7 +108,7 @@ prefs:
     publisher: 富山県
     title: "特集１ 災害に備えよう 〜もしものときのために〜"
     url: https://www.pref.toyama.jp/1021/kensei/kouhou/kouhoushi/kj00016456/2024/kouhou0606-3.html
-    checked: 2026-11-09
+    checked: 2026-11-14
     note: "食料品を使いながら備えるローリングストックと、非常持ち出し品の見直しを載せています。"
 
   - pref: ishikawa

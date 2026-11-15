@@ -106,7 +106,8 @@ cities:
     publisher: 世田谷区
     title: "備蓄状況の公表"
     url: https://www.city.setagaya.lg.jp/02049/34052.html
-    checked: 2026-10-26
+    checked: 2026-11-14
+    note: "食料や毛布など国が定めた主要品目の区の備蓄量を、令和7年度のPDFで載せています。"
 
   - city: tokyo/nakano
     publisher: 中野区
@@ -305,7 +306,8 @@ cities:
     publisher: 北九州市
     title: "公的備蓄について"
     url: https://www.city.kitakyushu.lg.jp/contents/138_00012.html
-    checked: 2026-10-26
+    checked: 2026-11-14
+    note: "食料や飲料水などの公的備蓄の状況を、令和8年4月1日現在のPDFで載せています。"
 
   - city: saga/saga
     publisher: 佐賀市
@@ -332,7 +334,8 @@ cities:
     publisher: 那覇市
     title: "災害備蓄品"
     url: https://www.city.naha.okinawa.jp/safety/saigai/1001598/1011429.html
-    checked: 2026-10-26
+    checked: 2026-11-14
+    note: "主食や飲料水、毛布などの市の備蓄量を、令和8年6月30日時点で載せています。"
 
   - city: hokkaido/asahikawa
     publisher: 旭川市
