@@ -258,6 +258,23 @@ sources:
     checked: 2026-11-09
     about: くみ置きの水道水が飲食に使えるのは、直射日光を避けた涼しい所で約3日、冷蔵庫で約10日。清潔でふたのできる容器に口元まで入れる。過ぎたら掃除や洗濯に。2023年1月27日更新
 
+  # 断水の備え（/sonae/dansui/。11/14）
+  - id: sapporo-mizu
+    kind: sonae
+    publisher: 札幌市
+    title: 水の備蓄
+    url: https://www.city.sapporo.jp/suido/riyosya/saigai/bitiku.html
+    checked: 2026-11-14
+    about: 飲料水は1人1日3L・最低3日分。清潔でふたのできる容器に口元いっぱいまで入れる。入れかえは日のあたらない涼しい所で3日～1週間、冷蔵庫で1～2週間。塩素がなくなると細菌が増えやすい。時間がたつほど生活用水が要り、風呂や洗濯槽の残り湯はトイレなどに使える。浴槽に水を張り、幼児の転落を防ぐためふたを閉める。2025年3月27日更新
+
+  - id: kagoshima-sonae
+    kind: sonae
+    publisher: 鹿児島市
+    title: 災害への備え
+    url: https://www.city.kagoshima.lg.jp/suido/soumu/kyuhaisui/saigaisonae.html
+    checked: 2026-11-14
+    about: 飲料水は1人1日3L・3日分。清潔でふたのできる容器に口元いっぱいまで水道水を入れ、直射日光を避けた涼しい所に。3日に1回程度は容器を洗って入れかえ、入れかえた水は洗濯やトイレに。2Lのペットボトル3本でくみ置けば、いつも4L以上。浴槽の水はトイレや消火用水に。応急給水を受けるため清潔なポリ容器やバケツをいくつか。水1Lは約1kg。2024年6月10日更新
+
   - id: shinagawa-toilet
     kind: sonae
     publisher: 品川区
