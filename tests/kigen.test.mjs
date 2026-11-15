@@ -3,7 +3,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readYaml, checkItems } from '../src/data.mjs';
 import { kStr, kRead, kSort, kLeft, kIcs, kFold, kText, kName, kMonthEnd, KIGEN_JS } from '../src/kigen-core.mjs';
-import { kigenChoices, kigenPages, KIGEN_NOTICE_DAYS } from '../src/pages/kigen.mjs';
+import { kigenChoices, kigenPages, kigenHref, KIGEN_NOTICE_DAYS } from '../src/pages/kigen.mjs';
+import { hinmokuPages } from '../src/pages/hinmoku.mjs';
 import { page } from '../src/layout.mjs';
 
 const items = readYaml('items.yml');
@@ -174,4 +175,82 @@ test('期限メモのページ：広告は # のメモを消してから読む�
   }
   // スクリプトが文法として正しい
   assert.doesNotThrow(() => new Function(p.script));
+});
+
+// スクリプトを小さなにせの画面で動かす（?k= の動きだけを見る。#114）
+function runPage(script, { search = '', hash = '', store = '' } = {}) {
+  const els = new Map();
+  const el = (id) => {
+    if (!els.has(id)) {
+      const e = { id, value: '', hidden: false, textContent: '', disabled: false, style: {}, dataset: {}, attrs: {}, children: [] };
+      Object.assign(e, { add() {}, append(...x) { e.children.push(...x); }, addEventListener() {}, setAttribute(k, v) { e.attrs[k] = String(v); }, focus() {}, select() {}, remove() {} });
+      els.set(id, e);
+    }
+    return els.get(id);
+  };
+  const words = C.map((c) => { const b = el('w:' + c[1]); b.textContent = c[1]; return b; });
+  const stored = { 'machi-kigen-v1': store };
+  const location = { origin: 'https://example.test', pathname: '/dougu/kigen/', search, hash };
+  const sandbox = {
+    document: { querySelector: (s) => el(s.replace(/^#/, '')), querySelectorAll: () => words, createElement: () => el('x' + Math.random()), body: { dataset: {}, append() {} }, head: { append() {} } },
+    location,
+    history: { replaceState(_, __, u) { location.hash = ''; } },
+    window: { addEventListener() {} },
+    localStorage: { getItem: (k) => stored[k] || null, setItem: (k, v) => { stored[k] = v; }, removeItem: (k) => { delete stored[k]; } },
+    navigator: {}, URLSearchParams, Option: function (t, v) { this.text = t; this.value = v; },
+  };
+  new Function(...Object.keys(sandbox), script)(...Object.values(sandbox));
+  return { name: el('kn').value, pressed: words.filter((b) => b.attrs['aria-pressed'] === 'true').map((b) => b.textContent), rows: el('kl').children.length, stored, msg: el('kmsg').textContent };
+}
+
+test('?k=<記号> で開くと品目の欄にその名前・札に丸。知らない記号は何もしない。メモは今と同じに読む（#114）', () => {
+  const [p] = kigenPages({ items });
+  for (const c of C) {
+    const r = runPage(p.script, { search: `?k=${c[0]}` });
+    assert.equal(r.name, c[1]);
+    assert.deepEqual(r.pressed, [c[1]]);
+    assert.equal(r.stored['machi-kigen-v1'], undefined, 'メモを書かない');
+  }
+  for (const search of ['', '?k=zz', '?k=', '?k=W', '?x=w', '?k=constructor']) {
+    const r = runPage(p.script, { search });
+    assert.equal(r.name, '', search);
+    assert.deepEqual(r.pressed, [], search);
+  }
+  const s = kStr(L, C);
+  const a = runPage(p.script, { hash: '#' + s });
+  const b = runPage(p.script, { hash: '#' + s, search: '?k=w' });
+  assert.equal(b.rows, a.rows);
+  assert.equal(b.rows, L.length);
+  assert.equal(b.stored['machi-kigen-v1'], a.stored['machi-kigen-v1']);
+  assert.equal(b.name, '水');
+  // URL を送るときの URL に ?k= は入らない（pathname だけ）
+  assert.ok(p.script.includes("location.origin+location.pathname+(kStr"));
+});
+
+test('品目ページの期限メモのリンク：記号は items.yml の checklists の kigen と合う。記号のない品目は今のまま', () => {
+  const pages = hinmokuPages({ items, sources: readYaml('sources.yml'), products: null, saigai: false });
+  const want = { mizu: 'w', shushoku: 's', 'keitai-toilet': 't', gas: 'g', light: 'd' };
+  for (const it of items.items.filter((x) => x.hinmoku)) {
+    const p = pages.find((x) => x.path === `/hinmoku/${it.id}/`);
+    const hrefs = [...p.body.matchAll(/href="(\/dougu\/kigen\/[^"]*)"/g)].map((m) => m[1]);
+    for (const h of hrefs) {
+      const k = /\?k=([a-z])$/.exec(h)?.[1];
+      if (k) assert.ok(C.some((c) => c[0] === k), h);
+      else assert.equal(h, '/dougu/kigen/');
+    }
+    if (want[it.id]) assert.ok(hrefs.includes(`/dougu/kigen/?k=${want[it.id]}`), it.id);
+  }
+  // 記号は checklists から引く（品目の id か名前で）
+  for (const c of C) if (c[2]) assert.equal(kigenHref(items, { item: c[2].split('/')[2] }), `/dougu/kigen/?k=${c[0]}`);
+  assert.equal(kigenHref(items, { name: '乾電池' }), `/dougu/kigen/?k=${C.find((c) => c[1] === '乾電池')[0]}`);
+  assert.equal(kigenHref(items, { item: 'battery' }), '/dougu/kigen/');
+  assert.equal(kigenHref(items, { item: 'nai' }), '/dougu/kigen/');
+});
+
+test('/dougu/kigen/ の HTML：本文は ?k= で変わらない。スクリプトは ?k= を読むだけで # のメモ・localStorage に使わない', () => {
+  const [p] = kigenPages({ items });
+  assert.ok(!/[?&]k=/.test(p.body));
+  const line = p.script.split('\n').find((x) => x.includes("get('k')"));
+  assert.equal(line, "const qk=C.find(c=>c[0]===new URLSearchParams(location.search).get('k'));if(qk){nm.value=qk[1];pick()}");
+  assert.equal(p.script.split('\n').filter((x) => x.includes('location.search')).length, 2, 'clean() とこの1行だけ');
 });

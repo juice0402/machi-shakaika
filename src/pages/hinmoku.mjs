@@ -5,7 +5,7 @@ import { esc, fmt, h2, jpDate, fit, priceBand, srcName } from '../layout.mjs';
 import { need, bottles, calcConf, calcHtml, CALC_JS } from '../calc.mjs';
 import { SHOW, cleanName } from '../rakuten.mjs';
 import { SAIGAI } from '../mode.mjs';
-import { KIGEN_NOTICE_DAYS } from './kigen.mjs';
+import { KIGEN_NOTICE_DAYS, kigenHref } from './kigen.mjs';
 import { KOYOMI_CSS } from '../koyomi.mjs';
 
 const SONAE = { mizu: ['/sonae/bichiku/', '備蓄の量のめやす'], shushoku: ['/sonae/rolling-stock/', 'ローリングストック'], 'keitai-toilet': ['/sonae/keitai-toilet/', '携帯トイレの備え'], gas: ['/sonae/fuyu-teiden/', '冬の停電と寒さの備え'], light: ['/sonae/fuyu-teiden/', '冬の停電と寒さの備え'], battery: ['/sonae/fuyu-teiden/', '冬の停電と寒さの備え'] };
@@ -77,7 +77,7 @@ function jimae(it, items, sources) {
   const bt = it.bottle;
   const km = it.kumioki;
   const hon = (n, d) => Math.ceil(need(it.per_day ?? 0, n, d) / (bt?.liters ?? 1));
-  const kigen = (what, tail) => `<p>${what}は<a href="/dougu/kigen/">期限メモ</a>に入れると、近い順に並びます。${tail}</p>`;
+  const kigen = (what, tail) => `<p>${what}は<a href="${kigenHref(items, { item: it.id })}">期限メモ</a>に入れると、近い順に並びます。${tail}</p>`;
   const T = {
     mizu: {
       src: ['nerima-yohairyo', 'kantei-sonae', 'bousai-teiden', 'chiba-pref-mansion', 'suginami-mansion', 'maff-tanshin', 'maff-guide'],
@@ -203,7 +203,7 @@ ${h2('使う場面')}
 <p>雪道を走る前に準備しておきたいものの例にもあります。<a href="/sonae/kuruma-taisetsu/">車の大雪の備え</a>に。</p>
 ${h2('どの備えに入るか')}
 <p>${pub('nagasaki-mochidashi')}の例では持ち出す袋に、${pub('osaka-bichiku')}の例では家に置く備えに入っています。</p>
-<p>電池で動くライトは、予備の乾電池もあわせて置きます。乾電池の期限は<a href="/dougu/kigen/">期限メモ</a>に入れられます。</p>`,
+<p>電池で動くライトは、予備の乾電池もあわせて置きます。乾電池の期限は<a href="${kigenHref(items, { name: '乾電池' })}">期限メモ</a>に入れられます。</p>`,
       after: `${h2('えらび方の目安')}
 <p>数の目安は確かめていないので、使う場所から考えます。停電に備える項目として、${pub('bousai-teiden')}は足元灯も挙げています。</p>
 <p>持ち出す袋と家に置く備えの、どちらの例にも入っています。袋の中に1つ、家の中に1つと、分けて置くこともできます。</p>

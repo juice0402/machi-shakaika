@@ -15,6 +15,7 @@ import { SITE } from '../site.mjs';
 export const KIGEN_NOTICE_DAYS = 30;
 
 // えらべる品目：[記号, 名前, 品目ページ（ないものは ''）]
+//   /dougu/kigen/?k=<記号> で開くと、品目の欄にその名前を入れて札に丸をつける（品目ページのリンクから。#114）。メモ（# と localStorage）にはさわらない
 export function kigenChoices(items) {
   const out = [];
   for (const cl of items.checklists) {
@@ -25,6 +26,12 @@ export function kigenChoices(items) {
     }
   }
   return out;
+}
+
+// 品目ページの「期限メモ」のリンク：品目（items.yml の id）か名前で記号を引く。記号がなければ記号なしの URL
+export function kigenHref(items, { item, name } = {}) {
+  const c = kigenChoices(items).find((x) => (item ? x[2] === `/hinmoku/${item}/` : x[1] === name));
+  return c ? `/dougu/kigen/?k=${c[0]}` : '/dougu/kigen/';
 }
 
 // ものさしの目盛り（1年を12か月。3・6・9か月は少し長く）
@@ -107,6 +114,7 @@ L=r.list;asking=true;draw();$('#kau').textContent=r.list.length;$('#kam').textCo
 $('#kuse').onclick=()=>{asking=false;ask.hidden=true;save();draw();say('URLのメモを使います')};
 $('#kmine').onclick=()=>{asking=false;ask.hidden=true;L=mine;save();draw();say('この端末のメモを使います')}}
 window.addEventListener('hashchange',load);load();
+const qk=C.find(c=>c[0]===new URLSearchParams(location.search).get('k'));if(qk){nm.value=qk[1];pick()}
 const ad=document.body.dataset.adsLate;if(ad){const s=document.createElement('script');s.async=true;s.crossOrigin='anonymous';s.src=ad;document.head.append(s)}
 async function copy(t,ok){try{await navigator.clipboard.writeText(t);say(ok)}catch(e){out.value=t;out.hidden=false;out.select();say('下の文字をコピーしてください')}}
 $('#kshare').addEventListener('click',async()=>{const u=link();if(navigator.share){try{await navigator.share({title:'期限メモ',url:u});return}catch(e){if(e&&e.name==='AbortError')return}}copy(u,'URLをコピーしました')});
