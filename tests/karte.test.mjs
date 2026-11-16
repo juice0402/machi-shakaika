@@ -147,3 +147,30 @@ test('入口：トップの備えの知識・チェックリスト・冷蔵庫�
   assert.ok(douguPages({ cc, items, sources }).some((x) => x.path === '/dougu/check/' && x.body.includes('href="/dougu/karte/"')));
   assert.match(printPages({ cc, items, sources })[0].body, /href="\/dougu\/karte\/"/);
 });
+
+test('? つきの URL で開いても、この端末に覚えた家にある数を消さない（#117）', () => {
+  const line = p.script.split('\n').find((l) => l.startsWith('const KS='));
+  assert.ok(line, 'o を作る行');
+  const make = (q, saved) => {
+    const ls = saved === undefined ? { getItem() { throw new Error('使えない'); } } : { getItem: () => saved };
+    const f = new Function('mtQ', 'localStorage', `let moved=false;${line}\nreturn {o,moved};`);
+    return f(new URLSearchParams(q), ls);
+  };
+  const saved = 'm=13101&n=3&d=3&s=m&y=1&w=10&f=5&t=20';
+  // 街のページから：街だけ変わり、家にある数・住まい・2週間分の人は覚えたまま
+  let r = make('m=01100', saved);
+  assert.deepEqual(r.o, { m: '01100', n: '3', d: '3', s: 'm', y: '1', w: '10', f: '5', t: '20' });
+  assert.equal(r.moved, true);
+  // 人数と日数だけ
+  r = make('n=2&d=7', saved);
+  assert.deepEqual(r.o, { m: '13101', n: '2', d: '7', s: 'm', y: '1', w: '10', f: '5', t: '20' });
+  // URL に家にある数があれば URL の値
+  assert.equal(make('m=01100&w=4', saved).o.w, '4');
+  // URL なし：覚えた値のまま・保存し直さない
+  r = make('', saved);
+  assert.deepEqual(r.o, Object.fromEntries(new URLSearchParams(saved)));
+  assert.equal(r.moved, false);
+  // 覚えた値がない・読めない：URL の値だけ
+  assert.deepEqual(make('m=01100', null).o, { m: '01100' });
+  assert.deepEqual(make('m=01100&n=2').o, { m: '01100', n: '2' });
+});
