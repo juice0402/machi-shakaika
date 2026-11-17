@@ -131,9 +131,10 @@ ${S}{transform:none!important;height:296mm}
 }`;
 
 // ブラウザの中の動き：入れたもの → 紙を作り直す → URL の ? とこの端末におぼえる
+// URL に値があるときは、覚えた値の上に URL にある値だけを重ねる（家にある数を消さない）
 const KARTE_JS = String.raw`(()=>{const kf=document.getElementById('kf'),sh=document.querySelector('.sheet'),f=document.querySelector('[data-pick]');if(!kf||!sh)return;
 let row=null,pn='',moved=false;const t=new Date(),today=t.getFullYear()+'年'+(t.getMonth()+1)+'月'+t.getDate()+'日';
-const KS=['m','n','d','s','y','w','f','t'],HK={w:'mizu',f:'shoku',t:'toilet'};let o={};if(KS.some(k=>mtQ.has(k))){KS.forEach(k=>{if(mtQ.has(k))o[k]=mtQ.get(k)});moved=true}else{try{o=Object.fromEntries(new URLSearchParams(localStorage.getItem('karte')||''))}catch(e){}}
+const KS=['m','n','d','s','y','w','f','t'],HK={w:'mizu',f:'shoku',t:'toilet'};let o={};try{o=Object.fromEntries(new URLSearchParams(localStorage.getItem('karte')||''))}catch(e){}if(KS.some(k=>mtQ.has(k))){KS.forEach(k=>{if(mtQ.has(k))o[k]=mtQ.get(k)});moved=true}
 const st=kaState(o,C.days);
 const qs=()=>(st.m?'m='+st.m+'&':'')+'n='+st.n+'&d='+st.d+'&s='+st.s+'&y='+st.y+['w','f','t'].map(k=>st[k]===null?'':'&'+k+'='+st[k]).join('');
 const hs=[...kf.querySelectorAll('[data-h]')];hs.forEach(i=>{if(st[i.dataset.h]!==null)i.value=st[i.dataset.h]});if(hs.some(i=>i.value))kf.querySelector('.ka').open=true;

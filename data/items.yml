@@ -54,6 +54,18 @@ kasai:
   koukan: 10年
   sources: [fdma-jukeiki-qa, fdma-bouka-dokuhon, tfd-jukeiki, tfd-jishin]
 
+# 断水の備え（/sonae/dansui/。11/14）。くみ置きの日数などは出典の言い方のまま
+#   jouon・reizou：nerima-kumioki、sapporo_*：sapporo-mizu、irekae・rolling*：kagoshima-sonae（rolling は出典の「ペットボトル」を、ペットの言葉の点検のため「水の容器」に言いかえ）
+dansui:
+  jouon: 約3日
+  reizou: 約10日
+  sapporo_jouon: 3日～1週間
+  sapporo_reizou: 1～2週間
+  irekae: 3日に1回程度
+  rolling: 2リットル入りの水の容器3本
+  rolling_min: 4リットル以上
+  sources: [miyagi-mizu, nerima-kumioki, sapporo-mizu, kagoshima-sonae, kanagawa-toilet, hiroshima-toilet, chiba-zaitaku]
+
 # 家の外の備え2本（/sonae/kuruma-taisetsu/・/sonae/kitaku-konnan/。10/28 #19）。sources はページの出典に並べる id（この順）
 #   車のページは数字を出さない（積んでおく量の目安を公的な資料で確かめていないため）
 #   職場のページの数字は kitaku と mizu・shushoku の per_day（内閣府のガイドラインの水1人1日3L・主食3食と同じ）と、そこから計算した量だけ
