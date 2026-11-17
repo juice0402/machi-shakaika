@@ -270,10 +270,22 @@ test('夜 #93：計算のページと /sonae/bichiku/ から、人数と日数�
   const three = '<a data-keep href="/hinmoku/mizu/">備蓄の水</a>・<a data-keep href="/hinmoku/shushoku/">備蓄の主食</a>・<a data-keep href="/hinmoku/keitai-toilet/">携帯トイレ</a>';
   for (const b of [ks, bi]) assert.ok(b.includes(three));
   assert.ok(ks.indexOf(three) > ks.indexOf('この人数でチェックリストを見る'));
-  assert.deepEqual(runCalc(ks, '?n=2&d=7').keeps, ['/dougu/check/?n=2&d=7', '/hinmoku/mizu/?n=2&d=7', '/hinmoku/shushoku/?n=2&d=7', '/hinmoku/keitai-toilet/?n=2&d=7']);
+  assert.deepEqual(runCalc(ks, '?n=2&d=7').keeps, ['/dougu/check/?n=2&d=7', '/dougu/karte/?n=2&d=7', '/hinmoku/mizu/?n=2&d=7', '/hinmoku/shushoku/?n=2&d=7', '/hinmoku/keitai-toilet/?n=2&d=7']);
   // 品目ページを同じ ?n=&d= で開くと、計算のページと同じ量
   const mz = hinmokuPages({ items, sources, products: null, saigai: false, cc }).find((x) => x.path === '/hinmoku/mizu/').body;
   assert.equal(runCalc(mz, '?n=2&d=7').outs[0][2], runCalc(ks, '?n=2&d=7').outs.find((o) => o[0] === 'mizu')[2]);
+});
+
+// 夜 #119（C-026・C-027）：計算のページから、同じ人数と日数で防災カルテへ。リンクは /dougu/keisan/ だけ・1つ・チェックリストの次
+test('夜 #119：/dougu/keisan/ に data-keep つきの /dougu/karte/ へのリンクが1つ', () => {
+  const ps = sonaePages({ cc, items, sources });
+  const ks = ps.find((p) => p.path === '/dougu/keisan/').body;
+  const link = '<a class="go" data-keep href="/dougu/karte/">この人数で防災カルテを作る</a>';
+  assert.equal(ks.split(link).length - 1, 1);
+  assert.equal((ks.match(/href="\/dougu\/karte\/"/g) ?? []).length, 1);
+  assert.ok(ks.includes(`この人数でチェックリストを見る</a><br>${link}<br>`));
+  assert.ok(runCalc(ks, '?n=2&d=7').keeps.includes('/dougu/karte/?n=2&d=7'));
+  for (const p of ps.filter((x) => x.path !== '/dougu/keisan/')) assert.ok(!p.body.includes('data-keep href="/dougu/karte/"'), p.path);
 });
 
 // 夜 #104（C-026）：/sonae/keitai-toilet/ と /sonae/rolling-stock/ でも、わが家の人数の量をその場で出す。カードは1つめの段落の下・1つだけ
