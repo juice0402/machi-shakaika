@@ -245,7 +245,7 @@
 - マージ：する
 - 足した：育てる山の補充（自動・2026-11-14）
 
-### [ ] 計算カードのはじめの人数（4人）を1か所に（品目ページの直書きをなくす）
+### [x] 計算カードのはじめの人数（4人）を1か所に（品目ページの直書きをなくす）（#122）
 - やること：`src/pages/hinmoku.mjs` の `calcPart()` の `const n = 4;` は、`src/calc.mjs` の `calcHtml` のはじめの値 `n = 4` と同じ数の直書き。`src/calc.mjs` に `export const CALC_N = 4;`（はじめの人数）を置き、`calcHtml` の既定値と `calcPart()` の両方でそれを使う。ページの見た目・HTML の出力は1文字も変えない
 - できあがりの条件：`npm run check` が緑（`ALLOW_MISSING_HINAN_LIST=1 npm run check`）。直す前の main と直したあとで dist を作り、全ページの HTML が同じ（`diff -r` で差がない。fingerprint.json もふくめて同じ）ことを PR に書く。`grep -n "= 4" src/pages/hinmoku.mjs` で人数の直書きが残っていない
 - 決まったこと：引き継ぎ claude/machi-handoff.md の「夜のメモ」の「気になる点」と報告ファイル claude/reports/machi.md の「2026-11-12 朝の作業」（夜 #93 の点検の気づき「hinmoku.mjs の人数の既定値 4 は calc.mjs の既定値と同じ直書き」）。備えの数字は data/items.yml の1か所だけ（CLAUDE.md）。12/1 までは技術の直しはしてよい（連絡 C-028）
