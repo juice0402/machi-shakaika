@@ -5,6 +5,7 @@ import { derive, muniList } from '../src/stats.mjs';
 import { mtNear, mtDiff, mtDiffHtml, mtStats } from '../src/machi-core.mjs';
 import { kazuData, village, largestRemainder, villageSvg } from '../src/machi-tools.mjs';
 import { toolPages } from '../src/pages/kurabe.mjs';
+import { rankingPages } from '../src/pages/ranking.mjs';
 
 const munis = readMunis();
 const urlOf = (c) => (c === '27140' ? '/osaka/sakai/' : null);
@@ -74,4 +75,13 @@ test('/niteru/・/kurabe/：説明文80〜120文字・h1は1つ・数字は開�
     assert.ok(p.script.includes("fetch('/kurabe/kazu.json')"));
     assert.ok(/国勢調査」を加工して作成/.test(p.body));
   }
+});
+
+test('/ranking/jinko/：いちばん下は「ほかの道具」で /kurabe/ と /niteru/ へ（#124）', () => {
+  const p = rankingPages({ munis, list: muniList(munis.areas), urlOf }).find((x) => x.path === '/ranking/jinko/');
+  const h2s = [...p.body.matchAll(/<h2[^>]*>([\s\S]*?)<\/h2>/g)].map((m) => m[1].replace(/<[^>]+>/g, '').trim());
+  assert.equal(h2s.at(-1), 'ほかの道具');
+  const last = p.body.slice(p.body.lastIndexOf('<h2'));
+  assert.ok(last.includes('<a href="/kurabe/">'));
+  assert.ok(last.includes('<a href="/niteru/">'));
 });
