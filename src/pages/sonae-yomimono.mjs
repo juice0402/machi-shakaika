@@ -306,7 +306,7 @@ ${sourceList(items.mansion.sources, sources)}`,
   });
 
   // ---------- 年に2回の備えの見直し（11/7） ----------
-  //   見直しの日は 9/1 防災の日（bousai-week）と 11/19 東京都の備蓄の日（tokyo-bichiku-toilet）。備えのごよみ（data/koyomi.yml）の2つのテーマと同じ割りふり
+  //   見直しの日は 9/1 防災の日（bousai-week）と 11/19 東京都の備蓄の日（tokyo-bichiku）。備えのごよみ（data/koyomi.yml）の2つのテーマと同じ割りふり
   //   数字は days・mizu・keitai-toilet の per_day・yohairyo_days と、そこから計算した量だけ。日付は items.yml の minaoshi.hi
   const hi = items.minaoshi.hi;
   out.push({

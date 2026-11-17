@@ -318,10 +318,10 @@ sources:
   - id: tokyo-bichiku-toilet
     kind: sonae
     publisher: 東京都
-    title: 携帯トイレ・簡易トイレ
-    url: https://www.bousai.metro.tokyo.lg.jp/_res/common/bichiku/lief_r5_8.pdf
-    checked: 2026-11-07
-    about: 家族で備蓄を確認するきっかけとして毎年11月19日を「備蓄の日」としている。必要な備蓄品と数量は家族構成や住まいでちがう（令和5年8月版のちらし）
+    title: 大規模災害の発生に伴う生活への影響
+    url: https://www.bousai.metro.tokyo.lg.jp/_res/common/bichiku/pamph_r6_7.pdf
+    checked: 2026-11-15
+    about: 必要な備蓄品と数量は家族構成や住まいでちがう。断水するとトイレは流せず、集合住宅で配管が傷んでいると下の階であふれるおそれ。便器に付けて固めて処理する携帯トイレ・簡易トイレを用意（日常備蓄のパンフレット・令和6年7月版）
 
   - id: bousai-volunteer
     kind: sonae

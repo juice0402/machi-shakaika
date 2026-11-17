@@ -36,17 +36,17 @@ akachan:
 # 街とつながる読みもの2本（/sonae/hitorigurashi/・/sonae/mansion/。市区町村ページ「この街の備え」から）
 #   ページに出る数字は days・mizu・shushoku・keitai-toilet の per_day と、そこから計算した1人分・家族の量だけ。新しい数字は足していない
 hitori:
-  sources: [maff-tanshin, maff-shuno, maff-sonae, maff-stock, hiroshima-toilet, kanagawa-toilet, chiba-pref-mansion, kantei-sonae, keishicho-kitaku, tokyo-bichiku-toilet, osaka-bichiku]
+  sources: [maff-tanshin, maff-shuno, maff-sonae, maff-stock, hiroshima-toilet, kanagawa-toilet, chiba-pref-mansion, kantei-sonae, keishicho-kitaku, tokyo-bichiku, osaka-bichiku]
 mansion:
   sources: [chiba-pref-mansion, suginami-mansion, kanagawa-toilet, chiba-zaitaku, maff-sonae, hiroshima-toilet, bousai-teiden]
 # 年に2回の備えの見直し（/sonae/minaoshi/。11/7）。ページに出る数字は days・mizu と keitai-toilet の per_day・yohairyo_days と、そこから計算した量だけ
 minaoshi:
-  # 見直しの日（出典の言い方のまま）。bousai：防災の日・week：防災週間（bousai-week）、bichiku：東京都の備蓄の日（tokyo-bichiku-toilet）
+  # 見直しの日（出典の言い方のまま）。bousai：防災の日・week：防災週間（bousai-week）、bichiku：東京都の備蓄の日（tokyo-bichiku）
   hi:
     bousai: 9月1日
     week: 8月30日から9月5日
     bichiku: 11月19日
-  sources: [bousai-week, tokyo-bichiku-toilet, maff-sonae, maff-guide, maff-shuno, nerima-yohairyo, hiroshima-toilet, kanagawa-toilet, asahikawa-sonae]
+  sources: [bousai-week, tokyo-bichiku, maff-sonae, maff-guide, maff-shuno, nerima-yohairyo, hiroshima-toilet, kanagawa-toilet, asahikawa-sonae]
 
 # 火事の備え（/sonae/kasai/。11/10）。点検と交換の言い方は出典のまま（tenken：fdma-bouka-dokuhon、koukan：fdma-bouka-dokuhon・tfd-jukeiki）
 kasai:
