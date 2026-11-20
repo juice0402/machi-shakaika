@@ -191,7 +191,9 @@ test('道具の下の説明（#127）：しくみ・使う場面の例・よく�
     for (const x of [`水は${f(a4.mizu)}L、主食は${f(a4.shoku)}食、携帯トイレは${f(a4.toilet)}回分`, `水は${f(a1.mizu)}Lで2Lのボトル${f(a1.bottles)}本、主食は${f(a1.shoku)}食、携帯トイレは${f(a1.toilet)}回分`, `切り上げた${f(a4.bottles)}本`]) assert.ok(s.includes(x), x);
     const lack = kaLack(a4, { w: 12 }).mizu;
     assert.ok(lack > 0 ? s.includes(`あと${f(lack)}本です`) : s.includes('日分そろっています'));
-    assert.ok(!/NaN|undefined/.test(s));
+    assert.ok(!/NaN|undefined|2週間/.test(s), '日数は yohairyo_days から');
+    assert.ok(s.includes(`<h3>${yd}日分の人とは</h3>`) && s.includes(`${yd}日分の人に1人`));
+    assert.ok(s.includes(`2L×6本の箱が2箱あるときは、水の欄に12本`));
     return s;
   };
   assert.ok(p.body.includes(check(conf.per, conf.yd)), 'ページの文と同じ');
