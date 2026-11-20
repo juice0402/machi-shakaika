@@ -18,7 +18,10 @@ export const need = (per, n, d) => Math.round(per * n * d);
 // ボトルの本数：量を1本の L で割って切り上げ（防災カルテの「あと◯本」と同じ数え方）
 export const bottles = (per, n, d, liters) => Math.ceil((per * n * d) / liters);
 
-export function calcHtml(cc, { n = 4, d = cc.days.min, q = 'わが家の備えは、どれだけ？', id = 'calc', ans = true } = {}) {
+// 計算カードのはじめの人数（出典のある数字ではないので items.yml には置かない。品目ページの計算カードも同じ値）
+export const CALC_N = 4;
+
+export function calcHtml(cc, { n = CALC_N, d = cc.days.min, q = 'わが家の備えは、どれだけ？', id = 'calc', ans = true } = {}) {
   const days = cc.days.choices
     .map((x) => `<button class="day${x === d ? ' on' : ''}" data-day="${x}" aria-pressed="${x === d}"><span>${x}日</span>${HAN}</button>`)
     .join('');

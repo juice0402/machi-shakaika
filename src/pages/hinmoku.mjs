@@ -2,7 +2,7 @@
 // 楽天の商品を出すページは、AdSense を置かない・楽天以外へのリンクを置かない（楽天ウェブサービス規約 第8条4項・第10条1項4号）
 //   出典はリンクにせず名前と確認日だけ（リンクは備えの知識のページにある）。フッターに楽天のクレジット（layout.mjs）
 import { esc, fmt, h2, jpDate, fit, priceBand, srcName } from '../layout.mjs';
-import { need, bottles, calcConf, calcHtml, CALC_JS } from '../calc.mjs';
+import { need, bottles, calcConf, calcHtml, CALC_JS, CALC_N } from '../calc.mjs';
 import { SHOW, cleanName } from '../rakuten.mjs';
 import { SAIGAI } from '../mode.mjs';
 import { KIGEN_NOTICE_DAYS, kigenHref } from './kigen.mjs';
@@ -295,7 +295,7 @@ function amountDesc(it, days, sources) {
 function calcPart(it, cc) {
   const k = cc.out[it.id];
   if (!it.calc || !k) return '';
-  const n = 4;
+  const n = CALC_N;
   const d = cc.days.min;
   const bt = it.bottle;
   const extra = bt ? `（${bt.liters}Lボトル<b data-out="${k}" data-ceil="${bt.liters}">${fmt(bottles(cc.per[k], n, d, bt.liters))}</b>本）` : '';
