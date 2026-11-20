@@ -157,6 +157,40 @@ kf.querySelector('[data-y]').addEventListener('change',e=>{moved=true;st.y=e.tar
 addEventListener('resize',fit);const p=document.querySelector('[data-print]');if(p)p.addEventListener('click',()=>print());
 if(st.m&&set)MT.load().then(K=>{const r=K.r.find(x=>x[0]===st.m);if(r)set(r);else{st.m='';draw()}});draw()})();`;
 
+// 道具の下の説明（夜 #127）：しくみ・使う場面の例・よくある問い。数字は kaAmounts・kaLack で出す（手で書かない）
+//   印刷では main>:not(.sheetwrap) で出ない
+export function karteMore(conf, cc) {
+  const { per, yd } = conf;
+  const lo = cc.days.min;
+  const hi = Math.max(...cc.days.choices);
+  const f = (v) => v.toLocaleString('ja-JP');
+  const a4 = kaAmounts(per, yd, { n: 4, d: lo, y: 1 });
+  const a1 = kaAmounts(per, yd, { n: 1, d: hi, y: 0 });
+  const have = 12; // 2L×6本の箱を2箱
+  const lack = kaLack(a4, { w: have }).mizu;
+  const L = conf.lines;
+  const ln = (k) => `<a href="${L[k].href}">${esc(L[k].text)}</a>`;
+  return `<div class="prose">
+${h2('しくみ')}
+<p>量は、1人1日の量×（ほかの人数×日数＋2週間分の人数×${yd}）で出します。2週間分の人は、えらんだ日数にかかわらず${yd}日分で数えます。1人1日の量は、紙の「わが家の量」の横に小さく書いています。</p>
+<p>水は2Lのボトルの本数で絵にします。48本をこえると、2L×6本の箱の数に切りかえます。主食と携帯トイレは方眼のマスで、1マスがいくつ分かは量に合わせて1・2・5・10から決めます。</p>
+<p>街をえらぶと、その街の65歳以上の割合とひとり暮らしの世帯の割合、共同住宅に住む世帯の割合が紙に入ります。数字は国勢調査からで、目盛りの▲は全国の値です。</p>
+<p>紙の下の1行は、住まいと人数で変わります。マンション・アパートなら${ln('mansion')}、一戸建てで1人なら${ln('hitori')}、ほかは${ln('zaitaku')}の読みものにつなぎます。街の共同住宅が5割以上のときや、ひとり暮らしの世帯が${(conf.single3 / 10).toFixed(1)}%以上のときは、その街の数字が1行に入ります。2週間分の人がいると、${ln('akachan')}の1行が足されます。</p>
+<p>「家にある数を入れる」をひらいて本数や食数を入れると、ある分だけ絵がぬられます。足りない数は画面の1行にだけ出て、紙はA4の1枚のままです。</p>
+${h2('使う場面の例')}
+<p>4人家族の${lo}日分で、そのうち1人が赤ちゃんのときは、家族を4人、日数を${lo}日にして、2週間分の人に1人を入れます。水は${f(a4.mizu)}L、主食は${f(a4.shoku)}食、携帯トイレは${f(a4.toilet)}回分です。3人の${lo}日分と、1人の${yd}日分を足した量になります。</p>
+<p>ひとり暮らしで${hi}日分なら、水は${f(a1.mizu)}Lで2Lのボトル${f(a1.bottles)}本、主食は${f(a1.shoku)}食、携帯トイレは${f(a1.toilet)}回分です。一戸建てでも1人なら、紙の下の1行は${ln('hitori')}になります。</p>
+<p>はじめの4人の家に2L×6本の箱が2箱あるときは、水の欄に${have}本と入れます。いる本数は${f(a4.mizu)}Lを2で割って切り上げた${f(a4.bottles)}本なので、${lack > 0 ? `あと${f(lack)}本です。` : `${lo}日分そろっています。`}</p>
+${h2('よくある問い')}
+<h3>入れたものは送られますか</h3>
+<p>送りません。この端末のブラウザにだけおぼえます。</p>
+<h3>印刷すると、この説明も出ますか</h3>
+<p>出ません。印刷されるのはA4の紙1枚だけで、入力の欄やこの説明は入りません。</p>
+<h3>2週間分の人とは</h3>
+<p>入力の欄のとおり、赤ちゃん・高齢の家族・持病などで、少なくとも${yd}日分がめやすの人です。その人の分は、えらんだ日数にかかわらず${yd}日分で数えます。</p>
+</div>`;
+}
+
 export function kartePages({ cc, items, sources, munis, nat, z }) {
   const { conf, ids } = karteConf({ cc, items, sources, munis, nat, z });
   const st = kaState({}, conf.days);
@@ -183,6 +217,7 @@ ${form}
 <div class="sheetwrap"><div class="sheet" lang="ja">${kaSheet(conf, st, null, '', '')}</div></div>
 <p class="note">入れたものは送りません。この端末のブラウザにだけおぼえます。</p>
 <p><a class="go" href="/dougu/print/">冷蔵庫に貼るチェックリスト</a><br><a class="go" href="/dougu/kigen/">賞味期限をメモする</a></p>
+${karteMore(conf, cc)}
 ${h2('出典')}
 ${srcKokusei(munis)}
 ${sourceList(ids, sources)}`;
