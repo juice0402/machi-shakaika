@@ -135,7 +135,8 @@ ${rows(byCount, (x) => x.popChange, (x) => `+${fmt(x.popChange)}人`)}
 <p class="note">${NOTE_KUMIKAE}政令市は市全体で数えています。住みやすさの順位ではありません。</p>
 ${h2('増えた街のようす')}
 <p>${txt.yosu.map(esc).join('')}</p>
-${srcKokusei(munis)}`;
+${srcKokusei(munis)}
+${h2('ほかの道具')}<ul class="list"><li><a href="/kurabe/">2つの街の数字をくらべる</a></li><li><a href="/niteru/">数字が似ている街をさがす</a></li></ul>`;
   return [
     {
       path: '/ranking/jinko/',
