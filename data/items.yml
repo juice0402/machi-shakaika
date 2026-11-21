@@ -72,6 +72,18 @@ mochidashi:
   tenken: 少なくとも年に一度
   sources: [osaka-bichiku, nagasaki-mochidashi, kantei-sonae, maff-sonae, hiroshima-toilet, kanagawa-toilet]
 
+# 家族の連絡のしかた（/sonae/renraku/。11/21）。言い方は出典のまま（総務省の災害用伝言サービスのページ・埼玉県・警視庁）
+renraku:
+  dengon: '171'                 # 災害用伝言ダイヤルの番号
+  byou: 30秒以内                # 1伝言の録音時間（総務省・警視庁）
+  kensu: 1～20伝言              # 1電話番号あたり（総務省）
+  web_moji: 全角100文字まで     # 災害用伝言板（web171）の1伝言（総務省）
+  web_kensu: 20伝言             # web171 の1電話番号あたり（総務省）
+  web_hozon: 最大6ヶ月程度      # web171 の保存時間（総務省）
+  keitai_kensu: 最大10伝言      # 携帯電話各社の災害用伝言板の1電話番号あたり（総務省）
+  taiken: [毎月1日、15日, 正月三が日（1月1日～3日）, 防災とボランティア週間（1月15日～21日）, 防災週間（8月30日～9月5日）]   # 体験利用（総務省。埼玉県・警視庁も同じ）
+  sources: [soumu-dengon, saitama-dengon, keishicho-dengon, keishicho-kitaku, bousai-kitaku]
+
 # 家の外の備え2本（/sonae/kuruma-taisetsu/・/sonae/kitaku-konnan/。10/28 #19）。sources はページの出典に並べる id（この順）
 #   車のページは数字を出さない（積んでおく量の目安を公的な資料で確かめていないため）
 #   職場のページの数字は kitaku と mizu・shushoku の per_day（内閣府のガイドラインの水1人1日3L・主食3食と同じ）と、そこから計算した量だけ
