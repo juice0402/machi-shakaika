@@ -129,6 +129,21 @@ const townSelect = (id, off) => scopeSelect(id, { p: false, pref: false, off });
 const resBox = (n, links) => `<section id="res" class="qz" hidden aria-live="polite"><p class="score"><b>0</b><span>／${n}</span></p><p class="sp"></p><p><button class="go send" type="button">結果を送る</button>　<button class="go again" type="button">もう一度</button></p><p class="note" id="sent"></p>
 <p>${links}</p></section>`;
 
+// /quiz/ の一覧の行（名前と説明）。5つのクイズのいちばん下の「ほかのクイズ」も同じ行を使う（#132）
+export const QUIZ_LIST = {
+  kyou: ['今日の1問', '日本時間の0時に入れかわる2択。答えた県が地図にたまる'],
+  docchi: ['どっちが多い？', '都道府県・全国の市区町村・県の中から、2択を10問'],
+  dobon: ['ドボンクイズ', 'トップ10を1つずつ当てる。外れたらドボン'],
+  doko: ['この街はどこ？', '市区町村の名前から、県を地図でおす10問'],
+  narabe: ['ならべる', '3つの街を、数字の大きい順に5問'],
+  hint: ['ヒントで街あて', '少ないヒントで当てるほど高い点。5問'],
+  sonae: ['備えの数字クイズ', '水・食事・携帯トイレの量のめやす5問'],
+};
+const quizLi = (id) => `<li><a href="/quiz/${id}/">${QUIZ_LIST[id][0]}</a><small class="sub">${QUIZ_LIST[id][1]}</small></li>`;
+// 5つのクイズの「ほかのクイズ」（2つまで。今日の1問・備え・街あつめ帳は入れない）
+export const QUIZ_HOKA = { docchi: ['dobon', 'narabe'], dobon: ['docchi', 'doko'], doko: ['hint', 'dobon'], narabe: ['docchi', 'dobon'], hint: ['doko', 'narabe'] };
+const hokaQuiz = (id) => `\n${h2('ほかのクイズ')}<ul class="list">${QUIZ_HOKA[id].map(quizLi).join('')}</ul>`;
+
 // 結果を出す・範囲を変える・読みこむ（3つで共通。start と qs・score・label はページごと）
 const FINISH = `function finish(name,extra){box.hidden=true;res.hidden=false;$('.score b',res).textContent=extra?extra[0]:score;$('.score span',res).textContent='／'+(extra?extra[1]:qs.length);$('.sp',res).textContent=extra?qs.length+'問中'+score+'問正解':'';$('.sp',res).hidden=!extra;
 res.dataset.text='まちの社会科「'+name+'」'+tag(sel)+qs.length+'問中'+score+'問正解'+(extra?'・'+extra[0]+'点':'');$('#sent').textContent='';window.scrollTo(0,0)}
@@ -495,10 +510,10 @@ export function quizPages({ munis, items, sources, machi }) {
     body: `<p class="crumb"><a href="/">トップ</a></p>
 <h1 class="city">クイズ</h1>
 ${h2('街の数字クイズ')}
-<ul class="list"><li><a href="/quiz/kyou/">今日の1問</a><small class="sub">日本時間の0時に入れかわる2択。答えた県が地図にたまる</small></li><li><a href="/quiz/docchi/">どっちが多い？</a><small class="sub">都道府県・全国の市区町村・県の中から、2択を10問</small></li><li><a href="/quiz/dobon/">ドボンクイズ</a><small class="sub">トップ10を1つずつ当てる。外れたらドボン</small></li><li><a href="/quiz/doko/">この街はどこ？</a><small class="sub">市区町村の名前から、県を地図でおす10問</small></li><li><a href="/quiz/narabe/">ならべる</a><small class="sub">3つの街を、数字の大きい順に5問</small></li><li><a href="/quiz/hint/">ヒントで街あて</a><small class="sub">少ないヒントで当てるほど高い点。5問</small></li><li><a href="/atsume/">街あつめ帳</a><small class="sub">クイズに出た街に、はんこがたまる</small></li></ul>
+<ul class="list">${['kyou', 'docchi', 'dobon', 'doko', 'narabe', 'hint'].map(quizLi).join('')}<li><a href="/atsume/">街あつめ帳</a><small class="sub">クイズに出た街に、はんこがたまる</small></li></ul>
 <p class="note">市区町村のページの中にも、その街のクイズがあります（例：<a href="/osaka/sakai/">堺市</a>）。</p>
 ${h2('備えの数字クイズ')}
-<ul class="list"><li><a href="/quiz/sonae/">備えの数字クイズ</a><small class="sub">水・食事・携帯トイレの量のめやす5問</small></li></ul>
+<ul class="list">${quizLi('sonae')}</ul>
 <p class="note">答えはこの端末の中だけで決まり、どこにも送りません。</p>
 ${shelfMore({ munis, machi, docchiMan, dobonN, sd: sonaeData(items, sources) })}`,
   });
@@ -520,7 +535,7 @@ ${data2('qoff', off.docchi)}
 <p><a href="/ranking/jinko/">人口が増えた市区町村</a>・<a href="/quiz/dobon/">ドボンクイズ</a></p></section>
 <noscript><p>このクイズはスクリプトで動きます。</p></noscript>
 ${src}
-${docchiMore({ munis, machi, docchiMan })}`,
+${docchiMore({ munis, machi, docchiMan })}${hokaQuiz('docchi')}`,
     script: DOCCHI_JS,
   });
 
@@ -543,7 +558,7 @@ ${scopeSelect('sc', { big: false, off: off.dobon })}
 <p class="dbn" hidden><button class="go next" type="button">次のお題</button>　<button class="go send" type="button">結果を送る</button></p><p class="note" id="sent"></p></section>
 <noscript><p>このクイズはスクリプトで動きます。</p></noscript>
 ${src}
-${dobonMore({ munis, machi })}`,
+${dobonMore({ munis, machi })}${hokaQuiz('dobon')}`,
     script: DOBON_JS,
   });
 
@@ -568,7 +583,7 @@ ${townSelect('sc', off.doko)}
 ${resBox(DOKO_N, '<a href="/quiz/hint/">ヒントで街あて</a>・<a href="/quiz/dobon/">ドボンクイズ</a>')}
 ${noJs}
 ${src}
-${dokoMore({ munis, machi })}`,
+${dokoMore({ munis, machi })}${hokaQuiz('doko')}`,
     script: DOKO_JS,
   });
 
@@ -589,7 +604,7 @@ ${data2('qoff', off.narabe)}
 ${resBox(NARABE_N, '<a href="/quiz/docchi/">どっちが多い？</a>・<a href="/quiz/dobon/">ドボンクイズ</a>')}
 ${noJs}
 ${src}
-${narabeMore({ munis, machi })}`,
+${narabeMore({ munis, machi })}${hokaQuiz('narabe')}`,
     script: NARABE_JS,
   });
 
@@ -609,7 +624,7 @@ ${townSelect('sc', off.hint)}
 ${resBox(HINT_N * HINT_MAX, '<a href="/quiz/doko/">この街はどこ？</a>・<a href="/quiz/narabe/">ならべる</a>')}
 ${noJs}
 ${src}
-${hintMore({ munis, machi })}`,
+${hintMore({ munis, machi })}${hokaQuiz('hint')}`,
     script: HINT_JS,
   });
 

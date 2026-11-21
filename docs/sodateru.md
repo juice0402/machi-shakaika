@@ -292,7 +292,7 @@
 - マージ：する
 - 足した：育てる山の補充（自動・2026-11-16）
 
-### [ ] クイズ5つ（どっちが多い？・ドボン・この街はどこ？・ならべる・ヒントで街あて）のいちばん下に「ほかのクイズ」
+### [x] クイズ5つ（どっちが多い？・ドボン・この街はどこ？・ならべる・ヒントで街あて）のいちばん下に「ほかのクイズ」（#132）
 - やること
   - `src/pages/quiz.mjs` の `quizPages` で、/quiz/docchi/・/quiz/dobon/・/quiz/doko/・/quiz/narabe/・/quiz/hint/ の body のいちばん最後（`docchiMore`・`dobonMore`・`dokoMore`・`narabeMore`・`hintMore` の「よくある問い」の後ろ）に `${h2('ほかのクイズ')}<ul class="list">…</ul>` を足す。1行は /quiz/ の一覧の行と同じ形（`<li><a href="/quiz/…/">名前</a><small class="sub">説明</small></li>`）で、説明の文は /quiz/ の一覧の `small.sub` と同じ文を1か所から使う（直書きを2か所にしない）
   - 並べるのは2つ：docchi はドボンクイズ・ならべる／dobon はどっちが多い？・この街はどこ？／doko はヒントで街あて・ドボンクイズ／narabe はどっちが多い？・ドボンクイズ／hint はこの街はどこ？・ならべる（doko・narabe・hint は今の結果の箱の2つと同じ。docchi の結果の箱の「人口が増えた市区町村」はクイズでないので入れない。dobon の結果の箱にはほかのクイズのリンクがない）
