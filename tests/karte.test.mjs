@@ -6,7 +6,7 @@ import { readMunis } from '../src/munis.mjs';
 import { derive, muniList, nationalRates } from '../src/stats.mjs';
 import { kazuData } from '../src/machi-tools.mjs';
 import { kaState, kaAmounts, kaLack, kaHave, kaUnit, kaWaterSvg, kaGridSvg, kaLines, kaSheet } from '../src/karte-core.mjs';
-import { kartePages, karteConf, KARTE_PATH } from '../src/pages/karte.mjs';
+import { kartePages, karteConf, karteMore, KARTE_PATH } from '../src/pages/karte.mjs';
 import { printPages } from '../src/pages/print.mjs';
 import { douguPages } from '../src/pages/dougu.mjs';
 import { topPage } from '../src/pages/top.mjs';
@@ -173,4 +173,33 @@ test('? つきの URL で開いても、この端末に覚えた家にある数�
   // 覚えた値がない・読めない：URL の値だけ
   assert.deepEqual(make('m=01100', null).o, { m: '01100' });
   assert.deepEqual(make('m=01100&n=2').o, { m: '01100', n: '2' });
+});
+
+test('道具の下の説明（#127）：しくみ・使う場面の例・よくある問いが出典の前。例の数字は kaAmounts から', () => {
+  const at = (t) => p.body.indexOf(`${t}</h2>`);
+  const src = at('出典');
+  for (const t of ['しくみ', '使う場面の例', 'よくある問い']) assert.ok(at(t) > 0 && at(t) < src, t);
+  assert.ok(p.body.indexOf('class="sheetwrap"') < at('しくみ'), '紙のあと');
+  const more = p.body.slice(at('しくみ'), src);
+  assert.ok(!/NaN|undefined|null/.test(more));
+  const check = (per, yd) => {
+    const c = { ...conf, per, yd };
+    const s = karteMore(c, cc);
+    const f = (v) => v.toLocaleString('ja-JP');
+    const a4 = kaAmounts(per, yd, { n: 4, d: cc.days.min, y: 1 });
+    const a1 = kaAmounts(per, yd, { n: 1, d: Math.max(...cc.days.choices), y: 0 });
+    for (const x of [`水は${f(a4.mizu)}L、主食は${f(a4.shoku)}食、携帯トイレは${f(a4.toilet)}回分`, `水は${f(a1.mizu)}Lで2Lのボトル${f(a1.bottles)}本、主食は${f(a1.shoku)}食、携帯トイレは${f(a1.toilet)}回分`, `切り上げた${f(a4.bottles)}本`]) assert.ok(s.includes(x), x);
+    const lack = kaLack(a4, { w: 12 }).mizu;
+    assert.ok(lack > 0 ? s.includes(`あと${f(lack)}本です`) : s.includes('日分そろっています'));
+    assert.ok(!/NaN|undefined|2週間/.test(s), '日数は yohairyo_days から');
+    assert.ok(s.includes(`<h3>${yd}日分の人とは</h3>`) && s.includes(`${yd}日分の人に1人`));
+    assert.ok(s.includes(`2L×6本の箱が2箱あるときは、水の欄に12本`));
+    return s;
+  };
+  assert.ok(p.body.includes(check(conf.per, conf.yd)), 'ページの文と同じ');
+  // items.yml の per_day を変えても合う形
+  check({ mizu: 4, shoku: 2, toilet: 7 }, conf.yd);
+  check({ mizu: 1, shoku: 1, toilet: 1 }, 10);
+  // 印刷では出ない（紙だけ）
+  assert.ok(/main>:not\(\.sheetwrap\)\{display:none/.test(p.head.replace(/\s/g, '')) || p.head.includes('main>:not(.sheetwrap)'));
 });
