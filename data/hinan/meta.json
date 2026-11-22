@@ -1,25 +1,25 @@
 {
- "fetched": "2026-11-10",
- "checked": "2026-11-16",
+ "fetched": "2026-11-23",
+ "checked": "2026-11-23",
  "total": {
-  "basho": 115924,
-  "hinanjo": 83479
+  "basho": 115948,
+  "hinanjo": 83484
  },
  "files": {
   "basho": {
-   "etag": "\"1038f36-65fd1dba85dfa\"",
-   "lastModified": "Mon, 09 Nov 2026 06:13:18 GMT",
-   "bytes": 17010486
+   "etag": "\"1039c40-6605d670dacc7\"",
+   "lastModified": "Mon, 16 Nov 2026 04:42:17 GMT",
+   "bytes": 17013824
   },
   "hinanjo": {
-   "etag": "\"b2d9f0-65fd1dba87569\"",
-   "lastModified": "Mon, 09 Nov 2026 06:13:18 GMT",
-   "bytes": 11721200
+   "etag": "\"b2dcf0-6605d670dc436\"",
+   "lastModified": "Mon, 16 Nov 2026 04:42:17 GMT",
+   "bytes": 11721968
   },
   "history": {
-   "etag": "\"1615b-65fd1dba842a2\"",
-   "lastModified": "Mon, 09 Nov 2026 06:13:18 GMT",
-   "bytes": 90459
+   "etag": "\"16135-6605d670d89a0\"",
+   "lastModified": "Mon, 16 Nov 2026 04:42:17 GMT",
+   "bytes": 90421
   }
  }
 }
