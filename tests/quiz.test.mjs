@@ -242,3 +242,26 @@ test('この街はどこ？・ヒントで街あて：北海道だけの範囲�
   for (const s of on(QUIZ_SCOPES.town, off.doko)) assert.equal(qDoko(DY, s, r, DOKO_N).length, DOKO_N, s);
   for (const s of on(QUIZ_SCOPES.town, off.hint)) assert.equal(qHint(D, s, r, HINT_N).length, HINT_N, s);
 });
+
+test('クイズ5つのいちばん下に「ほかのクイズ」：クイズへのリンク2つ・自分へのリンクなし・説明は /quiz/ の一覧と同じ（#132）', { skip }, async () => {
+  const { quizPages, QUIZ_LIST } = await import('../src/pages/quiz.mjs');
+  const ps = quizPages({ munis, items: readYaml('items.yml'), sources: readYaml('sources.yml'), machi: D });
+  const shelf = ps.find((p) => p.path === '/quiz/').body;
+  for (const id of ['docchi', 'dobon', 'doko', 'narabe', 'hint']) {
+    const { body } = ps.find((p) => p.path === `/quiz/${id}/`);
+    const h2s = [...body.matchAll(/<h2[^>]*>([\s\S]*?)<\/h2>/g)];
+    const last = h2s.at(-1);
+    assert.equal(last[1].replace(/<[^>]+>/g, '').trim(), 'ほかのクイズ', id);
+    const tail = body.slice(last.index);
+    assert.ok(/<\/ul>\s*$/.test(tail), `${id}：「ほかのクイズ」の後ろに何かある`);
+    const lis = [...tail.matchAll(/<li><a href="([^"]+)">([^<]+)<\/a><small class="sub">([^<]+)<\/small><\/li>/g)];
+    assert.equal(lis.length, 2, id);
+    assert.equal((tail.match(/<a /g) ?? []).length, 2, id);
+    for (const [li, href, name, sub] of lis) {
+      assert.match(href, /^\/quiz\/(docchi|dobon|doko|narabe|hint)\/$/, `${id}：${href}`);
+      assert.notEqual(href, `/quiz/${id}/`, `${id}：自分へのリンク`);
+      assert.ok(shelf.includes(li), `${id}：${name} の行が /quiz/ の一覧とちがう`);
+      assert.equal(QUIZ_LIST[href.split('/')[2]][1], sub);
+    }
+  }
+});
