@@ -30,3 +30,22 @@ test('かっこの中は小さい2行目に。文字はそのまま', () => {
   assert.deepEqual(splitName({ name: '携帯ラジオ' }), { main: '携帯ラジオ', small: '' });
   assert.deepEqual(splitName({ name: 'ミルク・紙おむつ・ほ乳びん', sub: '乳児がいる家' }), { main: 'ミルク・紙おむつ・ほ乳びん', small: '乳児がいる家' });
 });
+
+test('紙の下の説明（#130）：しくみ・よくある問いが紙のあと・出典の前。品目の数は items.yml の checklists と合う', () => {
+  const at = (t) => p.body.indexOf(`${t}</h2>`);
+  const src = at('出典');
+  for (const t of ['しくみ', 'よくある問い']) assert.ok(at(t) > 0 && at(t) < src, t);
+  assert.ok(p.body.indexOf('class="sheetwrap"') < at('しくみ'), '紙のあと');
+  const more = p.body.slice(at('しくみ'), src);
+  assert.ok(!/NaN|undefined|null/.test(more));
+  const cl = (id) => items.checklists.find((c) => c.id === id);
+  const b = cl('bichiku');
+  const m = cl('mochidashi');
+  const kn = b.entries.filter((e) => e.kigen);
+  assert.ok(more.includes(`${b.name}の${b.entries.length}品目`));
+  assert.ok(more.includes(`${m.name}の${m.entries.length}品目`));
+  assert.ok(more.includes(`${kn.map((e) => e.kigen[1]).join('・')}の${kn.length}品目`));
+  assert.match(more, /href="\/dougu\/check\/"/);
+  assert.match(more, /href="\/dougu\/kigen\/"/);
+  assert.ok(!/hinmoku|rakuten/.test(more), '品目ページ・楽天へのリンクは足さない');
+});

@@ -60,7 +60,10 @@ export function printPages({ cc, items, sources }) {
     })
     .join('');
   const mHalf = Math.ceil(m.entries.length / 2);
-  const ids = [...new Set([...b.entries, ...m.entries].flatMap((e) => e.sources).concat(days.sources))];
+  const label = (e, i) => b.cl.entries[i].kigen?.[1] ?? splitName(e).main;
+  const qtyNames = b.entries.map((e, i) => (e.qty && !e.sub ? label(e, i) : '')).filter(Boolean);
+  const kigenNames = b.cl.entries.map((e) => e.kigen?.[1]).filter(Boolean);
+  const ids =[...new Set([...b.entries, ...m.entries].flatMap((e) => e.sources).concat(days.sources))];
 
   const sheet = `<div class="sheet" lang="ja">
 <span class="band">${band()}</span>
@@ -73,6 +76,24 @@ export function printPages({ cc, items, sources }) {
 <p class="h2">${HM}${esc(m.cl.name)}<small>${m.entries.length}品目</small></p>
 <ul class="ml">${mrows}</ul>
 <div class="foot"><p>${srcLine(ids, sources)}</p><p><span class="site">${esc(SITE.name)}</span>${esc(SITE.url.replace('https://', ''))}/dougu/check/</p></div>
+</div>`;
+
+  // 紙の下の説明（夜 #130）：しくみ・よくある問い。品目の数と名前は items.yml の checklists から（手で書かない）
+  //   印刷では main>:not(.sheetwrap) で出ない
+  const more = `<div class="prose">
+${h2('しくみ')}
+<p>紙はA4の縦1枚です。上に人数を書く欄と、最低${days.min}日分、できれば${days.better}日分という1行があり、その下に表が2つ並びます。</p>
+<p>上の表は${esc(b.cl.name)}の${b.entries.length}品目で、左から丸をつける欄、品目、期限の欄です。${qtyNames.join('・')}は、名前の下に1人1日の量を小さく書いています。これに人数と日数をかけると、家に置く量になります。</p>
+<p>期限を書く線があるのは、${kigenNames.join('・')}の${kigenN}品目です。期限のある品目にだけ線を引き、ほかの品目の期限の欄はあけてあります。</p>
+<p>下の表は${esc(m.cl.name)}の${m.entries.length}品目で、2列に分けて丸をつける欄だけを置いています。かっこの中の例は、名前の下に小さく入れています。</p>
+<p>品目の名前と量は、画面のチェックリストと同じ一覧から作っています。紙のいちばん下には、出典と確かめた日、画面のチェックリストのアドレスが入ります。</p>
+${h2('よくある問い')}
+<h3>画面の上でチェックしたいときは</h3>
+<p><a href="/dougu/check/">画面のチェックリスト</a>で、同じ品目に丸をつけられます。</p>
+<h3>期限を画面に残したいときは</h3>
+<p><a href="/dougu/kigen/">賞味期限のメモ</a>に品目と日付を入れると、この端末のブラウザにおぼえます。</p>
+<h3>印刷すると、この説明も出ますか</h3>
+<p>出ません。印刷されるのはA4の紙1枚だけで、ボタンやリンク、この説明は入りません。</p>
 </div>`;
 
   // 紙の中の見た目（.sheet の中だけに効かせる）。1px は印刷で 1/96 インチ
@@ -133,6 +154,7 @@ ${S}{transform:none!important;height:296mm}
 <p><button class="go" type="button" data-print>印刷する・PDFにする</button></p>
 <div class="sheetwrap">${sheet}</div>
 <p><a class="go" href="/dougu/check/">画面でチェックする</a><br><a class="go" href="/dougu/karte/">わが家の防災カルテ（量を絵で）</a><br><a class="go" href="/dougu/kigen/">賞味期限をメモする</a></p>
+${more}
 ${h2('出典')}
 ${sourceList(ids, sources)}`,
       script: js,
