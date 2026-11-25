@@ -339,3 +339,34 @@
 - 読むファイル：CLAUDE.md・src/pages/quiz.mjs の /quiz/ の一覧と /quiz/sonae/ の body と sonaeMore の最後・前の項目で足した「ほかのクイズ」の所・tests/quiz.test.mjs
 - マージ：する
 - 足した：育てる山の補充（自動・2026-11-18）
+
+### [ ] ローリングストック（/sonae/rolling-stock/）の「この人数でチェックリストを見る」の行に、同じ人数で品目ページ（水・主食）へ
+- やること：/sonae/rolling-stock/（`src/pages/sonae.mjs` の rolling-stock の body）のいちばん下の `<p><a class="go" data-keep href="/dougu/check/">この人数でチェックリストを見る</a></p>`（「配慮のいる家族の食品」の後ろ・`h2('出典')` の前）に、`<br><a data-keep href="/hinmoku/mizu/">備蓄の水</a>・<a data-keep href="/hinmoku/shushoku/">備蓄の主食</a>` を足す（/dougu/keisan/ の同じ行の形をまねる。携帯トイレは入れない）。カードの人数と日数を変えると、`CALC_JS` が `data-keep` の URL を `?n=&d=` つきに書きかえ、品目ページの計算カードが同じ人数と日数で開く。計算カード・ほかの文・リンク・出典・説明文は変えない
+- できあがりの条件：`npm run check` が緑（作業場から e-Stat・国土地理院にはつながらないので `ALLOW_MISSING_HINAN_LIST=1 npm run check`）。テストで、/sonae/rolling-stock/ に `data-keep` つきの /hinmoku/mizu/ と /hinmoku/shushoku/ へのリンクが1つずつあることを見張る（ページを作る関数の出力を見る tests/honbun-pages.test.mjs の形をまねる）。playwright で、カードを2人・7日にして「備蓄の水」を押すと、水の品目ページの計算カードが2人・7日になる。スマホ 390×660 の1画面めは今と同じ（main のビルドと画素までくらべる）。`node scripts/honbun.mjs dist --pages` の /sonae/rolling-stock/ の地の文が今より減らない。足した所のスクショ（スマホとパソコン）を並べて1枚で PR に
+- 決まったこと：連絡 C-025（11/6）「買いに来る理由がある人を集める」（claude/common-tasks-done.md）。その machi の決めごとは、引き継ぎ claude/machi-handoff.md「大事な決めごと」の買いに来る理由に「新しい売り場のページは作らず、今の品目ページ6つ（楽天）へ内部リンク。楽天を呼ぶ回数・A8・AdSense の置き場所は今のまま。クイズ・今日の1問・まなびプリント・街あつめ帳には出さない（子どもも使う）」とあり、品目ページへの内部リンクを足すのはこの決めごとのとおり。連絡 C-026（11/6）③「自分で計算できる・自分の数字が残る（自分の条件で出す・残す・持ち帰る）」（claude/common-tasks.md）。11/22 の補充で main（4b960cf）を見たら、計算カードのあるページ（トップをのぞく）のうち /sonae/bichiku/・/sonae/keitai-toilet/・/dougu/keisan/ には `data-keep` つきの品目ページへのリンクがあり、/sonae/rolling-stock/ だけが品目ページへのリンクがカセットコンロ（/hinmoku/gas/・`data-keep` なし）だけだった。品目ページは `?n=&d=` を読む（`src/calc.mjs` の CALC_JS・夜 #93）。人数と日数は URL の ? だけ（CLAUDE.md「利用者のデータを集めない」）。12/1 までは1回1つの小さな足し・サイトの中のつなぎはしてよい・machi はくらべ役で作りを大きく変えない（連絡 C-028）
+- 迷ったら：リンクは水と主食の2つだけ（ページの中身が食品と水のため。携帯トイレ・ガスは足さない）。リンクの文は品目の名前（「備蓄の水」「備蓄の主食」）にし、/dougu/keisan/ と同じにする。計算カードのすぐ下には置かない（1画面めを変えないため。今のチェックリストの行に足す）。「どれだけ置いておくか」の節の文にはリンクを足さない。A8 の文字の広告はこのページに足さない（A8 は今の3ページだけ・引き継ぎの「大事な決めごと」）
+- 読むファイル：CLAUDE.md・src/pages/sonae.mjs の rolling-stock の body と /dougu/keisan/ の `data-keep` の行・src/calc.mjs の CALC_JS（data-keep）・tests/honbun-pages.test.mjs
+- マージ：する
+- 足した：育てる山の補充（自動・2026-11-22）
+
+### [ ] 今日の1問（/quiz/kyou/）のいちばん下に「ほかのクイズ」
+- やること
+  - `src/pages/kyou.mjs` の `kyouPage` の body のいちばん最後（`${more({ … })}` の「よくある問い」の後ろ）に、クイズ5つの「ほかのクイズ」（夜 #132・PR #133）と同じ形で `${h2('ほかのクイズ')}<ul class="list">…</ul>` を足す。並べるのは2つ：ドボンクイズ（/quiz/dobon/）・この街はどこ？（/quiz/doko/）
+  - 1行は PR #133 で `src/pages/quiz.mjs` に置いた `QUIZ_LIST` の名前と説明の文から作る（直書きを増やさない）。今の行を作る `quizLi` は quiz.mjs の中だけの const なので、`export const quizLi` にして kyou.mjs で import する（kyou.mjs はもう `import { DOCCHI_N } from './quiz.mjs';` があるので、その行に足す）
+  - 1画面め・問題と結果の箱（「どっちが多い？を10問」のリンクをふくむ）・わたしの地図・スクリプト・「数字のもと」「題の順番」「1問の読み方」「よくある問い」の中身・/quiz/ の一覧は変えない
+- 順番：「クイズ5つ（どっちが多い？・ドボン・この街はどこ？・ならべる・ヒントで街あて）のいちばん下に「ほかのクイズ」」（PR #133）のあと（`QUIZ_LIST` はその PR で入る。マージ待ちならその枝の上に作る）
+- できあがりの条件：`npm run check` が緑（`ALLOW_MISSING_HINAN_LIST=1 npm run check`）。`tests/quiz.test.mjs` に1つ足す（#132 のテストの形をまねる）：/quiz/kyou/ の最後の h2 が「ほかのクイズ」で、/quiz/dobon/ と /quiz/doko/ へのリンクの2つ・自分へのリンクがない・説明の文が /quiz/ の一覧と同じ・品目ページ（/hinmoku/）へのリンクがない。/quiz/ のページの HTML は1文字も変わらない（ビルドの結果をくらべる）。スマホ 390×660 の1画面めは今と同じ（main のビルドと画素までくらべる。今日の1問は日付で問題が決まるので、同じ日にビルドした2つをくらべる）。いちばん下のスクショ（スマホとパソコン）を並べて1枚で PR に
+- 決まったこと：連絡 C-027（11/12）「決まりは続く：自分のサイトの中だけで渡り歩ける道を、理由の分かる形で、数をしぼって（ほかのサイトへのリンクは作らない）」（claude/common-tasks.md）。引き継ぎ claude/machi-handoff.md「大事な決めごと」のサイトの中の沼に「今ある部品だけ・表示の速さを落とさない」。11/22 の補充で main（4b960cf）のビルドを数えたら、/quiz/kyou/ の main の中のリンクはトップ・クイズの一覧・どっちが多い？（結果の箱とよくある問いの2か所）・街あつめ帳だけで、いちばん下は「よくある問い」で終わっていた。今日の1問は案C「地図で場所も」（引き継ぎ claude/machi-handoff.md「大事な決めごと」）。クイズは AdSense なし・回答は送らない・ページの文は小学生にも読める言葉（引き継ぎ「大事な決めごと」のクイズ）。楽天の品目ページへのリンクはクイズに出さない（子どもも使う・連絡 C-025 の決めごと）。「同じ四角いボタンを並べた切りかえ」「右はしの小さな見る」は使わない（`ul.list` の文字のリンク・C-001）。12/1 までは1回1つの小さな足し・サイトの中のつなぎはしてよい（連絡 C-028）
+- 迷ったら：リンクは2つのまま（3つ以上にしない）。どっちが多い？はもう2か所でリンクしているので入れず、今日の1問と同じく地図で答えるドボンクイズとこの街はどこ？にする。街あつめ帳・備えの数字クイズ・ならべる・ヒントで街あてへのリンクは足さない。「ほかのクイズ」が出典の行より後ろになるのは /kurabe/・/niteru/ の「ほかの道具」と同じなので、そのままでよい。PR #133 がまだマージされず `QUIZ_LIST` が main にないときは、その枝の上に作る（文を新しく直書きしない）。import が輪になって動かないときだけ、`QUIZ_LIST` と `quizLi` を quiz.mjs のまま、kyou.mjs で名前と説明を `QUIZ_LIST` から読んで同じ形の行を作る
+- 読むファイル：CLAUDE.md・src/pages/kyou.mjs の kyouPage と more・src/pages/quiz.mjs の QUIZ_LIST と quizLi（PR #133 のあと）・tests/quiz.test.mjs の #132 のテスト
+- マージ：する
+- 足した：育てる山の補充（自動・2026-11-22）
+
+### [ ] 備えの品目（/hinmoku/）の「チェックリスト」の行に、わが家の人数で計算する道
+- やること：品目の一覧（`src/pages/hinmoku.mjs` の `hinmokuPages` の path '/hinmoku/' の body）の `<p><a class="go" href="/dougu/check/">チェックリスト</a></p>` を、`<p><a class="go" href="/dougu/check/">チェックリスト</a><br><a class="go" href="/dougu/keisan/">わが家の人数で計算する</a></p>` にする（`<br>` でつなぐ・/dougu/keisan/ の `a.go` の行の形）。一覧の行の量は「4人家族の◯日分」（`amount()`）なので、ほかの人数の量はこのリンクの先で出せる。一覧・`shelfText`・出典・説明文（description）・品目ページ6つは変えない
+- できあがりの条件：`npm run check` が緑（`ALLOW_MISSING_HINAN_LIST=1 npm run check`）。tests/honbun-pages.test.mjs に1つ足す（`hinmokuPages(...).find((x) => x.path === '/hinmoku/')` の今の形をまねる）：/hinmoku/ に /dougu/keisan/ へのリンクが1つある・災害時モード（`saigai: true`）でも同じ。/hinmoku/<id>/ の6ページの HTML は1文字も変わらない（ビルドの結果をくらべる）。スマホ 390×660 で品目の一覧の6行が今と同じく1画面めに入る（足した行で押し出さない）。`node scripts/honbun.mjs dist --pages` の /hinmoku/ の地の文が今より減らない。足した所のスクショ（スマホとパソコン）を並べて1枚で PR に
+- 決まったこと：連絡 C-026（11/6）③「自分で計算できる・自分の数字が残る（自分の条件で出す・残す・持ち帰る）」と連絡 C-027（11/12）「決まりは続く：自分のサイトの中だけで渡り歩ける道を、理由の分かる形で、数をしぼって（ほかのサイトへのリンクは作らない）」（どちらも claude/common-tasks.md）。引き継ぎ claude/machi-handoff.md「大事な決めごと」のサイトの中の沼に「今ある部品だけ・表示の速さを落とさない」。11/22 の補充で main（4b960cf）のビルドを数えたら、/hinmoku/ の main の中のリンクはトップ・備えの知識・品目6つ・チェックリストだけで、量の計算（/dougu/keisan/）への道がなかった。リンクの文「わが家の人数で計算する」は /quiz/sonae/ の結果の箱と同じ言葉。12/1 までは1回1つの小さな足し・サイトの中のつなぎはしてよい・machi はくらべ役で作りを大きく変えない（連絡 C-028）
+- 迷ったら：/hinmoku/ には計算カードを置かない（ページの作りを変えるため。リンクの1行だけ）。一覧の「4人家族の◯日分」の文（`amount()` の `4`）は計算カードのはじめの人数ではなく文の中の例なので変えない（`CALC_N` にしない・人数のはじめの値は data/items.yml にも移さない）。リンクに `data-keep` は付けない（/hinmoku/ には CALC_JS も人数の欄もないため）。/koyomi/ など、ほかのリンクは足さない（1つだけ）。品目ページ（/hinmoku/<id>/）には足さない（もう計算カードがある）
+- 読むファイル：CLAUDE.md・src/pages/hinmoku.mjs の amount と hinmokuPages の '/hinmoku/' の body・src/pages/sonae.mjs の /dougu/keisan/ の `a.go` の行・tests/honbun-pages.test.mjs の '/hinmoku/' の所
+- マージ：する
+- 足した：育てる山の補充（自動・2026-11-22）
