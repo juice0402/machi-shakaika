@@ -140,8 +140,8 @@ export const QUIZ_LIST = {
   sonae: ['備えの数字クイズ', '水・食事・携帯トイレの量のめやす5問'],
 };
 const quizLi = (id) => `<li><a href="/quiz/${id}/">${QUIZ_LIST[id][0]}</a><small class="sub">${QUIZ_LIST[id][1]}</small></li>`;
-// 5つのクイズの「ほかのクイズ」（2つまで。今日の1問・備え・街あつめ帳は入れない）
-export const QUIZ_HOKA = { docchi: ['dobon', 'narabe'], dobon: ['docchi', 'doko'], doko: ['hint', 'dobon'], narabe: ['docchi', 'dobon'], hint: ['doko', 'narabe'] };
+// クイズのいちばん下の「ほかのクイズ」（2つまで。5つのクイズには今日の1問・備え・街あつめ帳は入れない。備えは今日の1問とどっちが多い？・#140）
+export const QUIZ_HOKA = { docchi: ['dobon', 'narabe'], dobon: ['docchi', 'doko'], doko: ['hint', 'dobon'], narabe: ['docchi', 'dobon'], hint: ['doko', 'narabe'], sonae: ['kyou', 'docchi'] };
 const hokaQuiz = (id) => `\n${h2('ほかのクイズ')}<ul class="list">${QUIZ_HOKA[id].map(quizLi).join('')}</ul>`;
 
 // 結果を出す・範囲を変える・読みこむ（3つで共通。start と qs・score・label はページごと）
@@ -644,7 +644,7 @@ ${hintMore({ munis, machi })}${hokaQuiz('hint')}`,
 <section id="res" class="qz" hidden aria-live="polite"><p class="score"><b>0</b><span>／5</span></p><p><a class="go" href="/dougu/keisan/">わが家の人数で計算する</a></p><p><button class="go send" type="button">結果を送る</button>　<button class="go again" type="button">もう一度</button></p><p class="note" id="sent"></p></section>
 <noscript><p>このクイズはスクリプトで動きます。</p></noscript>
 <p class="src">数字は公的な資料のめやすです。家の備えは人数分、最低${sd.min}日分、できれば${sd.better}日分</p>
-${sonaeMore({ items, sources, sd })}`,
+${sonaeMore({ items, sources, sd })}${hokaQuiz('sonae')}`,
     head: data(sd),
     script: `(()=>{${COMMON}
 const D=JSON.parse($('#qd').textContent),N=${SONAE_N},f=v=>v.toLocaleString('ja-JP');const nd=()=>[1+R(6),Math.random()<.5?D.min:D.better];

@@ -265,3 +265,25 @@ test('クイズ5つのいちばん下に「ほかのクイズ」：クイズへ�
     }
   }
 });
+
+test('備えの数字クイズのいちばん下に「ほかのクイズ」：今日の1問とどっちが多い？の2つ・自分と品目ページへのリンクなし・説明は /quiz/ の一覧と同じ（#140）', { skip }, async () => {
+  const { quizPages, QUIZ_LIST } = await import('../src/pages/quiz.mjs');
+  const ps = quizPages({ munis, items: readYaml('items.yml'), sources: readYaml('sources.yml'), machi: D });
+  const shelf = ps.find((p) => p.path === '/quiz/').body;
+  const { body } = ps.find((p) => p.path === '/quiz/sonae/');
+  const h2s = [...body.matchAll(/<h2[^>]*>([\s\S]*?)<\/h2>/g)];
+  const last = h2s.at(-1);
+  assert.equal(last[1].replace(/<[^>]+>/g, '').trim(), 'ほかのクイズ');
+  assert.equal(h2s.at(-2)[1].replace(/<[^>]+>/g, '').trim(), '出典');
+  const tail = body.slice(last.index);
+  assert.ok(/<\/ul>\s*$/.test(tail), '「ほかのクイズ」の後ろに何かある');
+  const lis = [...tail.matchAll(/<li><a href="([^"]+)">([^<]+)<\/a><small class="sub">([^<]+)<\/small><\/li>/g)];
+  assert.deepEqual(lis.map((m) => m[1]), ['/quiz/kyou/', '/quiz/docchi/']);
+  assert.equal((tail.match(/<a /g) ?? []).length, 2);
+  for (const [li, href, name, sub] of lis) {
+    assert.ok(shelf.includes(li), `${name} の行が /quiz/ の一覧とちがう`);
+    assert.equal(QUIZ_LIST[href.split('/')[2]][1], sub);
+  }
+  assert.ok(!body.includes('href="/quiz/sonae/"'), '自分へのリンク');
+  assert.ok(!body.includes('/hinmoku/'), '品目ページへのリンク');
+});
