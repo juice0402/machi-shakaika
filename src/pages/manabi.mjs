@@ -164,6 +164,27 @@ export function manabiPages({ munis, list, nat, kazu, sources }) {
 <div class="row"><span class="k">段階</span>${gr}</div>
 <label class="yk"><input type="checkbox" data-a>答えもつける（2枚目に答えと考え方）</label>
 </section>`;
+  // 紙の下の説明（夜 #137）：しくみ・よくある問い。種類・段階の名前、調査の名前と時点、見本の街、街の数は変数から（手で書かない）
+  //   印刷では main>:not(.sheetwrap) で出ない
+  const [ka, kb] = KINDS.map((k) => k[1]);
+  const [gs, gc, gh] = GRADES.map((g) => g[1]);
+  const kn = Object.fromEntries(KINDS);
+  const gn = Object.fromEntries(GRADES);
+  const more = `<div class="prose">
+${h2('しくみ')}
+<p>種類は「${ka}」と「${kb}」の2つです。「${ka}」はえらんだ街の数字を全国とくらべて読み、「${kb}」はくらべる街をもう1つえらんで、2つの街の数字をならべて読みます。</p>
+<p>段階は${gs}・${gc}・${gh}の3つで、同じ街でも問題の出し方が変わります。「${ka}」の${gs}は、100のマスをぬった図を数える問いが2つと、1世帯の人数と人口を目盛りで読む問い、家の備えにつなげて書く問いです。${gc}は割合の棒グラフを読み、人数を計算したり、全国との差を出したり、正しい文をえらんだりします。${gh}は5つの数字をならべた街の横顔を読み、その街を3行で紹介する問いになります。</p>
+<p>「${kb}」の${gs}は、2まいのカードを見て、多いほうの街に丸をつける紙です。${gc}と${gh}は、割合・人口密度・1世帯の人数のグラフで2つの街をくらべます。</p>
+<p>「答えもつける」に印を入れると、2枚目に答えと考え方が出ます。2枚目には、紙に使った街と全国の数字の表も出ます。</p>
+<p>数字は総務省の${esc(munis.statName)}（${jpDate(munis.survey)}現在）です。街の数字は、街をさがすときや、前にえらんだ街があるとき、「${kb}」に切りかえたときに読みこみます。人口密度と一戸建ての割合は「${kb}」をえらんだときだけ読みます。はじめに見えている紙は、見本の${esc(d.pn)}${esc(d.name)}の「${kn[st.k]}」「${gn[st.g]}」の紙です。</p>
+${h2('よくある問い')}
+<h3>入れたものは、どこかに送られますか</h3>
+<p>送りません。えらんだ街と種類と段階は、この端末のブラウザにだけおぼえます。</p>
+<h3>印刷すると、この説明も出ますか</h3>
+<p>出ません。印刷されるのはA4の紙だけで、答えをつけたときは2枚になります。</p>
+<h3>どの街をえらべますか</h3>
+<p>全国の${MB.mbFmt(kazu.r.length)}の市区町村からえらべます。見本の街は${esc(d.name)}です。</p>
+</div>`;
   const body = `<p class="crumb"><a href="/">トップ</a> / <a href="/kurabe/">2つの街をくらべる</a></p>
 <h1 class="city">まなびプリント</h1>
 <p class="src">街と段階をえらぶと、数字を読む問題がA4の1枚に</p>
@@ -174,6 +195,7 @@ ${form}
 <div class="sheetwrap"><div class="sheets">${MB.mbSheets(conf, st, d)}</div></div>
 <p class="note">入れたものは送りません。この端末のブラウザにだけおぼえます。</p>
 <p><a class="go" href="/dougu/karte/">わが家の防災カルテ（A4）</a></p>
+${more}
 ${h2('出典')}
 ${srcKokusei(munis)}`;
   return [

@@ -7,7 +7,7 @@ import { ESTAT_CREDIT } from '../src/site.mjs';
 import { readYaml } from '../src/data.mjs';
 import { esc } from '../src/layout.mjs';
 import { mbState, mbCity, mbPopScale, mbQuizA, mbSheets, mbPerRange, mbSig2, mbAddB, mbQuizB, mbRatio, mbDensScale, mbPer1 } from '../src/manabi-core.mjs';
-import { manabiPages, manabiConf, manabiBData, MANABI_PATH } from '../src/pages/manabi.mjs';
+import { manabiPages, manabiConf, manabiBData, MANABI_PATH, GRADES, KINDS } from '../src/pages/manabi.mjs';
 import { cardData, toolPages } from '../src/pages/kurabe.mjs';
 import * as MC from '../src/card-core.mjs';
 
@@ -357,4 +357,20 @@ test('B 中学生：家の備えの問いは出典つき・共同住宅の割合
   assert.ok(!mbSheets(C, { k: 'b', m: '27100', n: '27210', g: 'c', a: 1 }, osk, same).includes('ポンプ'));
   // 全部の組で、答えの欄が空の問いは書く問いだけ
   for (const [x, y] of ALLP) for (const t of mbQuizB(C, 'c', cityB(x), cityB(y)).qs) assert.ok(t.ans || t.t === 'write', `${x} ${y} ${t.t}`);
+});
+
+test('紙の下の説明（#137）：しくみ・よくある問いが紙のあと・出典の前。段階・種類の名前、調査の時点、見本の街、街の数がデータと合う', () => {
+  const at = (t) => p.body.indexOf(`${t}</h2>`);
+  const src = at('出典');
+  for (const t of ['しくみ', 'よくある問い']) assert.ok(at(t) > 0 && at(t) < src, t);
+  assert.ok(p.body.indexOf('class="sheetwrap"') < at('しくみ'), '紙のあと');
+  const more = p.body.slice(at('しくみ'), src);
+  assert.ok(!/NaN|undefined|null/.test(more));
+  assert.ok(more.includes(`段階は${GRADES.map((g) => g[1]).join('・')}の3つ`));
+  for (const [, t] of KINDS) assert.ok(more.includes(`「${t}」`), t);
+  assert.ok(more.includes(`${esc(munis.statName)}（${Number(munis.survey.slice(0, 4))}年`));
+  const d = city('40130');
+  assert.ok(more.includes(`見本の${d.pn}${d.name}の「${KINDS[0][1]}」「${GRADES[0][1]}」の紙`));
+  assert.ok(more.includes(`全国の${kazu.r.length.toLocaleString('ja-JP')}の市区町村`));
+  assert.ok(!/<a |class="go"|data-print/.test(more), 'リンクやボタンは足さない');
 });
