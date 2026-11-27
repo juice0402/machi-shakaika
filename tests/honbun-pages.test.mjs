@@ -305,3 +305,14 @@ test('夜 #104：携帯トイレの備え・ローリングストックに計算
   assert.equal((kt.body.match(/<p class="pr">/g) ?? []).length, 1, 'A8 の広告は1つのまま');
   assert.ok(kt.body.includes('<a data-keep href="/hinmoku/keitai-toilet/">携帯トイレの品目と商品</a>'));
 });
+
+// 夜 #142（C-025・C-026）：/sonae/rolling-stock/ のチェックリストの行から、同じ人数と日数で品目ページ（水・主食）へ。携帯トイレ・ガスは足さない
+test('夜 #142：/sonae/rolling-stock/ に data-keep つきの /hinmoku/mizu/ と /hinmoku/shushoku/ へのリンクが1つずつ', () => {
+  const rs = sonaePages({ cc, items, sources }).find((p) => p.path === '/sonae/rolling-stock/').body;
+  for (const id of ['mizu', 'shushoku']) assert.equal(rs.split(`<a data-keep href="/hinmoku/${id}/">`).length - 1, 1, id);
+  assert.ok(rs.includes('この人数でチェックリストを見る</a><br><a data-keep href="/hinmoku/mizu/">備蓄の水</a>・<a data-keep href="/hinmoku/shushoku/">備蓄の主食</a></p>'));
+  assert.ok(!rs.includes('href="/hinmoku/keitai-toilet/"'));
+  assert.ok(!rs.includes('data-keep href="/hinmoku/gas/"'));
+  assert.ok(rs.indexOf('/hinmoku/mizu/') > rs.indexOf('配慮のいる家族の食品'));
+  assert.deepEqual(runCalc(rs, '?n=2&d=7').keeps, ['/dougu/check/?n=2&d=7', '/hinmoku/mizu/?n=2&d=7', '/hinmoku/shushoku/?n=2&d=7']);
+});

@@ -192,7 +192,7 @@ ${h2('置き場所')}
 <p>ひとり暮らしで置き場所がせまいときは<a href="/sonae/hitorigurashi/">ひとり暮らしの備え</a>に。</p>
 ${h2('配慮のいる家族の食品')}
 <p>食物アレルギーに対応した食品や、やわらかい介護食品、ミルクは、家族によっては欠かせない食品です。練馬区の案内は、アレルギーに対応した食品をローリングストックで回しながら置くよう書いています。こうした家族がいる家では、少なくとも${y}日分がめやすです。</p>
-<p><a class="go" data-keep href="/dougu/check/">この人数でチェックリストを見る</a></p>
+<p><a class="go" data-keep href="/dougu/check/">この人数でチェックリストを見る</a><br><a data-keep href="/hinmoku/mizu/">備蓄の水</a>・<a data-keep href="/hinmoku/shushoku/">備蓄の主食</a></p>
 </div>
 ${h2('出典')}
 ${sourceList(['maff-guide', 'maff-sonae', 'maff-stock', 'maff-shuno', 'maff-tanshin', 'nerima-yohairyo', 'hepco-saigai'], sources)}`,
