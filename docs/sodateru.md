@@ -304,7 +304,7 @@
 - マージ：する
 - 足した：育てる山の補充（自動・2026-11-16）
 
-### [ ] チェックリスト（/dougu/check/）のはじめの人数（4人）も CALC_N に
+### [x] チェックリスト（/dougu/check/）のはじめの人数（4人）も CALC_N に（#135）
 - やること：`src/pages/dougu.mjs` の `douguPages()` の `const n = 4;` は、/dougu/check/ の計算カード（`calcHtml(cc, { n, d, … })`）と品目の量の行（`need(per, n, d)`）と地の文（「はじめは${n}人の${d}日分です」）のはじめの人数で、計算カードのはじめの人数と同じ数の直書き。前の項目で `src/calc.mjs` に置く `CALC_N` を import して `const n = CALC_N;` にする（import は今の `import { calcHtml, CALC_JS, need } from '../calc.mjs';` の行に足す）。ページの見た目・HTML の出力は1文字も変えない
 - 順番：「計算カードのはじめの人数（4人）を1か所に（品目ページの直書きをなくす）」（PR #123）のあと（`CALC_N` はその PR で入る。マージ待ちならその枝の上に作る）
 - できあがりの条件：`npm run check` が緑（作業場から e-Stat・国土地理院にはつながらないので `ALLOW_MISSING_HINAN_LIST=1 npm run check`）。直す前と直したあとで dist を作り、全ページの HTML が同じ（`diff -r` で差がない。fingerprint.json もふくめて同じ）ことを PR に書く。`grep -n "const n = 4" src/pages/dougu.mjs` が0件

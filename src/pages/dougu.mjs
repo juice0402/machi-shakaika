@@ -1,7 +1,7 @@
 // チェックリスト（/dougu/check/）：家に置く備えと持ち出す袋。品目と出典は data/items.yml の checklists から
 // チェックはこの端末のブラウザの中だけ（localStorage）。どこにも送らない
 import { esc, h2, fit, HAN } from '../layout.mjs';
-import { calcHtml, CALC_JS, need } from '../calc.mjs';
+import { calcHtml, CALC_JS, CALC_N, need } from '../calc.mjs';
 import { checkEntries } from '../data.mjs';
 import { sourceList } from './sonae.mjs';
 import { a8Ad } from '../a8.mjs';
@@ -22,7 +22,7 @@ const MADA_CSS = `.mada{margin:10px 0 0;font-size:14px;line-height:2}.mada .dt{f
 
 export function douguPages({ cc, items, sources }) {
   const { days } = cc;
-  const n = 4;
+  const n = CALC_N;
   const d = days.min;
   const lists = items.checklists.map((cl) => ({ cl, entries: checkEntries(items, cl) }));
   // まだの品目（夜 #106）：家に置く備えの、品目ページのある行だけ。チェックした行のリンクは CHECK_JS が隠し、全部そろったら朱のはんこ
