@@ -104,7 +104,7 @@ const hinanList = (code) => (existsSync(`data/hinan/list/${code}.json`) ? JSON.p
 for (const city of cities) add(cityPage({ city, munis, list, z, cc, hinan, hinanMeta, urlOf, kazu, bichiku: bichikuOf.get(`${city.pref}/${city.slug}`) ?? null, hinanList: hinanList(city.code) }));
 for (const p of sonaePages({ cc, items, sources })) add(p);
 for (const p of fuyuTeidenPages({ cc, items, sources })) add(p);
-for (const p of yomimonoPages({ cc, items, sources })) add(p);
+for (const p of yomimonoPages({ cc, items, sources, z, munis })) add(p);
 for (const p of sotoPages({ cc, items, sources })) add(p);
 for (const p of douguPages({ cc, items, sources })) add(p);
 for (const p of kigenPages({ items, ima: ima?.theme.includes('期限の見直し') ? koyomiLine(ima, items) : '' })) add(p);

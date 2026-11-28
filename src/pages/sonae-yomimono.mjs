@@ -2,8 +2,11 @@
 // 街とつながる2本（10/27 #18）：ひとり暮らし（/sonae/hitorigurashi/）・マンション（/sonae/mansion/）。市区町村ページ「この街の備え」の行から
 // 作りは冬の停電（sonae-fuyu.mjs）と同じ：起きること → 前に足すものの表。発生中の行動・避難の判断は書かず、1行で気象庁・自治体・ハザードマップへ
 // 数字はすべて data/items.yml（days・mizu・shushoku・keitai-toilet・yohairyo_days）から。出典は items.yml の jishin・zaitaku・akachan・hitori・mansion の sources
-import { esc, h2, fit } from '../layout.mjs';
-import { need } from '../calc.mjs';
+import { esc, h2, fit, srcKokusei } from '../layout.mjs';
+import { need, bottles } from '../calc.mjs';
+import { PREFS } from '../areas.mjs';
+import { readMunis } from '../munis.mjs';
+import { derive } from '../stats.mjs';
 import { sourceList } from './sonae.mjs';
 import { SOTO } from './sonae-soto.mjs';
 import { FUYU } from './sonae-fuyu.mjs';
@@ -21,6 +24,7 @@ export const YOMIMONO = [
   { key: 'dansui', path: '/sonae/dansui/', name: '断水の備え', group: '災害の前に', date: '2026-11-14' },
   { key: 'mochidashi', path: '/sonae/mochidashi/', name: '非常用持ち出し袋と家の備蓄のちがい', group: '量と品目', date: '2026-11-17' },
   { key: 'renraku', path: '/sonae/renraku/', name: '家族の連絡のしかた', group: '家族と住まい', date: '2026-11-21' },
+  { key: 'setaininzu', path: '/sonae/setai-ninzu/', name: '世帯の人数と備蓄の量', group: '量と品目', date: '2026-11-28' },
 ];
 
 // 読みものの全部（YOMIMONO・家の外 SOTO・冬の停電）。/sonae/ の棚と末尾はここから
@@ -76,7 +80,8 @@ export function tail(items, self) {
 ${others.length ? `<p>${others.map((y) => `<a href="${y.path}">${esc(y.name)}</a>`).join('・')}</p>` : ''}`;
 }
 
-export function yomimonoPages({ cc, items, sources }) {
+// z（全国の値）と munis（国勢調査）は build.mjs から。なければ data/estat/munis.json を読む（テスト用）
+export function yomimonoPages({ cc, items, sources, munis = readMunis(), z = derive(munis?.areas['00000']) }) {
   const err = checkYomimono(items, sources);
   if (err.length) throw new Error(err.map((e) => `データ：${e}`).join('\n'));
   const { by, days } = cc;
@@ -535,5 +540,63 @@ ${tail(items, 'renraku')}
 ${h2('出典')}
 ${sourceList(items.renraku.sources, sources)}`,
   });
+  // ---------- 世帯の人数と備蓄の量（11/28） ----------
+  //   1世帯の人数は国勢調査（一般世帯の1世帯当たり人員・単独世帯・世帯数）。人数は小数1けた（/dougu/keisan/ の例と同じ）
+  //   ボンベは農林水産省の大人1人1週間の例の数だけ（家族の人数での数え方は出典で確かめていないので掛けない）
+  if (!(z?.perHh > 0)) throw new Error('世帯の人数と備蓄の量：国勢調査の1世帯の人数がない');
+  {
+    const r1 = (v) => (Math.round(v * 10) / 10).toFixed(1);
+    const pct = (a, b) => (Math.round((a / b) * 1000) / 10).toFixed(1);
+    const prefs = PREFS.map((p) => ({ ...p, a: munis.areas[`${p.code}000`] })).filter((p) => p.a?.perHh > 0).sort((p, q) => q.a.perHh - p.a.perHh);
+    const hi = prefs[0];
+    const lo = prefs[prefs.length - 1];
+    const per = Number(r1(z.perHh));
+    const d = days.better;
+    const gas = items.items.find((it) => it.id === 'gas');
+    const amt = (n) => `水${need(w, n, d)}L・携帯トイレ${need(t, n, d)}回分`;
+    const pl = (p) => `<a href="/${p.slug}/">${esc(p.name)}</a>`;
+    out.push({
+      path: '/sonae/setai-ninzu/',
+      title: '世帯の人数と備蓄の量（1人・2人・4人の家の水と携帯トイレ）',
+      description: fit(
+        [`備蓄の量は人数で決まる。全国の1世帯の人数は${r1(z.perHh)}人（令和7年国勢調査）。${d}日分なら1人で水${need(w, 1, d)}L、2人で${need(w, 2, d)}L、4人で${need(w, 4, d)}L。携帯トイレは1人${need(t, 1, d)}回分。`],
+        [['人数が変わったら量も見直す。', '']],
+      ),
+      head: `<style>${CSS}</style>`,
+      body: `${crumb}
+<h1 class="city">世帯の人数と備蓄の量</h1>
+<p class="lead">家の人数で、そろえる水とトイレの量が変わる</p>
+${CALC}
+${table(['止まるもの', '代わりに足すもの'], [
+  ['水道', '飲み水と調理の水', '水', `1人1日${w}L×人数`],
+  ['水洗トイレ', '断水や配管の被害で', '携帯トイレ', `1人1日${t}回×人数`],
+  ['買い物', '店に食べ物がない', '主食', `1人1日${m}食×人数`],
+  ['ガス', '', 'カセットコンロとボンベ', `大人1人1週間の例で${gas.example_qty}本`],
+  ['電気・水道・ガス', '止まる日数', '備える日数', `最低${days.min}日、できれば${d}日`],
+])}
+<div class="prose">
+${h2('量は人数で決まる')}
+<p>農林水産省は、食品を最低${days.min}日分から1週間分、人数分そろえるよう書いています。水は1人1日およそ${w}Lで、飲み水と調理の水を合わせた量です。首相官邸のページも、備蓄の例を人数分としています。</p>
+<p>携帯トイレについて、広島市は1日${t}回に家族の人数と日数を掛けた数をめやすにしています。どれも1人分の量に人数を掛けるので、家族が1人増えれば、そろえる量もその分だけ増えます。</p>
+${h2('全国の1世帯は何人か')}
+<p>令和7年国勢調査では、一般世帯の1世帯あたりの人数は全国で${r1(z.perHh)}人です。一般世帯は、寮や病院などをのぞいた、ふつうの家のことです。都道府県では、${pl(lo)}の${r1(lo.a.perHh)}人から${pl(hi)}の${r1(hi.a.perHh)}人までの幅があります。</p>
+<p>ひとりで暮らす単独世帯は、一般世帯の${pct(z.single, z.ippan)}%です。${z.hh > z.hh2020 && z.pop < z.pop2020 ? '5年前の調査とくらべると、世帯の数は増え、人口は減りました。' : ''}平均の人数で量を出すと、全国の平均的な家の${d}日分は水${need(w, per, d)}Lです。ただ、平均はどこかの家の人数ではないので、自分の家の量は家にいる人の数で数えます。</p>
+${h2('1人・2人・4人の家')}
+<p>${d}日分で数えると、ひとり暮らしは${amt(1)}です。2人の家は${amt(2)}、4人の家は${amt(4)}になります。2Lのボトルなら、1人で${bottles(w, 1, d, 2)}本、4人で${bottles(w, 4, d, 2)}本です。</p>
+<p>主食は1人1日${m}食で数え、4人の家の${d}日分は${need(m, 4, d)}食です。ほかの人数や${days.min}日分の量は、<a href="/dougu/keisan/">計算</a>で人数と日数をえらべば出ます。</p>
+<p>ボンベは、農林水産省の大人1人1週間の例に${gas.example_qty}本とあります。家族の人数で何本になるかは、この例には書かれていません。</p>
+${h2('人数が変わるとき')}
+<p>子どもが生まれたときや、親と一緒に住むようになったときは、そろえる量も変わります。子どもがひとり立ちして人数が減れば、置いておく量は少なくてすみます。期限の確かめとあわせて量も見直す日の決め方は、<a href="/sonae/minaoshi/">年に2回の備えの見直し</a>にまとめました。</p>
+<p>乳幼児や妊産婦、高齢者、持病のある人、食物アレルギーのある人がいる家では、練馬区は少なくとも${y}日分を備えるよう書いています。その人の分は、ほかの家族より長い日数で数えます。</p>
+${h2('置く場所')}
+<p>人数が多いほど、量が増えて置き場所に困ります。農林水産省のガイドは、重いものは下に置き、台所に入りきらない分は家のすき間に分けて置くとしています。単身者向けのガイドには、ひとり暮らしでもクローゼットのすき間やベッドの下を使えるとあります。ひとりの家の置き方は<a href="/sonae/hitorigurashi/">ひとり暮らしの備え</a>にあります。</p>
+</div>
+${srcKokusei(munis)}
+${tail(items, 'setaininzu')}
+<p class="why">災害が起きたときの動き方や避難は、<a href="https://www.jma.go.jp/bosai/">気象庁</a>の情報、市区町村の案内、<a href="${esc(hazard.url)}" rel="noopener">ハザードマップ</a>で確かめます。</p>
+${h2('出典')}
+${sourceList(items.setaininzu.sources, sources)}`,
+    });
+  }
   return out;
 }
