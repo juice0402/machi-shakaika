@@ -5,7 +5,10 @@ import { calcConf, need } from '../src/calc.mjs';
 import { sonaePages, sonaeShelf, YOMI_GROUPS } from '../src/pages/sonae.mjs';
 import { yomimonoPages, checkYomimono, YOMIMONO, allYomimono, tail } from '../src/pages/sonae-yomimono.mjs';
 import { sotoPages } from '../src/pages/sonae-soto.mjs';
-import { sonaeLinks } from '../src/stats.mjs';
+import { sonaeLinks, derive } from '../src/stats.mjs';
+import { readMunis } from '../src/munis.mjs';
+import { PREFS } from '../src/areas.mjs';
+import { bottles } from '../src/calc.mjs';
 
 const items = readYaml('items.yml');
 const sources = readYaml('sources.yml');
@@ -28,10 +31,16 @@ test('読みもの：本文の数字は items.yml とそこから計算したも
   const y = items.yohairyo_days;
   const m = cc.by.shushoku.per_day;
   const allowed = new Set([1, 2, 4, min, better, w, t, m, y, need(w, 4, better), need(t, 4, better), need(w, 2, y), ...[w, m, t].flatMap((v) => [need(v, 1, min), need(v, 1, better)]), ...Object.values(items.minaoshi.hi).flatMap((d) => d.match(/\d+/g).map(Number)), ...[items.kasai.tenken, items.kasai.koukan].flatMap((d) => d.match(/\d+/g).map(Number)), ...Object.values(items.dansui).filter((d) => typeof d === 'string').flatMap((d) => (d.match(/\d+/g) ?? []).map(Number)), ...[items.mochidashi.omosa, items.mochidashi.tenken].flatMap((d) => (d.match(/\d+/g) ?? []).map(Number)), ...Object.values(items.renraku).flat().filter((d) => typeof d === 'string').flatMap((d) => (d.match(/\d+/g) ?? []).map(Number)), ...items.checklists.map((c) => c.entries.length)]);
+  // 世帯の人数と備蓄の量：国勢調査の値（小数1けた・割合）と、人数ごとの量・ボトルの本数・ボンベの例
+  const mu = readMunis();
+  const zz = derive(mu.areas['00000']);
+  const dec = (v) => (Math.round(v * 10) / 10).toFixed(1).split('.').map(Number);
+  const setai = new Set([...dec(zz.perHh), ...dec((zz.single / zz.ippan) * 100), ...PREFS.flatMap((q) => dec(mu.areas[`${q.code}000`].perHh)), ...[w, t, m].flatMap((v) => [1, 2, 4].map((n) => need(v, n, better))), need(w, Number((Math.round(zz.perHh * 10) / 10).toFixed(1)), better), bottles(w, 1, better, 2), bottles(w, 4, better, 2), items.items.find((it) => it.id === 'gas').example_qty, 5]);
   for (const p of pages) {
-    const nums = (text(p.body).replace(/（\d{4}年\d{1,2}月\d{1,2}日確認）/g, '').match(/\d+/g) ?? []).map(Number);
+    const ok = (n) => allowed.has(n) || (p.path === '/sonae/setai-ninzu/' && setai.has(n));
+    const nums = (text(p.body).replace(/（\d{4}年\d{1,2}月\d{1,2}日確認）/g, '').replace(/（\d{4}年\d{1,2}月\d{1,2}日現在・\d{4}年\d{1,2}月\d{1,2}日公表）/g, '').replace(/令和\d+年/g, '').match(/\d+/g) ?? []).map(Number);
     assert.ok(nums.length >= 3, p.path);
-    for (const n of nums) assert.ok(allowed.has(n), `${p.path}：${n} は items.yml にない数字`);
+    for (const n of nums) assert.ok(ok(n), `${p.path}：${n} は items.yml にない数字`);
   }
 });
 
